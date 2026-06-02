@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
+
+  --color-rc-bg: #f8fafc;
+  --color-rc-card: #ffffff;
+  --color-rc-text: #0f172a;
+  --color-rc-teal: #0f766e;
+  --color-rc-green: #22c55e;
+  --color-rc-blue: #3b82f6;
+}
+
+/* ── Theme CSS variables (default: teal) ─────────────────────────────── */
+:root {
+  --rc-primary: #0d9488;
+  --rc-primary-dark: #0f766e;
+  --rc-primary-light: #14b8a6;
+  --rc-primary-bg: #f0fdfa;
+  --rc-primary-text: #0f766e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── Theme-aware utility classes ─────────────────────────────────────── */
+.theme-bg       { background-color: var(--rc-primary-bg); }
+.theme-text     { color: var(--rc-primary-text); }
+.theme-border   { border-color: var(--rc-primary); }
+.theme-btn {
+  background-color: var(--rc-primary);
+  color: #ffffff;
+}
+.theme-btn:hover {
+  background-color: var(--rc-primary-dark);
+}
+.theme-icon-bg  { background-color: var(--rc-primary-dark); }
+.theme-badge    { background-color: var(--rc-primary-bg); color: var(--rc-primary-text); }
+.theme-nav-active { background-color: var(--rc-primary-bg); color: var(--rc-primary-text); }
+.theme-store-panel { background-color: var(--rc-primary-bg); }
+.theme-store-text  { color: var(--rc-primary-text); }
+
+/* ── Scrollbar ───────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

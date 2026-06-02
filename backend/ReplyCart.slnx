@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ReplyCart.Api/ReplyCart.Api.csproj" />
+    <Project Path="src/ReplyCart.Application/ReplyCart.Application.csproj" />
+    <Project Path="src/ReplyCart.Domain/ReplyCart.Domain.csproj" />
+    <Project Path="src/ReplyCart.Infrastructure/ReplyCart.Infrastructure.csproj" />
+    <Project Path="src/ReplyCart.Shared/ReplyCart.Shared.csproj" />
+  </Folder>
+</Solution>
