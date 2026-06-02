@@ -96,23 +96,25 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ReplyCart API v1"));
-}
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ReplyCart API v1"));
 
 // Ensure wwwroot exists so UseStaticFiles can serve uploaded files immediately
 Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot"));
 Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads", "products"));
 
-// Apply EF Core migrations and seed sample data on first run
-using (var scope = app.Services.CreateScope())
+// Apply EF Core migrations and seed on startup
+try
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+    await DataSeeder.SeedAsync(app.Services, app.Logger);
 }
-await DataSeeder.SeedAsync(app.Services, app.Logger);
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Startup DB migration/seed failed — app will still start.");
+}
 
 // CORS must come before static files so that /uploads/* responses include
 // the Access-Control-Allow-Origin header.
