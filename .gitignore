@@ -1,0 +1,30 @@
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+.vs/
+*.rsuser
+*.DotSettings.user
+**/appsettings.Development.json
+**/appsettings.Production.json
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.production
+*.log
+
+# Misc
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/settings.json
+
+# Secrets
+*.pfx
+*.p12
+secrets/
