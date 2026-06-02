@@ -59,6 +59,13 @@ public class ProductsController(IMediator mediator) : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:guid}/clone")]
+    public async Task<IActionResult> Clone(Guid id, CancellationToken ct)
+    {
+        var newId = await mediator.Send(new CloneProductCommand(id), ct);
+        return Created($"api/v1/products/{newId}", new { id = newId });
+    }
+
     // ── Image management (Cloudinary) ─────────────────────────────────────────
 
     /// <summary>Upload a product image via Cloudinary (multipart/form-data, field name: "file").</summary>

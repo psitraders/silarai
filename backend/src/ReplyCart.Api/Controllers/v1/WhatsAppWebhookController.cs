@@ -1,8 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.WhatsApp.Commands;
+using ReplyCart.Infrastructure.Persistence;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -17,12 +20,23 @@ public class WhatsAppWebhookController : ControllerBase
     private readonly IWhatsAppService _whatsApp;
     private readonly ILogger<WhatsAppWebhookController> _logger;
 
-    public WhatsAppWebhookController(IMediator mediator, IConfiguration configuration, IWhatsAppService whatsApp, ILogger<WhatsAppWebhookController> logger)
+    private readonly AppDbContext _db;
+    private readonly IAiProvider _ai;
+    private readonly IConversationMemoryService _memory;
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public WhatsAppWebhookController(IMediator mediator, IConfiguration configuration, IWhatsAppService whatsApp,
+        ILogger<WhatsAppWebhookController> logger, AppDbContext db, IAiProvider ai,
+        IConversationMemoryService memory, IHttpClientFactory httpClientFactory)
     {
         _mediator = mediator;
         _configuration = configuration;
         _whatsApp = whatsApp;
         _logger = logger;
+        _db = db;
+        _ai = ai;
+        _memory = memory;
+        _httpClientFactory = httpClientFactory;
     }
 
     // ── Step 1: Meta verification challenge ──────────────────────────────────
@@ -62,11 +76,32 @@ public class WhatsAppWebhookController : ControllerBase
                     var value = change.Value;
                     if (value?.Messages == null) continue;
 
-                    // Get tenant from phone number ID (looks up DB first, then config fallback)
-                    var tenantId = await _whatsApp.ResolveTenantByPhoneNumberIdAsync(value.Metadata?.PhoneNumberId ?? string.Empty, ct);
+                    // Resolve tenant by Meta Phone Number ID (most reliable — matches stored per-tenant ID)
+                    var phoneNumberId = value.Metadata?.PhoneNumberId ?? string.Empty;
+                    var tenantId = await _whatsApp.ResolveTenantByPhoneNumberIdAsync(phoneNumberId, ct);
+
+                    // ── External chatbot client? ──────────────────────────────
                     if (tenantId == null)
                     {
-                        _logger.LogWarning("No tenant found for phone number ID {Id}", value.Metadata?.PhoneNumberId);
+                        var extClient = await _db.ChatbotClients
+                            .Include(c => c.Products)
+                            .FirstOrDefaultAsync(c => c.WaPhoneNumberId == phoneNumberId && c.IsActive, ct);
+
+                        if (extClient != null)
+                        {
+                            foreach (var message in value.Messages)
+                            {
+                                if (message.Type != "text") continue;
+                                var text = message.Text?.Body ?? string.Empty;
+                                if (string.IsNullOrWhiteSpace(text)) continue;
+                                await ChatbotClientWebhookHelper.HandleWhatsAppAsync(
+                                    extClient, message.From, text,
+                                    _ai, _memory, _httpClientFactory, _logger, ct);
+                            }
+                            continue;
+                        }
+
+                        _logger.LogWarning("No tenant/client found for WhatsApp PhoneNumberId {Id}", phoneNumberId);
                         continue;
                     }
 

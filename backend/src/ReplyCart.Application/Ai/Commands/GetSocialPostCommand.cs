@@ -7,9 +7,10 @@ namespace ReplyCart.Application.Ai.Commands;
 public record GetSocialPostCommand(
     string ProductName,
     string? ProductDescription,
-    string Platform,   // "Instagram" | "Facebook" | "WhatsApp" | "Twitter"
-    string Tone,       // "Fun" | "Professional" | "Festive" | "Urgent"
-    string? BusinessName
+    string Platform,    // "Instagram" | "Facebook" | "WhatsApp" | "Twitter"
+    string Tone,        // "Fun" | "Professional" | "Festive" | "Urgent"
+    string? BusinessName,
+    string Language = "English"
 ) : IRequest<SocialPostResult>;
 
 public record SocialPostResult(string Caption, string Hashtags, string CallToAction);
@@ -39,6 +40,7 @@ public class GetSocialPostCommandHandler(
                 request.Platform,
                 request.Tone,
                 bizName,
+                request.Language,
                 cancellationToken);
             wasSuccessful = true;
             usedProvider  = aiProvider.ProviderName;

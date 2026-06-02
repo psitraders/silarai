@@ -189,6 +189,7 @@ public class PaymentController(
             DeliveryAddress = request.DeliveryAddress,
             Notes           = $"Paid online via Razorpay | Payment ID: {request.RazorpayPaymentId}",
             TotalAmount     = totalAmount,
+            PaymentStatus   = PaymentStatus.Paid,
             Items           = items
         };
 

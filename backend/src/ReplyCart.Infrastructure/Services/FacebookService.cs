@@ -78,6 +78,61 @@ public class FacebookService : IFacebookService
         return business?.TenantId;
     }
 
+    /// <inheritdoc />
+    public async Task<string?> CreatePagePostAsync(string message, string? imageUrl = null, CancellationToken ct = default)
+    {
+        var (pageId, accessToken) = await GetCredentialsAsync(ct);
+        if (pageId == null || accessToken == null)
+        {
+            _logger.LogWarning("Facebook credentials not configured for tenant {TenantId}. Skipping post.", _tenantContext.CurrentTenantId);
+            return null;
+        }
+
+        try
+        {
+            string postUrl;
+            object payload;
+
+            if (!string.IsNullOrWhiteSpace(imageUrl))
+            {
+                // Photo post: POST /{page-id}/photos
+                postUrl = $"https://graph.facebook.com/{_apiVersion}/{pageId}/photos";
+                payload = new { url = imageUrl, caption = message, access_token = accessToken };
+            }
+            else
+            {
+                // Text post: POST /{page-id}/feed
+                postUrl = $"https://graph.facebook.com/{_apiVersion}/{pageId}/feed";
+                payload = new { message, access_token = accessToken };
+            }
+
+            var json    = JsonSerializer.Serialize(payload);
+            using var request = new HttpRequestMessage(HttpMethod.Post, postUrl);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _http.SendAsync(request, ct);
+            var body     = await response.Content.ReadAsStringAsync(ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("Facebook Page post failed {Status}: {Body}", response.StatusCode, body);
+                return null;
+            }
+
+            using var doc = JsonDocument.Parse(body);
+            // Photo endpoint returns { "post_id": "..." }, feed endpoint returns { "id": "..." }
+            if (doc.RootElement.TryGetProperty("post_id", out var pid)) return pid.GetString();
+            if (doc.RootElement.TryGetProperty("id",      out var id))  return id.GetString();
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create Facebook page post");
+            return null;
+        }
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private async Task<(string? PageId, string? AccessToken)> GetCredentialsAsync(CancellationToken ct)

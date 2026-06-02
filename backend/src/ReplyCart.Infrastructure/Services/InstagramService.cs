@@ -77,6 +77,73 @@ public class InstagramService : IInstagramService
         return business?.TenantId;
     }
 
+    /// <inheritdoc />
+    public async Task<string?> CreatePhotoPostAsync(string imageUrl, string caption, CancellationToken ct = default)
+    {
+        var (accountId, accessToken) = await GetCredentialsAsync(ct);
+        if (accountId == null || accessToken == null)
+        {
+            _logger.LogWarning("Instagram credentials not configured for tenant {TenantId}. Skipping post.", _tenantContext.CurrentTenantId);
+            return null;
+        }
+
+        try
+        {
+            // Step 1: Create a media container
+            var containerUrl = $"https://graph.facebook.com/{_apiVersion}/{accountId}/media";
+            var containerPayload = new
+            {
+                image_url = imageUrl,
+                caption   = caption,
+                access_token = accessToken
+            };
+
+            using var containerReq = new HttpRequestMessage(HttpMethod.Post, containerUrl);
+            containerReq.Content = new StringContent(
+                JsonSerializer.Serialize(containerPayload), Encoding.UTF8, "application/json");
+            containerReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            var containerRes = await _http.SendAsync(containerReq, ct);
+            var containerBody = await containerRes.Content.ReadAsStringAsync(ct);
+
+            if (!containerRes.IsSuccessStatusCode)
+            {
+                _logger.LogError("Instagram create media container failed {Status}: {Body}", containerRes.StatusCode, containerBody);
+                return null;
+            }
+
+            using var containerDoc = JsonDocument.Parse(containerBody);
+            var containerId = containerDoc.RootElement.GetProperty("id").GetString();
+            if (string.IsNullOrEmpty(containerId)) return null;
+
+            // Step 2: Publish the container
+            var publishUrl = $"https://graph.facebook.com/{_apiVersion}/{accountId}/media_publish";
+            var publishPayload = new { creation_id = containerId, access_token = accessToken };
+
+            using var publishReq = new HttpRequestMessage(HttpMethod.Post, publishUrl);
+            publishReq.Content = new StringContent(
+                JsonSerializer.Serialize(publishPayload), Encoding.UTF8, "application/json");
+            publishReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            var publishRes = await _http.SendAsync(publishReq, ct);
+            var publishBody = await publishRes.Content.ReadAsStringAsync(ct);
+
+            if (!publishRes.IsSuccessStatusCode)
+            {
+                _logger.LogError("Instagram publish media failed {Status}: {Body}", publishRes.StatusCode, publishBody);
+                return null;
+            }
+
+            using var publishDoc = JsonDocument.Parse(publishBody);
+            return publishDoc.RootElement.GetProperty("id").GetString();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create Instagram photo post");
+            return null;
+        }
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private async Task<(string? AccountId, string? AccessToken)> GetCredentialsAsync(CancellationToken ct)

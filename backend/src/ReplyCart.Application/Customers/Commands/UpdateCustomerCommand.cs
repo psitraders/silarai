@@ -7,14 +7,16 @@ using ReplyCart.Domain.Customers;
 namespace ReplyCart.Application.Customers.Commands;
 
 public record UpdateCustomerCommand(
-    Guid   CustomerId,
-    string Name,
-    string PhoneNumber,
-    string? Email,
-    string? Address,
-    string? City,
-    string? Notes,
-    string? Tags
+    Guid     CustomerId,
+    string   Name,
+    string   PhoneNumber,
+    string?  Email,
+    string?  Address,
+    string?  City,
+    string?  Notes,
+    string?  Tags,
+    DateOnly? Birthday    = null,
+    DateOnly? Anniversary = null
 ) : IRequest;
 
 public class UpdateCustomerCommandHandler(IAppDbContext db, ITenantContext tenantContext)
@@ -33,6 +35,8 @@ public class UpdateCustomerCommandHandler(IAppDbContext db, ITenantContext tenan
         customer.City        = request.City?.Trim();
         customer.Notes       = request.Notes?.Trim();
         customer.Tags        = request.Tags?.Trim();
+        customer.Birthday    = request.Birthday;
+        customer.Anniversary = request.Anniversary;
 
         await db.SaveChangesAsync(cancellationToken);
     }

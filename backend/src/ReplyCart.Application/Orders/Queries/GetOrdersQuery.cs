@@ -21,9 +21,9 @@ public class GetOrdersQueryHandler(IAppDbContext db) : IRequestHandler<GetOrders
 {
     public async Task<PagedList<OrderListDto>> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
     {
-        var query = db.Orders
-            .Include(o => o.Items)
-            .AsQueryable();
+        // Do NOT Include(o => o.Items) — that loads every item row into memory.
+        // Instead, project ItemCount as a correlated subquery that stays server-side.
+        var query = db.Orders.AsQueryable();
 
         if (!string.IsNullOrEmpty(request.Status) && Enum.TryParse<OrderStatus>(request.Status, out var status))
             query = query.Where(o => o.Status == status);
@@ -37,7 +37,8 @@ public class GetOrdersQueryHandler(IAppDbContext db) : IRequestHandler<GetOrders
             .Select(o => new OrderListDto(
                 o.Id, o.OrderNumber, o.CustomerName, o.CustomerPhone,
                 o.TotalAmount, o.Status.ToString(), o.PaymentStatus.ToString(),
-                o.SourceChannel.ToString(), o.CreatedAt, o.Items.Count
+                o.SourceChannel.ToString(), o.CreatedAt,
+                db.OrderItems.Count(i => i.OrderId == o.Id)
             ));
 
         return await PagedList<OrderListDto>.CreateAsync(projected, request.Page, request.PageSize);

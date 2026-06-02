@@ -15,6 +15,7 @@ public class PlansController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
         var plans = await db.SubscriptionPlans
+            .IgnoreQueryFilters()   // SubscriptionPlan is global (no tenant) — belt-and-suspenders
             .Where(p => p.IsActive)
             .OrderBy(p => p.SortOrder)
             .Select(p => new

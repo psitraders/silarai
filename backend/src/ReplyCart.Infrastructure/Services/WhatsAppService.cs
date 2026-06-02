@@ -1,162 +1,257 @@
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Infrastructure.Persistence;
 
 namespace ReplyCart.Infrastructure.Services;
 
+/// <summary>
+/// WhatsApp Business Cloud API implementation (graph.facebook.com).
+/// Per-tenant credentials: each merchant connects their own WhatsApp Business number
+/// via Meta Embedded Signup. PhoneNumberId + AccessToken are stored in the Businesses table.
+/// </summary>
 public class WhatsAppService : IWhatsAppService
 {
+    private const string ApiVersion = "v25.0";
+    private const string GraphBase  = "https://graph.facebook.com";
+
     private readonly HttpClient _http;
     private readonly ILogger<WhatsAppService> _logger;
     private readonly AppDbContext _db;
     private readonly ITenantContext _tenantContext;
-    private readonly IConfiguration _configuration;
-    private readonly string _apiVersion;
-
-    // Fallback credentials from config (for dev / single-tenant setups)
-    private readonly string? _configPhoneNumberId;
-    private readonly string? _configAccessToken;
 
     public WhatsAppService(
         IHttpClientFactory httpClientFactory,
         ILogger<WhatsAppService> logger,
         AppDbContext db,
-        ITenantContext tenantContext,
-        IConfiguration configuration)
+        ITenantContext tenantContext)
     {
-        _http = httpClientFactory.CreateClient("WhatsApp");
-        _logger = logger;
-        _db = db;
-        _tenantContext = tenantContext;
-        _configuration = configuration;
-        _apiVersion = configuration["WhatsApp:ApiVersion"] ?? "v19.0";
-        _configPhoneNumberId = configuration["WhatsApp:PhoneNumberId"];
-        _configAccessToken = configuration["WhatsApp:AccessToken"];
+        _http           = httpClientFactory.CreateClient();
+        _logger         = logger;
+        _db             = db;
+        _tenantContext  = tenantContext;
     }
 
     public bool IsConfigured
     {
         get
         {
-            // True if either DB credentials or config credentials are present
-            return !string.IsNullOrEmpty(_configPhoneNumberId) && !string.IsNullOrEmpty(_configAccessToken);
+            var business = _db.Businesses
+                .FirstOrDefault(b => b.TenantId == _tenantContext.CurrentTenantId);
+            return !string.IsNullOrEmpty(business?.WhatsAppPhoneNumberId)
+                && !string.IsNullOrEmpty(business?.WhatsAppAccessToken);
         }
     }
 
+    // ── Public API ────────────────────────────────────────────────────────────
+
+    /// <inheritdoc/>
     public async Task SendTextMessageAsync(string toPhone, string message, CancellationToken ct = default)
     {
         var (phoneNumberId, accessToken) = await GetCredentialsAsync(ct);
-        if (phoneNumberId == null || accessToken == null)
-        {
-            _logger.LogWarning("WhatsApp credentials not configured for tenant {TenantId}. Skipping send.", _tenantContext.CurrentTenantId);
-            return;
-        }
+        if (phoneNumberId == null || accessToken == null) return;
 
-        var url = $"https://graph.facebook.com/{_apiVersion}/{phoneNumberId}/messages";
         var payload = new
         {
             messaging_product = "whatsapp",
-            recipient_type = "individual",
-            to = NormalizePhone(toPhone),
+            to   = NormalizePhone(toPhone),
             type = "text",
-            text = new { preview_url = false, body = message }
+            text = new { body = message },
         };
 
-        await PostAsync(url, payload, accessToken, ct);
+        await PostAsync(MessagesUrl(phoneNumberId), payload, accessToken, ct);
     }
 
-    public async Task SendTemplateMessageAsync(string toPhone, string templateName, string languageCode, CancellationToken ct = default)
+    /// <inheritdoc />
+    public async Task SendTemplateMessageAsync(
+        string toPhone,
+        string templateName,
+        string languageCode,
+        IEnumerable<string>? bodyParams = null,
+        CancellationToken ct = default)
     {
         var (phoneNumberId, accessToken) = await GetCredentialsAsync(ct);
-        if (phoneNumberId == null || accessToken == null)
-        {
-            _logger.LogWarning("WhatsApp credentials not configured. Skipping template send.");
-            return;
-        }
+        if (phoneNumberId == null || accessToken == null) return;
 
-        var url = $"https://graph.facebook.com/{_apiVersion}/{phoneNumberId}/messages";
-        var payload = new
-        {
-            messaging_product = "whatsapp",
-            to = NormalizePhone(toPhone),
-            type = "template",
-            template = new { name = templateName, language = new { code = languageCode } }
-        };
-
-        await PostAsync(url, payload, accessToken, ct);
+        var payload = BuildTemplatePayload(toPhone, templateName, languageCode, bodyParams);
+        await PostAsync(MessagesUrl(phoneNumberId), payload, accessToken, ct);
     }
 
-    /// <summary>
-    /// Looks up which tenant owns the given WhatsApp Phone Number ID.
-    /// Used by the webhook controller to route incoming messages.
-    /// </summary>
+    /// <inheritdoc/>
+    public async Task<int> BroadcastTextMessageAsync(
+        IEnumerable<string?> phones,
+        string message,
+        CancellationToken ct = default)
+    {
+        var (phoneNumberId, accessToken) = await GetCredentialsAsync(ct);
+        if (phoneNumberId == null || accessToken == null) return 0;
+
+        var url  = MessagesUrl(phoneNumberId);
+        var sent = 0;
+
+        foreach (var phone in phones.Where(p => !string.IsNullOrWhiteSpace(p)))
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var payload = new
+                {
+                    messaging_product = "whatsapp",
+                    to   = NormalizePhone(phone!),
+                    type = "text",
+                    text = new { body = message },
+                };
+                await PostAsync(url, payload, accessToken, ct);
+                sent++;
+                await Task.Delay(60, ct); // ~16 msg/s — well within Meta's 80/s limit
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Broadcast: failed to send to {Phone}", phone);
+            }
+        }
+        return sent;
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> BroadcastCampaignAsync(
+        IEnumerable<(string Phone, string Name)> recipients,
+        string templateName,
+        string languageCode = "en_US",
+        IEnumerable<string>? bodyParams = null,
+        CancellationToken ct = default)
+    {
+        var (phoneNumberId, accessToken) = await GetCredentialsAsync(ct);
+        if (phoneNumberId == null || accessToken == null) return 0;
+
+        var url  = MessagesUrl(phoneNumberId);
+        var sent = 0;
+
+        foreach (var (phone, _) in recipients)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var payload = BuildTemplatePayload(phone, templateName, languageCode, bodyParams);
+                var ok = await PostAsync(url, payload, accessToken, ct);
+                if (ok) sent++;
+                await Task.Delay(60, ct);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Template broadcast: failed to send to {Phone}", phone);
+            }
+        }
+        return sent;
+    }
+
+    /// <inheritdoc/>
     public async Task<Guid?> ResolveTenantByPhoneNumberIdAsync(string phoneNumberId, CancellationToken ct = default)
     {
-        // 1. Check DB — tenant has set their credentials in the dashboard
         var business = await _db.Businesses
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(b => b.WhatsAppPhoneNumberId == phoneNumberId && !b.IsDeleted, ct);
-
-        if (business != null)
-            return business.TenantId;
-
-        // 2. Fallback — single-tenant setup via appsettings.json
-        if (phoneNumberId == _configPhoneNumberId)
-        {
-            var tenantIdStr = _configuration["WhatsApp:DefaultTenantId"];
-            if (Guid.TryParse(tenantIdStr, out var fallbackId))
-                return fallbackId;
-        }
-
-        return null;
+            .FirstOrDefaultAsync(
+                b => !b.IsDeleted && b.WhatsAppPhoneNumberId == phoneNumberId,
+                ct);
+        return business?.TenantId;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    private static string MessagesUrl(string phoneNumberId)
+        => $"{GraphBase}/{ApiVersion}/{phoneNumberId}/messages";
+
     private async Task<(string? PhoneNumberId, string? AccessToken)> GetCredentialsAsync(CancellationToken ct)
     {
-        // 1. Try DB credentials (tenant set them in the dashboard)
         var business = await _db.Businesses
             .FirstOrDefaultAsync(b => b.TenantId == _tenantContext.CurrentTenantId, ct);
 
-        if (business != null
-            && !string.IsNullOrEmpty(business.WhatsAppPhoneNumberId)
-            && !string.IsNullOrEmpty(business.WhatsAppAccessToken))
-        {
+        if (!string.IsNullOrEmpty(business?.WhatsAppPhoneNumberId)
+         && !string.IsNullOrEmpty(business?.WhatsAppAccessToken))
             return (business.WhatsAppPhoneNumberId, business.WhatsAppAccessToken);
-        }
 
-        // 2. Fallback to appsettings.json (dev / single-tenant)
-        if (!string.IsNullOrEmpty(_configPhoneNumberId) && !string.IsNullOrEmpty(_configAccessToken))
-            return (_configPhoneNumberId, _configAccessToken);
-
+        _logger.LogWarning(
+            "WhatsApp not connected for tenant {TenantId}. Skipping send.",
+            _tenantContext.CurrentTenantId);
         return (null, null);
     }
 
-    private async Task PostAsync(string url, object payload, string accessToken, CancellationToken ct)
+    private static object BuildTemplatePayload(
+        string phone,
+        string templateName,
+        string languageCode,
+        IEnumerable<string>? bodyParams)
+    {
+        var paramsList = bodyParams?.ToList() ?? [];
+
+        if (paramsList.Count > 0)
+        {
+            return new
+            {
+                messaging_product = "whatsapp",
+                to       = NormalizePhone(phone),
+                type     = "template",
+                template = new
+                {
+                    name     = templateName,
+                    language = new { code = languageCode },
+                    components = new[]
+                    {
+                        new
+                        {
+                            type       = "body",
+                            parameters = paramsList.Select(p => new { type = "text", text = p }).ToArray(),
+                        },
+                    },
+                },
+            };
+        }
+
+        return new
+        {
+            messaging_product = "whatsapp",
+            to       = NormalizePhone(phone),
+            type     = "template",
+            template = new
+            {
+                name     = templateName,
+                language = new { code = languageCode },
+            },
+        };
+    }
+
+    private async Task<bool> PostAsync(string url, object payload, string accessToken, CancellationToken ct)
     {
         try
         {
-            var json = JsonSerializer.Serialize(payload);
-            using var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            var json    = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _http.SendAsync(request, ct);
-            if (!response.IsSuccessStatusCode)
+            using var req = new HttpRequestMessage(HttpMethod.Post, url);
+            req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            req.Content = content;
+
+            var resp = await _http.SendAsync(req, ct);
+            var body = await resp.Content.ReadAsStringAsync(ct);
+
+            if (!resp.IsSuccessStatusCode)
             {
-                var body = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogError("WhatsApp API error {Status}: {Body}", response.StatusCode, body);
+                _logger.LogError("Meta WhatsApp API error {Status}: {Body}", resp.StatusCode, body);
+                return false;
             }
+
+            _logger.LogInformation("Meta WhatsApp API success: {Body}", body);
+            return true;
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send WhatsApp message to {Url}", url);
+            _logger.LogError(ex, "Failed to post to Meta WhatsApp endpoint {Url}", url);
+            return false;
         }
     }
 

@@ -40,6 +40,7 @@ public class MockAiProvider : IAiProvider
         string platform,
         string tone,
         string businessName,
+        string language = "English",
         CancellationToken cancellationToken = default)
     {
         var caption   = $"✨ Discover {productName} at {businessName}! {productDescription ?? "Shop our latest collection."}";
@@ -74,6 +75,109 @@ public class MockAiProvider : IAiProvider
         };
 
         return Task.FromResult(messages);
+    }
+
+    public Task<(string WhatsAppDesc, string InstagramDesc, string Tags)> GenerateProductDescriptionAsync(
+        string productName,
+        string? category,
+        string? features,
+        string tone,
+        string businessName,
+        string language = "English",
+        CancellationToken cancellationToken = default)
+    {
+        var wa   = $"✨ Introducing *{productName}* from {businessName}! {features ?? "Perfect quality, great price."}  Order now and get it delivered fast! 🛍️";
+        var ig   = $"Discover {productName} at {businessName}. {features ?? "Shop our latest collection."} Tap the link in bio to order!";
+        var tags = $"#{productName.Replace(" ", "")} #{businessName.Replace(" ", "")} #ShopNow #NewArrival #IndianBusiness";
+        return Task.FromResult((wa, ig, tags));
+    }
+
+    public Task<string> GenerateReelScriptAsync(
+        string productName,
+        string? productDescription,
+        int durationSeconds,
+        string tone,
+        string businessName,
+        CancellationToken cancellationToken = default)
+    {
+        var script =
+            $"🎬 {durationSeconds}-Second Reel Script — {productName} by {businessName}\n\n" +
+            $"SCENE 1 — Hook (0-3s)\n[VISUAL] Close-up of {productName}\n[TEXT ON SCREEN] \"You NEED to see this! 👀\"\n\n" +
+            $"SCENE 2 — Product Showcase (3-{durationSeconds / 2}s)\n[VISUAL] Show {productName} from multiple angles\n[VOICEOVER] \"{productDescription ?? $"Introducing {productName}"}. Available now at {businessName}!\"\n\n" +
+            $"SCENE 3 — CTA ({durationSeconds / 2}-{durationSeconds}s)\n[VISUAL] Call-to-action screen\n[TEXT ON SCREEN] \"DM us to order! 📲\"\n[VOICEOVER] \"Link in bio — order yours today!\"";
+        return Task.FromResult(script);
+    }
+
+    public Task<string> GeneratePosterImageAsync(
+        string productName,
+        string? productDescription,
+        string platform,
+        string tone,
+        string businessName,
+        CancellationToken cancellationToken = default)
+    {
+        // Return a coloured placeholder so the UI flow works without OpenAI configured
+        var color = tone switch
+        {
+            "Fun"          => "6366f1/ffffff",
+            "Professional" => "1e293b/ffffff",
+            "Festive"      => "f59e0b/ffffff",
+            "Urgent"       => "dc2626/ffffff",
+            _              => "0f766e/ffffff"
+        };
+        var label  = Uri.EscapeDataString($"{businessName} · {productName}");
+        var size   = platform is "Facebook" or "Twitter" ? "1792x1024" : "1024x1024";
+        var url    = $"https://placehold.co/{size}/{color}?text={label}";
+        return Task.FromResult(url);
+    }
+
+    public Task<ConversationReply> HandleConversationAsync(
+        ConversationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var msg  = request.CustomerMessage.ToLower();
+        string reply;
+        string? state = null;
+
+        if (msg.Contains("price") || msg.Contains("cost") || msg.Contains("kitna"))
+        {
+            reply = "Great question! 😊 Could you tell me which product you're interested in, and I'll share the exact price for you.";
+            state = "interested";
+        }
+        else if (msg.Contains("order") || msg.Contains("buy") || msg.Contains("lena"))
+        {
+            reply = "Awesome! 🛍️ I'll help you place the order. Could you share your name, delivery address, and phone number?";
+            state = "collecting_info";
+        }
+        else if (msg.Contains("deliver") || msg.Contains("ship"))
+        {
+            reply = "We deliver within 3-5 business days across India. Cash on delivery is also available! 🚚";
+        }
+        else
+        {
+            reply = "Hi! Welcome 👋 I'm your shopping assistant. You can browse our products, ask about prices, or place an order directly here. How can I help you?";
+            state = "discovery";
+        }
+
+        return Task.FromResult(new ConversationReply(reply, state));
+    }
+
+    public Task<AutoCampaignContent> GenerateAutoCampaignContentAsync(
+        string productName,
+        string? productDescription,
+        string businessName,
+        string tone,
+        string language = "English",
+        CancellationToken cancellationToken = default)
+    {
+        var desc = productDescription ?? $"the amazing {productName}";
+        return Task.FromResult(new AutoCampaignContent(
+            InstagramCaption: $"✨ New arrival at {businessName}! Introducing {productName} — {desc}. Tap the link in bio to order! 🛍️",
+            FacebookCaption:  $"🎉 We're excited to announce our latest product: *{productName}*! {desc}. Visit our store or message us to order today.",
+            WhatsAppMessage:  $"🛍️ New drop: *{productName}*! {desc} Reply to order now.",
+            Hashtags:         $"#{productName.Replace(" ", "")} #{businessName.Replace(" ", "")} #NewArrival #ShopNow #IndianBusiness",
+            Cta:              "Order via WhatsApp!"
+        ));
     }
 
     private static string GenerateGenericReply(string question)

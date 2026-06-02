@@ -15,7 +15,12 @@ public class User : BaseEntity
     public bool IsEmailVerified { get; set; }
     public DateTime? LastLoginAt { get; set; }
 
+    // 2FA / TOTP
+    public string? TotpSecret { get; set; }
+    public bool IsTwoFactorEnabled { get; set; }
+
     public Tenant Tenant { get; set; } = null!;
     public ICollection<UserRole> UserRoles { get; set; } = [];
     public ICollection<UserRefreshToken> RefreshTokens { get; set; } = [];
+    public ICollection<UserToken> UserTokens { get; set; } = [];
 }

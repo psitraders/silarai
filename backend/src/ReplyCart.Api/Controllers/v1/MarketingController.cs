@@ -42,6 +42,37 @@ public class MarketingController(IMediator mediator) : ControllerBase
         var result = await mediator.Send(
             new ReplyCart.Application.Ai.Commands.GetSocialPostCommand(
                 request.ProductName, request.ProductDescription,
+                request.Platform, request.Tone, request.BusinessName,
+                request.Language ?? "English"), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("product-description")]
+    public async Task<IActionResult> GenerateProductDescription([FromBody] ProductDescriptionRequest request, CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new ReplyCart.Application.Marketing.Commands.GenerateProductDescriptionCommand(
+                request.ProductName, request.Category, request.Features,
+                request.Tone, request.BusinessName, request.Language ?? "English"), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("reel-script")]
+    public async Task<IActionResult> GenerateReelScript([FromBody] ReelScriptRequest request, CancellationToken ct)
+    {
+        var script = await mediator.Send(
+            new ReplyCart.Application.Marketing.Commands.GenerateReelScriptCommand(
+                request.ProductName, request.ProductDescription,
+                request.DurationSeconds, request.Tone, request.BusinessName), ct);
+        return Ok(new { script });
+    }
+
+    [HttpPost("generate-poster")]
+    public async Task<IActionResult> GeneratePoster([FromBody] SocialPostRequest request, CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new ReplyCart.Application.Marketing.Commands.GeneratePosterCommand(
+                request.ProductName, request.ProductDescription,
                 request.Platform, request.Tone, request.BusinessName), ct);
         return Ok(result);
     }
@@ -63,5 +94,7 @@ public record CreateCampaignRequest(
     string? Subject,
     List<RecipientInput> Recipients);
 public record RecipientInput(string Name, string? Phone, string? Email);
-public record SocialPostRequest(string ProductName, string? ProductDescription, string Platform, string Tone, string? BusinessName);
+public record SocialPostRequest(string ProductName, string? ProductDescription, string Platform, string Tone, string? BusinessName, string? Language = "English");
+public record ProductDescriptionRequest(string ProductName, string? Category, string? Features, string Tone, string? BusinessName, string? Language = "English");
+public record ReelScriptRequest(string ProductName, string? ProductDescription, int DurationSeconds, string Tone, string? BusinessName);
 public record GenerateMessageRequest(string Goal, string Tone, string? ExtraContext);

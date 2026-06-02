@@ -11,8 +11,18 @@ using ReplyCart.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Create wwwroot + upload dirs BEFORE Build() so WebRootPath is never null
+var wwwroot = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(Path.Combine(wwwroot, "uploads", "products"));
+Directory.CreateDirectory(Path.Combine(wwwroot, "uploads", "store"));
+builder.Environment.WebRootPath = wwwroot;
+
 // Infrastructure (EF Core, services, storage, AI)
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// GA4 Analytics service (uses platform service account to call GA4 Data API)
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ReplyCart.Api.Services.GA4AnalyticsService>();
 
 // MediatR — scans Application assembly for handlers
 builder.Services.AddMediatR(cfg =>
@@ -53,11 +63,34 @@ builder.Services.AddAuthorization();
 // CORS
 builder.Services.AddCors(options =>
 {
+    // Fully open policy for public chatbot widget endpoints (no cookies, auth via API key)
+    options.AddPolicy("AllowWidget", policy =>
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+
     options.AddPolicy("AllowFrontend", policy =>
     {
         var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
             ?? ["http://localhost:5173"];
-        policy.WithOrigins(origins)
+
+        // Separate exact origins from wildcard patterns (e.g. "https://*.vercel.app")
+        var exactOrigins = origins.Where(o => !o.Contains('*')).ToArray();
+        var wildcardSuffixes = origins
+            .Where(o => o.Contains('*'))
+            .Select(o => o.Replace("https://*", "https://").Replace("http://*", "http://"))
+            .ToArray(); // e.g. "https://.vercel.app"
+
+        policy.SetIsOriginAllowed(origin =>
+            {
+                // Allow localhost for development
+                if (origin.StartsWith("http://localhost") || origin.StartsWith("http://127.0.0.1")) return true;
+                // Allow all configured exact origins
+                if (exactOrigins.Contains(origin)) return true;
+                // Allow wildcard suffix matches (e.g. any *.vercel.app)
+                if (wildcardSuffixes.Any(suffix => origin.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))) return true;
+                // Allow any HTTPS origin — needed for seller custom domains (SaaS)
+                if (origin.StartsWith("https://")) return true;
+                return false;
+            })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -96,14 +129,12 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Swagger available in all environments (safe for internal API)
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ReplyCart API v1"));
 
-// Ensure wwwroot exists so UseStaticFiles can serve uploaded files immediately
-Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot"));
-Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads", "products"));
-
 // Apply EF Core migrations and seed on startup
+// Wrapped in try/catch so a transient DB hiccup doesn't crash the whole process
 try
 {
     using var scope = app.Services.CreateScope();
@@ -116,11 +147,34 @@ catch (Exception ex)
     app.Logger.LogError(ex, "Startup DB migration/seed failed — app will still start.");
 }
 
-// CORS must come before static files so that /uploads/* responses include
-// the Access-Control-Allow-Origin header.
-app.UseCors("AllowFrontend");
 app.UseStaticFiles();
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// ── Public chatbot widget CORS ────────────────────────────────────────────────
+// Must run BEFORE the general UseCors so it short-circuits preflight requests
+// and stamps Access-Control-Allow-Origin: * on every /api/v1/chatbot/* response.
+// These endpoints authenticate via API key in the URL — no cookies needed.
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api/v1/chatbot"))
+    {
+        context.Response.Headers["Access-Control-Allow-Origin"]  = "*";
+        context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
+        context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type";
+
+        if (HttpMethods.IsOptions(context.Request.Method))
+        {
+            context.Response.StatusCode = 204;
+            return; // short-circuit — no further processing needed
+        }
+    }
+    await next();
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
+app.UseRouting();
+app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();

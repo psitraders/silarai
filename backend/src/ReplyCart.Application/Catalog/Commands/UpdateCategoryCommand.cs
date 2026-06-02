@@ -4,7 +4,7 @@ using ReplyCart.Application.Common.Interfaces;
 
 namespace ReplyCart.Application.Catalog.Commands;
 
-public record UpdateCategoryCommand(Guid Id, string Name, string? Description, bool IsActive, int SortOrder) : IRequest;
+public record UpdateCategoryCommand(Guid Id, string Name, string? Description, string? ImageUrl, bool IsActive, int SortOrder) : IRequest;
 
 public class UpdateCategoryHandler(IAppDbContext db, ITenantContext tenantContext)
     : IRequestHandler<UpdateCategoryCommand>
@@ -17,6 +17,8 @@ public class UpdateCategoryHandler(IAppDbContext db, ITenantContext tenantContex
 
         cat.Name = request.Name;
         cat.Description = request.Description;
+        if (request.ImageUrl is not null)
+            cat.ImageUrl = request.ImageUrl;
         cat.IsActive = request.IsActive;
         cat.SortOrder = request.SortOrder;
 

@@ -7,7 +7,8 @@ namespace ReplyCart.Application.Business.Commands;
 public record UpdateBusinessCommand(
     string Name, string Category, string? Description,
     string? WhatsAppNumber, string? InstagramHandle, string? FacebookPageUrl,
-    string Currency, string? WelcomeText, string? DeliveryInfo
+    string Currency, string Country, string Language,
+    string? WelcomeText, string? DeliveryInfo
 ) : IRequest;
 
 public class UpdateBusinessCommandHandler(IAppDbContext db, ITenantContext tenantContext)
@@ -35,6 +36,8 @@ public class UpdateBusinessCommandHandler(IAppDbContext db, ITenantContext tenan
         business.InstagramHandle = request.InstagramHandle;
         business.FacebookPageUrl = request.FacebookPageUrl;
         business.Currency = request.Currency;
+        business.Country = request.Country;
+        business.Language = request.Language;
         business.WelcomeText = request.WelcomeText;
         business.DeliveryInfo = request.DeliveryInfo;
         business.IsOnboardingComplete = true;

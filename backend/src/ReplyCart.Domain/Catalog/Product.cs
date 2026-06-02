@@ -6,6 +6,7 @@ namespace ReplyCart.Domain.Catalog;
 public class Product : TenantEntity
 {
     public string Title { get; set; } = string.Empty;
+    public string? Slug { get; set; }        // URL-friendly slug e.g. "rose-bouquet"
     public string? Description { get; set; }
     public string? Sku { get; set; }
     public Guid? CategoryId { get; set; }
@@ -16,6 +17,11 @@ public class Product : TenantEntity
     public int? StockQuantity { get; set; }
     public int SortOrder { get; set; }
     public string? Attributes { get; set; }
+
+    // B2B / ordering constraints
+    public int? MinOrderQuantity { get; set; }
+    public int? MaxOrderQuantity { get; set; }
+    public bool IsB2BOnly { get; set; }
 
     public Category? Category { get; set; }
     public ICollection<ProductImage> Images { get; set; } = [];

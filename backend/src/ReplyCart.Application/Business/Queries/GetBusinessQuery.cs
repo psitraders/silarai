@@ -7,7 +7,8 @@ namespace ReplyCart.Application.Business.Queries;
 public record BusinessDto(
     Guid Id, string Name, string Category, string? Description, string? LogoUrl,
     string? WhatsAppNumber, string? InstagramHandle, string? FacebookPageUrl,
-    string Currency, string? WelcomeText, string? DeliveryInfo, bool IsOnboardingComplete
+    string Currency, string Country, string Language,
+    string? WelcomeText, string? DeliveryInfo, bool IsOnboardingComplete
 );
 
 public record GetBusinessQuery : IRequest<BusinessDto?>;
@@ -23,7 +24,8 @@ public class GetBusinessQueryHandler(IAppDbContext db, ITenantContext tenantCont
         return b is null ? null : new BusinessDto(
             b.Id, b.Name, b.Category, b.Description, b.LogoUrl,
             b.WhatsAppNumber, b.InstagramHandle, b.FacebookPageUrl,
-            b.Currency, b.WelcomeText, b.DeliveryInfo, b.IsOnboardingComplete
+            b.Currency, b.Country, b.Language,
+            b.WelcomeText, b.DeliveryInfo, b.IsOnboardingComplete
         );
     }
 }

@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
+using ReplyCart.Domain.Catalog;
 using ReplyCart.Domain.Enums;
 using ReplyCart.Domain.Orders;
 
@@ -104,7 +106,40 @@ public class CreateOrderCommandHandler(IAppDbContext db, ITenantContext tenantCo
             Note = "Order created"
         });
 
+        // ── Stock validation (must happen before any writes) ──────────────────────
+        var productIds = request.Items.Select(i => i.ProductId).Distinct().ToList();
+        var products = await db.Products
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+
+        foreach (var item in request.Items)
+        {
+            var product = products.FirstOrDefault(p => p.Id == item.ProductId);
+            if (product == null) continue;
+
+            // Block if the product is already explicitly marked OutOfStock
+            if (product.Status == ProductStatus.OutOfStock)
+                throw new InsufficientStockException(product.Title, 0, item.Quantity);
+
+            // Block if requested quantity exceeds tracked stock
+            if (product.StockQuantity.HasValue && item.Quantity > product.StockQuantity.Value)
+                throw new InsufficientStockException(product.Title, product.StockQuantity.Value, item.Quantity);
+        }
+
         db.Orders.Add(order);
+
+        // ── Decrement stock; auto-mark OutOfStock when stock hits 0 ──────────────
+        foreach (var item in request.Items)
+        {
+            var product = products.FirstOrDefault(p => p.Id == item.ProductId);
+            if (product?.StockQuantity != null)
+            {
+                product.StockQuantity = Math.Max(0, product.StockQuantity.Value - item.Quantity);
+                if (product.StockQuantity <= 0 && product.Status == ProductStatus.Active)
+                    product.Status = ProductStatus.OutOfStock;
+            }
+        }
+
         await db.SaveChangesAsync(cancellationToken);
         return order.Id;
     }

@@ -4,7 +4,7 @@ using ReplyCart.Domain.Catalog;
 
 namespace ReplyCart.Application.Catalog.Commands;
 
-public record CreateCategoryCommand(string Name, string? Description) : IRequest<Guid>;
+public record CreateCategoryCommand(string Name, string? Description, string? ImageUrl) : IRequest<Guid>;
 
 public class CreateCategoryCommandHandler(IAppDbContext db, ITenantContext tenantContext)
     : IRequestHandler<CreateCategoryCommand, Guid>
@@ -16,7 +16,8 @@ public class CreateCategoryCommandHandler(IAppDbContext db, ITenantContext tenan
             Id = Guid.NewGuid(),
             TenantId = tenantContext.CurrentTenantId,
             Name = request.Name,
-            Description = request.Description
+            Description = request.Description,
+            ImageUrl = request.ImageUrl
         };
         db.Categories.Add(category);
         await db.SaveChangesAsync(cancellationToken);

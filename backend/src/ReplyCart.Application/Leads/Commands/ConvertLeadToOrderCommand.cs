@@ -1,7 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
+
 using ReplyCart.Application.Common.Interfaces;
+using ReplyCart.Domain.Catalog;
 using ReplyCart.Domain.Enums;
 using ReplyCart.Domain.Leads;
 using ReplyCart.Domain.Orders;
@@ -56,7 +58,37 @@ public class ConvertLeadToOrderCommandHandler(IAppDbContext db, ITenantContext t
                 ChangedBy = currentUser.UserId ?? Guid.Empty
             }]
         };
+        // ── Stock validation (before any writes) ──────────────────────────────────
+        var productIds = request.Items.Select(i => i.ProductId).Distinct().ToList();
+        var products = await db.Products
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+
+        foreach (var item in request.Items)
+        {
+            var product = products.FirstOrDefault(p => p.Id == item.ProductId);
+            if (product == null) continue;
+
+            if (product.Status == ProductStatus.OutOfStock)
+                throw new InsufficientStockException(product.Title, 0, item.Quantity);
+
+            if (product.StockQuantity.HasValue && item.Quantity > product.StockQuantity.Value)
+                throw new InsufficientStockException(product.Title, product.StockQuantity.Value, item.Quantity);
+        }
+
         db.Orders.Add(order);
+
+        // ── Decrement stock; auto-mark OutOfStock when stock hits 0 ──────────────
+        foreach (var item in request.Items)
+        {
+            var product = products.FirstOrDefault(p => p.Id == item.ProductId);
+            if (product?.StockQuantity != null)
+            {
+                product.StockQuantity = Math.Max(0, product.StockQuantity.Value - item.Quantity);
+                if (product.StockQuantity <= 0 && product.Status == ProductStatus.Active)
+                    product.Status = ProductStatus.OutOfStock;
+            }
+        }
 
         lead.Status = LeadStatus.OrderConfirmed;
         lead.LastActivityDate = DateTime.UtcNow;

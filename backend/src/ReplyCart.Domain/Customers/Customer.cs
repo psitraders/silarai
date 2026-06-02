@@ -13,6 +13,8 @@ public class Customer : TenantEntity
     public string? City { get; set; }
     public string? Notes { get; set; }
     public string? Tags { get; set; }
+    public DateOnly? Birthday { get; set; }       // MM-DD stored as year-MM-DD (year is ignored)
+    public DateOnly? Anniversary { get; set; }    // Customer's relationship anniversary
     public DateTime? LastOrderDate { get; set; }
     public int TotalOrders { get; set; }
     public decimal TotalSpend { get; set; }

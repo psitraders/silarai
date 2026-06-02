@@ -13,6 +13,8 @@ public record CustomerDetailDto(
     string? City,
     string? Notes,
     string? Tags,
+    DateOnly? Birthday,
+    DateOnly? Anniversary,
     int TotalOrders,
     decimal TotalSpend,
     DateTime? LastOrderDate,
@@ -54,6 +56,7 @@ public class GetCustomerDetailHandler(IAppDbContext db, ITenantContext tenantCon
         return new CustomerDetailDto(
             customer.Id, customer.Name, customer.PhoneNumber, customer.Email,
             customer.Address, customer.City, customer.Notes, customer.Tags,
+            customer.Birthday, customer.Anniversary,
             customer.TotalOrders, customer.TotalSpend, customer.LastOrderDate,
             customer.CreatedAt, recentOrders, recentLeads
         );

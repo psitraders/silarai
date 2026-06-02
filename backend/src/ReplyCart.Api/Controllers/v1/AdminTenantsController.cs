@@ -112,6 +112,7 @@ public class AdminTenantsController(AppDbContext db) : ControllerBase
                     .OrderByDescending(s => s.CreatedAt)
                     .Select(s => new
                     {
+                        s.Id,
                         PlanName = s.Plan.Name,
                         Status = s.Status.ToString(),
                         s.StartDate,
@@ -170,6 +171,112 @@ public class AdminTenantsController(AppDbContext db) : ControllerBase
         });
 
         await db.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    /// <summary>Returns all pending upgrade requests (for the admin notification badge).</summary>
+    [HttpGet("pending-upgrades")]
+    public async Task<IActionResult> GetPendingUpgrades(CancellationToken ct)
+    {
+        var pending = await db.TenantSubscriptions
+            .IgnoreQueryFilters()
+            .Where(s => s.Status == SubscriptionStatus.PendingApproval)
+            .Select(s => new
+            {
+                s.Id,
+                s.TenantId,
+                TenantName = db.Tenants.IgnoreQueryFilters()
+                    .Where(t => t.Id == s.TenantId)
+                    .Select(t => t.Name)
+                    .FirstOrDefault(),
+                TenantEmail = db.Tenants.IgnoreQueryFilters()
+                    .Where(t => t.Id == s.TenantId)
+                    .Select(t => t.ContactEmail)
+                    .FirstOrDefault(),
+                PlanName = s.Plan.Name,
+                PlanSlug = s.Plan.Slug,
+                s.IsAnnual,
+                s.PricePaid,
+                s.CreatedAt,
+            })
+            .OrderBy(s => s.CreatedAt)
+            .ToListAsync(ct);
+
+        return Ok(new { count = pending.Count, items = pending });
+    }
+
+    /// <summary>
+    /// Permanently delete a tenant and every byte of its data.
+    /// Deletes in FK-safe order using direct SQL for speed.
+    /// IRREVERSIBLE — SuperAdmin only.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteTenant(Guid id, CancellationToken ct)
+    {
+        var tenant = await db.Tenants.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == id, ct);
+
+        if (tenant is null)
+            return NotFound(new { message = "Tenant not found." });
+
+        // ── Delete child records first (FK-safe order) ─────────────────────────
+
+        // Orders children
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM OrderItems            WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Payments              WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM OrderStatusHistories  WHERE TenantId = {0}", id);
+
+        // Lead children
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM LeadNotes             WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM LeadActivities        WHERE TenantId = {0}", id);
+
+        // Product children
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM ProductImages         WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM ProductVariants       WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM ProductTags           WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM ProductReviews        WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM ProductWholesaleTiers WHERE TenantId = {0}", id);
+
+        // Campaign children
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM CampaignRecipients    WHERE TenantId = {0}", id);
+
+        // Storefront customer children
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM StorefrontWishlistItems WHERE TenantId = {0}", id);
+
+        // User children
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM UserRoles             WHERE UserId IN (SELECT Id FROM Users WHERE TenantId = {0})", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM UserRefreshTokens     WHERE UserId IN (SELECT Id FROM Users WHERE TenantId = {0})", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM UserTokens            WHERE UserId IN (SELECT Id FROM Users WHERE TenantId = {0})", id);
+
+        // ── Delete all tenant-scoped tables ────────────────────────────────────
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Orders                WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Leads                 WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Customers             WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM AbandonedCarts        WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Products              WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Coupons               WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Categories            WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM QuoteRequests         WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM StorefrontCustomers   WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM SocialLinks           WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM StorefrontSettings    WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Businesses            WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Campaigns             WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM WaTemplates           WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM AiSuggestions         WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM AiUsageLogs           WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM ReplyTemplates        WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM ConversationSessions  WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM AutoCampaigns         WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Users                 WHERE TenantId = {0}", id);
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM TenantSubscriptions   WHERE TenantId = {0}", id);
+
+        // TenantNotes has no FK — just delete by TenantId column if exists
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM TenantNotes           WHERE TenantId = {0}", id);
+
+        // ── Finally remove the tenant row itself ───────────────────────────────
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM Tenants               WHERE Id       = {0}", id);
+
         return NoContent();
     }
 

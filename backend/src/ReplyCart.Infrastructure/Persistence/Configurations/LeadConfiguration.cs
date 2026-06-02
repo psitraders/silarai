@@ -15,6 +15,8 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
 
         builder.HasIndex(l => new { l.TenantId, l.Status, l.AssignedUserId });
         builder.HasIndex(l => new { l.TenantId, l.FollowUpDate });
+        // Dashboard queries filter heavily on (TenantId, CreatedAt)
+        builder.HasIndex(l => new { l.TenantId, l.CreatedAt });
 
         builder.HasMany(l => l.Notes).WithOne(n => n.Lead).HasForeignKey(n => n.LeadId);
         builder.HasMany(l => l.Activities).WithOne(a => a.Lead).HasForeignKey(a => a.LeadId);

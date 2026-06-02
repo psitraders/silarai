@@ -4,7 +4,7 @@ using ReplyCart.Application.Common.Interfaces;
 
 namespace ReplyCart.Application.Catalog.Queries;
 
-public record CategoryDto(Guid Id, string Name, string? Description, int ProductCount, bool IsActive, int SortOrder);
+public record CategoryDto(Guid Id, string Name, string? Description, string? ImageUrl, int ProductCount, bool IsActive, int SortOrder);
 
 public record GetCategoriesQuery : IRequest<List<CategoryDto>>;
 
@@ -18,7 +18,7 @@ public class GetCategoriesQueryHandler(IAppDbContext db) : IRequestHandler<GetCa
             .OrderBy(c => c.SortOrder)
             .ThenBy(c => c.Name)
             .Select(c => new CategoryDto(
-                c.Id, c.Name, c.Description,
+                c.Id, c.Name, c.Description, c.ImageUrl,
                 db.Products.Count(p => p.CategoryId == c.Id),
                 c.IsActive, c.SortOrder
             ))

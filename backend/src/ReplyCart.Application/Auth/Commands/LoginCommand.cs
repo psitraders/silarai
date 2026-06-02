@@ -1,12 +1,13 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
+using ReplyCart.Application.Common.Helpers;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Identity;
 
 namespace ReplyCart.Application.Auth.Commands;
 
-public record LoginCommand(string Email, string Password, string? DeviceInfo) : IRequest<LoginResult>;
+public record LoginCommand(string Email, string Password, string? DeviceInfo, string? TotpCode = null) : IRequest<LoginResult>;
 
 public record LoginResult(
     string AccessToken,
@@ -16,7 +17,8 @@ public record LoginResult(
     Guid TenantId,
     string Name,
     string Email,
-    IEnumerable<string> Roles
+    IEnumerable<string> Roles,
+    bool RequiresTwoFactor = false
 );
 
 public class LoginCommandHandler(IAppDbContext db, IJwtTokenService jwtService)
@@ -35,6 +37,16 @@ public class LoginCommandHandler(IAppDbContext db, IJwtTokenService jwtService)
 
         if (!user.Tenant.IsActive)
             throw new ForbiddenException("Your account has been suspended. Please contact support.");
+
+        // 2FA check
+        if (user.IsTwoFactorEnabled)
+        {
+            if (string.IsNullOrWhiteSpace(request.TotpCode))
+                return new LoginResult(string.Empty, string.Empty, DateTime.MinValue, user.Id, user.TenantId, user.Name, user.Email, [], RequiresTwoFactor: true);
+
+            if (!TotpHelper.Verify(user.TotpSecret!, request.TotpCode))
+                throw new ValidationException([new FluentValidation.Results.ValidationFailure("TotpCode", "Invalid authentication code.")]);
+        }
 
         var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
         var accessToken = jwtService.GenerateAccessToken(user.Id, user.TenantId, user.Email, roles);

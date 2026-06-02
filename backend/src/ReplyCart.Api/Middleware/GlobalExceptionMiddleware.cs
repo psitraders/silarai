@@ -29,14 +29,14 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
         {
             ValidationException ve => (HttpStatusCode.UnprocessableEntity, "Validation Failed",
                 ve.Errors.SelectMany(e => e.Value.Select(v => $"{e.Key}: {v}"))),
+            InsufficientStockException => (HttpStatusCode.UnprocessableEntity, "Insufficient Stock",
+                (IEnumerable<string>)[exception.Message]),
             NotFoundException => (HttpStatusCode.NotFound, "Not Found", (IEnumerable<string>)[exception.Message]),
             ForbiddenException => (HttpStatusCode.Forbidden, "Forbidden", (IEnumerable<string>)[exception.Message]),
             PlanLimitException => (HttpStatusCode.PaymentRequired, "Plan Limit Exceeded", (IEnumerable<string>)[exception.Message]),
             UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized", (IEnumerable<string>)[exception.Message]),
             _ => (HttpStatusCode.InternalServerError, "Internal Server Error",
-                isDevelopment
-                    ? (IEnumerable<string>)[$"{exception.GetType().Name}: {exception.Message}", exception.StackTrace ?? ""]
-                    : ["An unexpected error occurred."])
+                (IEnumerable<string>)[$"{exception.GetType().Name}: {exception.Message}"])
         };
 
         context.Response.StatusCode = (int)statusCode;

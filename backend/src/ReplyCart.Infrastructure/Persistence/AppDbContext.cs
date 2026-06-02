@@ -4,13 +4,17 @@ using ReplyCart.Domain.Admin;
 using ReplyCart.Domain.Marketing;
 using ReplyCart.Domain.Ai;
 using ReplyCart.Domain.Business;
+using ReplyCart.Domain.Campaigns;
 using ReplyCart.Domain.Catalog;
+using ReplyCart.Domain.Chatbot;
 using ReplyCart.Domain.Common;
 using ReplyCart.Domain.Config;
+using ReplyCart.Domain.Conversation;
 using ReplyCart.Domain.Customers;
 using ReplyCart.Domain.Identity;
 using ReplyCart.Domain.Leads;
 using ReplyCart.Domain.Orders;
+using ReplyCart.Domain.Storefront;
 using ReplyCart.Domain.Tenancy;
 
 namespace ReplyCart.Infrastructure.Persistence;
@@ -37,6 +41,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<UserRefreshToken> UserRefreshTokens => Set<UserRefreshToken>();
+    public DbSet<UserToken> UserTokens => Set<UserToken>();
 
     // Business
     public DbSet<Domain.Business.Business> Businesses => Set<Domain.Business.Business>();
@@ -73,11 +78,31 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<TenantNote> TenantNotes => Set<TenantNote>();
     public DbSet<SystemAnnouncement> SystemAnnouncements => Set<SystemAnnouncement>();
     public DbSet<LandingPageConfig> LandingPageConfigs => Set<LandingPageConfig>();
+    public DbSet<PlatformSetting> PlatformSettings => Set<PlatformSetting>();
+    public DbSet<PlatformLead> PlatformLeads => Set<PlatformLead>();
 
     // Marketing
     public DbSet<Campaign> Campaigns => Set<Campaign>();
     public DbSet<CampaignRecipient> CampaignRecipients => Set<CampaignRecipient>();
     public DbSet<AbandonedCart> AbandonedCarts => Set<AbandonedCart>();
+    public DbSet<WaTemplate> WaTemplates => Set<WaTemplate>();
+
+    // Chatbot-as-a-Service (external clients)
+    public DbSet<ChatbotClient>  ChatbotClients  => Set<ChatbotClient>();
+    public DbSet<ChatbotProduct> ChatbotProducts => Set<ChatbotProduct>();
+
+    // Custom pages (tenant storefront)
+    public DbSet<StorefrontPage> StorefrontPages => Set<StorefrontPage>();
+
+    // AI Autonomous Features
+    public DbSet<ConversationSession> ConversationSessions => Set<ConversationSession>();
+    public DbSet<AutoCampaign> AutoCampaigns => Set<AutoCampaign>();
+
+    // Storefront Customer (B2C / B2B)
+    public DbSet<StorefrontCustomer> StorefrontCustomers => Set<StorefrontCustomer>();
+    public DbSet<StorefrontWishlistItem> StorefrontWishlistItems => Set<StorefrontWishlistItem>();
+    public DbSet<ProductWholesaleTier> ProductWholesaleTiers => Set<ProductWholesaleTier>();
+    public DbSet<QuoteRequest> QuoteRequests => Set<QuoteRequest>();
 
     // Safe property: returns the current tenant ID, or null if not resolved.
     // EF Core re-evaluates this on the CURRENT DbContext instance at query time

@@ -7,6 +7,7 @@ using ReplyCart.Application.Customers.Commands;
 using ReplyCart.Application.Customers.Queries;
 using ReplyCart.Domain.Customers;
 using Microsoft.EntityFrameworkCore;
+using ReplyCart.Application.Common.Exceptions;
 
 namespace ReplyCart.Api.Controllers.v1;
 
@@ -48,9 +49,14 @@ public class CustomersController(IMediator mediator, IAppDbContext db, ITenantCo
     public async Task<IActionResult> Update(Guid id, [FromBody] SaveCustomerRequest req, CancellationToken ct)
     {
         await mediator.Send(
-            new UpdateCustomerCommand(id, req.Name, req.PhoneNumber, req.Email, req.Address, req.City, req.Notes, req.Tags), ct);
+            new UpdateCustomerCommand(id, req.Name, req.PhoneNumber, req.Email, req.Address, req.City, req.Notes, req.Tags,
+                req.Birthday, req.Anniversary), ct);
         return NoContent();
     }
+
+    [HttpGet("birthdays")]
+    public async Task<IActionResult> GetUpcomingBirthdays([FromQuery] int daysAhead = 30, CancellationToken ct = default)
+        => Ok(await mediator.Send(new GetUpcomingBirthdaysQuery(daysAhead), ct));
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
@@ -64,6 +70,39 @@ public class CustomersController(IMediator mediator, IAppDbContext db, ITenantCo
     {
         await mediator.Send(new MergeCustomersCommand(targetId, sourceId), ct);
         return NoContent();
+    }
+
+    /// <summary>
+    /// AI-powered smart merge: finds all duplicate groups (same normalised phone or email)
+    /// and auto-merges them — keeping the primary with the most order history.
+    /// </summary>
+    [HttpPost("smart-merge")]
+    public async Task<IActionResult> SmartMerge(CancellationToken ct)
+    {
+        var result = await mediator.Send(new SmartMergeCustomersCommand(), ct);
+        return Ok(result);
+    }
+
+    // ── B2B Customers ─────────────────────────────────────────────────────────
+
+    /// <summary>Returns all CRM customers who registered as B2B buyers on the storefront.</summary>
+    [HttpGet("b2b")]
+    public async Task<IActionResult> GetB2B(CancellationToken ct)
+        => Ok(await mediator.Send(new GetB2BCustomersQuery(), ct));
+
+    /// <summary>Approves or revokes B2B status for a storefront customer (identified by CRM ID).</summary>
+    [HttpPost("{crmCustomerId:guid}/b2b/approve")]
+    public async Task<IActionResult> ApproveB2B(Guid crmCustomerId, [FromQuery] bool approve = true, CancellationToken ct = default)
+    {
+        try
+        {
+            await mediator.Send(new ApproveB2BCustomerCommand(crmCustomerId, approve), ct);
+            return NoContent();
+        }
+        catch (NotFoundException)
+        {
+            return NotFound(new { error = "B2B customer not found." });
+        }
     }
 
     // ── Export ─────────────────────────────────────────────────────────────────
@@ -202,11 +241,13 @@ public class CustomersController(IMediator mediator, IAppDbContext db, ITenantCo
 }
 
 public record SaveCustomerRequest(
-    string Name,
-    string PhoneNumber,
-    string? Email,
-    string? Address,
-    string? City,
-    string? Notes,
-    string? Tags
+    string   Name,
+    string   PhoneNumber,
+    string?  Email,
+    string?  Address,
+    string?  City,
+    string?  Notes,
+    string?  Tags,
+    DateOnly? Birthday    = null,
+    DateOnly? Anniversary = null
 );

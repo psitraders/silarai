@@ -1,7 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.Facebook.Commands;
+using ReplyCart.Infrastructure.Persistence;
 using System.Text.Json.Serialization;
 
 namespace ReplyCart.Api.Controllers.v1;
@@ -14,17 +16,29 @@ public class FacebookWebhookController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly IFacebookService _facebook;
     private readonly ILogger<FacebookWebhookController> _logger;
+    private readonly AppDbContext _db;
+    private readonly IAiProvider _ai;
+    private readonly IConversationMemoryService _memory;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public FacebookWebhookController(
         IMediator mediator,
         IConfiguration configuration,
         IFacebookService facebook,
-        ILogger<FacebookWebhookController> logger)
+        ILogger<FacebookWebhookController> logger,
+        AppDbContext db,
+        IAiProvider ai,
+        IConversationMemoryService memory,
+        IHttpClientFactory httpClientFactory)
     {
         _mediator = mediator;
         _configuration = configuration;
         _facebook = facebook;
         _logger = logger;
+        _db = db;
+        _ai = ai;
+        _memory = memory;
+        _httpClientFactory = httpClientFactory;
     }
 
     // ── Step 1: Meta verification challenge ──────────────────────────────────
@@ -59,9 +73,31 @@ public class FacebookWebhookController : ControllerBase
             {
                 // Resolve tenant by the Facebook Page ID
                 var tenantId = await _facebook.ResolveTenantByPageIdAsync(entry.Id ?? string.Empty, ct);
+
+                // ── External chatbot client? ──────────────────────────────────
                 if (tenantId == null)
                 {
-                    _logger.LogWarning("No tenant found for Facebook page ID {Id}", entry.Id);
+                    var extClient = await _db.ChatbotClients
+                        .Include(c => c.Products)
+                        .FirstOrDefaultAsync(c => c.FbPageId == entry.Id && c.IsActive, ct);
+
+                    if (extClient != null)
+                    {
+                        foreach (var messaging in entry.Messaging ?? [])
+                        {
+                            var sid  = messaging.Sender?.Id;
+                            var text = messaging.Message?.Text;
+                            if (string.IsNullOrEmpty(sid) || string.IsNullOrEmpty(text)) continue;
+                            if (messaging.Message?.IsEcho == true) continue;
+
+                            await ChatbotClientWebhookHelper.HandleFacebookAsync(
+                                extClient, sid, text,
+                                _ai, _memory, _httpClientFactory, _logger, ct);
+                        }
+                        continue;
+                    }
+
+                    _logger.LogWarning("No tenant/client found for Facebook page ID {Id}", entry.Id);
                     continue;
                 }
 
