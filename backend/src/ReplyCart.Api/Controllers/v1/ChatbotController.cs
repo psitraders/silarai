@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Cors;
+﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
@@ -301,3 +301,5 @@ public class ChatbotCartItem
     public decimal UnitPrice   { get; set; }
     public string? VariantInfo { get; set; }
 }
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Enums;
@@ -82,3 +82,5 @@ public class ProcessInstagramMessageHandler : IRequestHandler<ProcessInstagramMe
         return leadId;
     }
 }
+
+

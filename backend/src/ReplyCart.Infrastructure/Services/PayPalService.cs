@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using ReplyCart.Application.Common.Interfaces;
@@ -146,3 +146,5 @@ public class PayPalService(IHttpClientFactory httpClientFactory) : IPayPalServic
             ?? throw new InvalidOperationException("PayPal OAuth did not return an access token.");
     }
 }
+
+

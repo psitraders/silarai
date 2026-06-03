@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Models;
+﻿namespace ReplyCart.Application.Common.Models;
 
 public class PagedList<T>
 {
@@ -28,3 +28,5 @@ public class PagedList<T>
 }
 
 public record PaginationParams(int Page = 1, int PageSize = 20);
+
+

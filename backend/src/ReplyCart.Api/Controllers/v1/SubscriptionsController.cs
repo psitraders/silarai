@@ -190,8 +190,8 @@ public class SubscriptionsController(
                     .Select(t => new { t.Name, t.ContactEmail })
                     .FirstOrDefaultAsync(CancellationToken.None);
 
-                var adminEmail   = configuration["AdminEmail"] ?? "admin@replycart.app";
-                var dashboardUrl = (configuration["FrontendUrl"] ?? "https://replycart.app").TrimEnd('/');
+                var adminEmail   = configuration["AdminEmail"] ?? "admin@silarai.app";
+                var dashboardUrl = (configuration["FrontendUrl"] ?? "https://silarai.app").TrimEnd('/');
                 var reviewUrl    = $"{dashboardUrl}/admin/tenants/{tenantId}";
 
                 await emailService.SendUpgradeRequestNotificationAsync(
@@ -310,5 +310,7 @@ public class SubscriptionsController(
 }
 
 public record SelectPlanRequest(bool IsAnnual = false);
+
+
 
 

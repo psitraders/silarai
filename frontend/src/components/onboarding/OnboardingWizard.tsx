@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import {
   X, ArrowRight, ArrowLeft, Check, Copy, ExternalLink,
@@ -456,7 +456,7 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Welcome to ReplyCart!</h1>
+                <h1 className="text-2xl font-bold mb-2">Welcome to Silarai!</h1>
                 <p className="text-teal-100 text-sm leading-relaxed max-w-xs mx-auto">
                   Your all-in-one WhatsApp commerce platform. Let's set up your store in 4 quick steps.
                 </p>
@@ -916,3 +916,4 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
     </div>
   );
 }
+

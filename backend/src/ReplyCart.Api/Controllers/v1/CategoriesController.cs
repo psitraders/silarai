@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -80,3 +80,5 @@ public class CategoriesController(IMediator mediator) : ControllerBase
 
 public record CreateCategoryRequest(string Name, string? Description, string? ImageUrl);
 public record UpdateCategoryRequest(string Name, string? Description, string? ImageUrl, bool IsActive, int SortOrder);
+
+

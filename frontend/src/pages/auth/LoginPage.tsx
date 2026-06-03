@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -109,7 +109,7 @@ export function LoginPage() {
   const subText = totpStep
     ? 'Enter the code from your authenticator app'
     : tab === 'email'
-      ? 'Sign in to your ReplyCart account'
+      ? 'Sign in to your Silarai account'
       : "We'll send a one-time code to your email";
 
   return (
@@ -121,7 +121,7 @@ export function LoginPage() {
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
             <MessageSquareQuote className="w-5 h-5 text-white" />
           </div>
-          <span className="text-white font-bold text-lg">ReplyCart</span>
+          <span className="text-white font-bold text-lg">Silarai</span>
         </div>
 
         <div>
@@ -334,3 +334,4 @@ export function LoginPage() {
     </div>
   );
 }
+

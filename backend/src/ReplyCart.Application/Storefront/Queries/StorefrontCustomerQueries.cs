@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Enums;
@@ -117,3 +117,5 @@ public class GetStorefrontProfileHandler(IAppDbContext db)
             c.IsB2BCustomer, c.IsB2BApproved, c.CompanyName, c.GstNumber, c.LoyaltyPoints);
     }
 }
+
+

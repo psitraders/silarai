@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -46,9 +46,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "replycart.app",
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "silarai.app",
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "replycart.app",
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "silarai.app",
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
             // With MapInboundClaims=false claim names stay as their literal JWT keys.
@@ -106,7 +106,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ReplyCart API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Silarai API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using Bearer scheme. Enter: Bearer {token}",
@@ -131,7 +131,7 @@ var app = builder.Build();
 
 // Swagger available in all environments (safe for internal API)
 app.UseSwagger();
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ReplyCart API v1"));
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Silarai API v1"));
 
 // Apply EF Core migrations and seed on startup
 // Wrapped in try/catch so a transient DB hiccup doesn't crash the whole process
@@ -181,3 +181,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 
@@ -106,3 +106,5 @@ public class ConvertLeadToOrderCommandHandler(IAppDbContext db, ITenantContext t
         return order.Id;
     }
 }
+
+

@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 /// <summary>
 /// Abstracts the Meta Commerce Manager Catalog Batch API call
@@ -38,3 +38,5 @@ public record WhatsAppCatalogItem(
     bool    InStock,
     string  Brand
 );
+
+

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings, Save, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
@@ -115,7 +115,7 @@ export function AdminPlatformSettingsPage() {
           Platform Settings
         </h1>
         <p className="text-slate-500 text-sm mt-1">
-          Global configuration for the ReplyCart platform. Changes take effect immediately.
+          Global configuration for the Silarai platform. Changes take effect immediately.
         </p>
       </div>
 
@@ -136,3 +136,4 @@ export function AdminPlatformSettingsPage() {
     </div>
   );
 }
+

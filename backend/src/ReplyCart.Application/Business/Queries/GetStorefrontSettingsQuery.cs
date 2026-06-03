@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -74,3 +74,5 @@ public class GetStorefrontSettingsQueryHandler(IAppDbContext db, ITenantContext 
         );
     }
 }
+
+

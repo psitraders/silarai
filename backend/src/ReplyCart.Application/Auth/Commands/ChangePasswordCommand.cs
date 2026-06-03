@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
@@ -25,3 +25,5 @@ public class ChangePasswordCommandHandler(IAppDbContext db)
         await db.SaveChangesAsync(cancellationToken);
     }
 }
+
+

@@ -1,7 +1,7 @@
-import { LandingLayout } from '../../components/landing/LandingLayout';
+﻿import { LandingLayout } from '../../components/landing/LandingLayout';
 import { Mail, MessageCircle, Clock, MapPin } from 'lucide-react';
 
-const DEMO_WA = 'https://wa.me/918849549690?text=Hi%2C%20I%20have%20a%20question%20about%20ReplyCart';
+const DEMO_WA = 'https://wa.me/918849549690?text=Hi%2C%20I%20have%20a%20question%20about%20Silarai';
 
 const channels = [
   {
@@ -9,8 +9,8 @@ const channels = [
     color: 'bg-teal-50 text-teal-600',
     title: 'Email support',
     desc: 'Send us an email and we\'ll get back to you within one business day.',
-    action: 'support@replycart.app',
-    href: 'mailto:support@replycart.app',
+    action: 'support@Silarai.app',
+    href: 'mailto:support@Silarai.app',
     linkLabel: 'Send an email',
   },
   {
@@ -44,15 +44,15 @@ const channels = [
 
 const faqs = [
   {
-    q: 'Is ReplyCart really free to start?',
+    q: 'Is Silarai really free to start?',
     a: 'Yes. You can create your store, add products, and receive orders completely free. No credit card required. Paid plans unlock advanced features like AI chat and marketing tools.',
   },
   {
     q: 'Can I use my own domain?',
-    a: 'Yes — paid plans support custom domain mapping so your store can be at yourshop.com instead of yourshop.replycart.app.',
+    a: 'Yes — paid plans support custom domain mapping so your store can be at yourshop.com instead of yourshop.Silarai.app.',
   },
   {
-    q: 'Does ReplyCart work with WhatsApp Business?',
+    q: 'Does Silarai work with WhatsApp Business?',
     a: 'Yes. You can connect your WhatsApp Business number to send order updates, run campaigns, and power the AI chat assistant.',
   },
   {
@@ -60,8 +60,8 @@ const faqs = [
     a: 'We integrate with Razorpay so you can accept UPI, cards, net banking, and wallets. COD is also supported.',
   },
   {
-    q: 'I\'m not tech-savvy. Can I still use ReplyCart?',
-    a: 'Absolutely — that\'s exactly who we build for. If you can use Instagram, you can use ReplyCart. And our support team is always here to help.',
+    q: 'I\'m not tech-savvy. Can I still use Silarai?',
+    a: 'Absolutely — that\'s exactly who we build for. If you can use Instagram, you can use Silarai. And our support team is always here to help.',
   },
 ];
 
@@ -126,3 +126,4 @@ export function ContactPage() {
     </LandingLayout>
   );
 }
+

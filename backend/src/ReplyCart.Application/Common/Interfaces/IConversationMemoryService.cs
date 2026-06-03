@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 /// <summary>
 /// In-memory, per-session conversation history for the storefront AI chatbot.
@@ -15,3 +15,5 @@ public interface IConversationMemoryService
     /// <summary>Removes all history for the given session.</summary>
     void ClearSession(string sessionId);
 }
+
+

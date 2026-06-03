@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -111,3 +111,5 @@ public record OrderItemRequestDto(Guid ProductId, string ProductTitle, string? V
 public record UpdateOrderStatusRequest(OrderStatus Status, PaymentStatus? PaymentStatus, string? Note);
 public record RecordPaymentRequest(decimal Amount, string Method, string? ReferenceNumber, string? Notes);
 public record CancelOrderRequest(string? Reason);
+
+

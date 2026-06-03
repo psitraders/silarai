@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ReplyCart.Domain.Admin;
 using ReplyCart.Domain.Marketing;
 using ReplyCart.Domain.Ai;
@@ -86,3 +86,5 @@ public interface IAppDbContext
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
+
+

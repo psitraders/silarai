@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using ReplyCart.Application.Common.Helpers;
@@ -74,3 +74,5 @@ public class StripeService(IHttpClientFactory httpClientFactory) : IStripeServic
             ?? throw new InvalidOperationException("Stripe response did not contain a checkout URL.");
     }
 }
+
+

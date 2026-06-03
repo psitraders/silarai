@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -258,3 +258,5 @@ public class WhatsAppService : IWhatsAppService
     private static string NormalizePhone(string phone)
         => new string(phone.Where(char.IsDigit).ToArray());
 }
+
+

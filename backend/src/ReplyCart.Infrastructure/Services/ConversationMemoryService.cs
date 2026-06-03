@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using ReplyCart.Application.Common.Interfaces;
 
 namespace ReplyCart.Infrastructure.Services;
@@ -65,3 +65,5 @@ public sealed class ConversationMemoryService : IConversationMemoryService
         }
     }
 }
+
+

@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type ThemeId = 'teal' | 'purple' | 'blue' | 'rose' | 'orange';
@@ -77,7 +77,7 @@ export const useThemeStore = create<ThemeState>()(
       },
       currentTheme: () => THEMES.find(t => t.id === get().themeId) ?? THEMES[0],
     }),
-    { name: 'replycart-theme' }
+    { name: 'Silarai-theme' }
   )
 );
 
@@ -90,3 +90,4 @@ export function applyTheme(theme: Theme) {
   root.style.setProperty('--rc-primary-text', theme.primaryText);
   root.setAttribute('data-theme', theme.id);
 }
+

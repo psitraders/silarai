@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -123,3 +123,5 @@ public class TwoFactorOtpService(
     private static string NormalizePhone(string phone)
         => new string(phone.Where(char.IsDigit).ToArray());
 }
+
+

@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Exceptions;
+﻿namespace ReplyCart.Application.Common.Exceptions;
 
 /// <summary>
 /// Thrown when an order requests more units than are available in stock.
@@ -11,3 +11,5 @@ public class InsufficientStockException(string productTitle, int available, int 
     public int Available { get; } = available;
     public int Requested { get; } = requested;
 }
+
+

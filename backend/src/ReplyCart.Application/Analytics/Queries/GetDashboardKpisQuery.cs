@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using ReplyCart.Application.Common.Interfaces;
@@ -216,3 +216,5 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
         return result;
     }
 }
+
+

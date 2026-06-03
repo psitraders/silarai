@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
@@ -83,3 +83,5 @@ public class SearchController(IAppDbContext db, ITenantContext tenantContext) : 
         return Ok(new { products, customers, orders, leads });
     }
 }
+
+

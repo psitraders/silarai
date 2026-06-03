@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
@@ -162,7 +162,7 @@ public class CloudflareService(
     public async Task AddApexCnameAsync(string zoneId, CancellationToken ct = default)
     {
         var client = CreateClient();
-        var body = new { type = "CNAME", name = "@", content = "cname.replycart.app", proxied = true, ttl = 1 };
+        var body = new { type = "CNAME", name = "@", content = "cname.silarai.app", proxied = true, ttl = 1 };
         var content = new StringContent(JsonSerializer.Serialize(body, _json), Encoding.UTF8, "application/json");
         var response = await client.PostAsync($"zones/{zoneId}/dns_records", content, ct);
         var raw = await response.Content.ReadAsStringAsync(ct);
@@ -212,3 +212,5 @@ public class CloudflareService(
         return new CloudflareHostnameResult(id, hostname, status, sslStatus, txtName, txtValue);
     }
 }
+
+

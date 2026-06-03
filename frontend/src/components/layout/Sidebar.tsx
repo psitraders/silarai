@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+﻿import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
 import {
   LayoutDashboard, Inbox, Users, ShoppingBag, Package, Store,
@@ -69,7 +69,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Show custom domain when active, otherwise fall back to replycart.app/slug
+  // Show custom domain when active, otherwise fall back to Silarai.app/slug
   const storeUrl = customDomain?.status === 'active' && customDomain.domain
     ? `https://${customDomain.domain}`
     : storefront?.slug ? `${window.location.origin}/${storefront.slug}` : null;
@@ -97,7 +97,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               <MessageSquareQuote className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="font-bold text-slate-900 text-sm">ReplyCart</span>
+              <span className="font-bold text-slate-900 text-sm">Silarai</span>
               <p className="text-[10px] text-slate-400">Turn chats into orders</p>
             </div>
           </div>
@@ -231,3 +231,4 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     </>
   );
 }
+

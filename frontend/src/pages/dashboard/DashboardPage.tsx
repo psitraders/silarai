@@ -285,7 +285,7 @@ export function DashboardPage() {
   });
 
   const [storeCopied, setStoreCopied] = useState(false);
-  // Use custom domain when active, otherwise fall back to replycart.app/slug
+  // Use custom domain when active, otherwise fall back to Silarai.app/slug
   const storeUrl = customDomain?.status === 'active' && customDomain.domain
     ? `https://${customDomain.domain}`
     : storefront?.slug ? `${window.location.origin}/${storefront.slug}` : null;
@@ -853,3 +853,4 @@ export function DashboardPage() {
     </>
   );
 }
+

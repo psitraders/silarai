@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Business;
 using ReplyCart.Domain.Catalog;
@@ -192,3 +192,5 @@ public record OrderSummary(
     DateTime PlacedAt);
 
 public record ChatMessage(string Role, string Content);
+
+

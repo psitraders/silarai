@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public interface ITenantContext
 {
@@ -7,3 +7,5 @@ public interface ITenantContext
     bool IsResolved { get; }
     void SetTenant(Guid tenantId, string slug);
 }
+
+

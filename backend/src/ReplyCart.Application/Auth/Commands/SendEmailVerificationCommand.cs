@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
@@ -49,3 +49,5 @@ public class SendEmailVerificationCommandHandler(IAppDbContext db, IJwtTokenServ
         return Convert.ToBase64String(bytes).Replace("+", "-").Replace("/", "_").Replace("=", "");
     }
 }
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -20,3 +20,5 @@ public class DeleteAiTemplateHandler(IAppDbContext db, ITenantContext tenantCont
         await db.SaveChangesAsync(cancellationToken);
     }
 }
+
+

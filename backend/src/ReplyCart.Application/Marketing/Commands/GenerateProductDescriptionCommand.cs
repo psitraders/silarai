@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -55,3 +55,5 @@ public class GenerateProductDescriptionCommandHandler(
         return new ProductDescriptionResult(wa, ig, tags);
     }
 }
+
+

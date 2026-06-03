@@ -1,4 +1,4 @@
-import apiClient from './client';
+﻿import apiClient from './client';
 
 export interface BusinessDto {
   id: string;
@@ -254,7 +254,7 @@ export const businessApi = {
   getAutoCampaigns: (params?: { page?: number; pageSize?: number }) =>
     apiClient.get<AutoCampaignsResult>('/business/auto-campaigns', { params }).then(r => r.data),
 
-  // ── Catalog import (Meta → ReplyCart) ──────────────────────────────────────
+  // ── Catalog import (Meta → Silarai) ──────────────────────────────────────
   /** Fetch preview of products in the Meta Catalog — no data written */
   previewCatalogImport: () =>
     apiClient.get<CatalogImportPreview>('/business/catalog/import-preview').then(r => r.data),
@@ -289,3 +289,4 @@ export const businessApi = {
       .then(r => r.data.url);
   },
 };
+

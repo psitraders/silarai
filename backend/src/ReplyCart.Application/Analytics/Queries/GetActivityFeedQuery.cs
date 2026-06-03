@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -68,3 +68,5 @@ public class GetActivityFeedQueryHandler(IAppDbContext db, ITenantContext tenant
             .ToList();
     }
 }
+
+

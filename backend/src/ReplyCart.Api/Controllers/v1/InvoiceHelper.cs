@@ -1,4 +1,4 @@
-using ReplyCart.Application.Orders.Queries;
+﻿using ReplyCart.Application.Orders.Queries;
 
 namespace ReplyCart.Api.Controllers.v1;
 
@@ -176,7 +176,7 @@ internal static class InvoiceHelper
   <div class="footer">
     Thank you for shopping with <strong>{{storeName}}</strong>!
     &nbsp;&middot;&nbsp;
-    Powered by <a href="https://replycart.app" target="_blank">ReplyCart.app</a>
+    Powered by <a href="https://silarai.app" target="_blank">silarai.app</a>
   </div>
 </div>
 </body>
@@ -184,3 +184,5 @@ internal static class InvoiceHelper
 """;
     }
 }
+
+

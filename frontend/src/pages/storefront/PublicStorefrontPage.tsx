@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+﻿import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
@@ -90,7 +90,7 @@ interface StoreData {
   whatsAppCtaLabel?: string;
   razorpayEnabled?: boolean;
   announcementText?: string;       // null = hide bar entirely
-  allowsCustomBranding?: boolean;  // true = hide "Powered by ReplyCart"
+  allowsCustomBranding?: boolean;  // true = hide "Powered by Silarai"
   ga4MeasurementId?: string;       // G-XXXXXXXXXX for gtag embed
   faviconUrl?: string;             // dedicated favicon (falls back to logoUrl)
   loaderEnabled?: boolean;         // show branded 2-second loading screen
@@ -385,7 +385,7 @@ function ProductModal({
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const currency = store.currency ?? 'INR';
   // isCustomDomain = true  → floraved.com  → route is /order-confirmation/:id
-  // isCustomDomain = false → replycart.app → route is /:slug/order-confirmation/:id
+  // isCustomDomain = false → Silarai.app → route is /:slug/order-confirmation/:id
   const confirmBase = isCustomDomain ? `/order-confirmation` : `/${slug}/order-confirmation`;
 
   // Always use React Router navigate — pure SPA navigation, no HTTP request.
@@ -1835,7 +1835,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
             {!store?.allowsCustomBranding && (
               <p className="text-[10px] text-slate-400 text-center mt-2 flex items-center justify-center gap-1">
                 <Bot className="w-3 h-3" />
-                Powered by <span className="font-semibold">ReplyCart AI</span>
+                Powered by <span className="font-semibold">Silarai AI</span>
               </p>
             )}
           </div>
@@ -2012,13 +2012,13 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     sitemapLink.setAttribute('href', sitemapHref);
 
     return () => {
-      document.title = 'ReplyCart';
+      document.title = 'Silarai';
       // Remove dynamically added tags (canonical, sitemap, custom metas)
       document.head.querySelectorAll('[data-storefront="1"]').forEach(el => el.remove());
       // Restore static OG tags
-      setMeta('meta[name="description"]',        'name=description',        'ReplyCart helps social sellers manage WhatsApp orders.');
-      setMeta('meta[property="og:title"]',       'property=og:title',       'ReplyCart — Turn WhatsApp Chats Into Orders');
-      setMeta('meta[property="og:description"]', 'property=og:description', 'ReplyCart helps social sellers manage WhatsApp orders.');
+      setMeta('meta[name="description"]',        'name=description',        'Silarai helps social sellers manage WhatsApp orders.');
+      setMeta('meta[property="og:title"]',       'property=og:title',       'Silarai — Turn WhatsApp Chats Into Orders');
+      setMeta('meta[property="og:description"]', 'property=og:description', 'Silarai helps social sellers manage WhatsApp orders.');
     };
   }, [store?.name, (store as any)?.seoTitle, (store as any)?.seoKeywords]);
 
@@ -3411,7 +3411,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           </div>
         </div>
         <div className="border-t border-slate-800 px-4 py-4 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} {store.name}.{!store.allowsCustomBranding && <> Powered by <span className="text-slate-400 font-medium">ReplyCart</span></>}
+          © {new Date().getFullYear()} {store.name}.{!store.allowsCustomBranding && <> Powered by <span className="text-slate-400 font-medium">Silarai</span></>}
         </div>
       </footer>
 
@@ -3605,3 +3605,4 @@ For any questions, reach out to us on WhatsApp — we're happy to help!`}
     </div>
   );
 }
+

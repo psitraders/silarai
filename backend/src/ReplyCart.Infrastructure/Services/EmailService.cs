@@ -14,9 +14,9 @@ namespace ReplyCart.Infrastructure.Services;
 /// </summary>
 public class EmailService(IConfiguration config, ILogger<EmailService> logger) : IEmailService
 {
-    private readonly string _appUrl        = config["AppUrl"]        ?? "https://www.replycart.app";
-    private readonly string _dashboardUrl  = (config["FrontendUrl"]  ?? "https://replycart.app").TrimEnd('/');
-    private readonly string _fromEmail     = config["Smtp:FromEmail"] ?? "support@replycart.app";
+    private readonly string _appUrl        = config["AppUrl"]        ?? "https://www.silarai.app";
+    private readonly string _dashboardUrl  = (config["FrontendUrl"]  ?? "https://silarai.app").TrimEnd('/');
+    private readonly string _fromEmail     = config["Smtp:FromEmail"] ?? "support@silarai.app";
     private readonly string _fromName      = "ReplyCart";
 
     // â”€â”€ Email verification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -199,7 +199,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
       <!-- Footer -->
       <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
         <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
-          Sent by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://replycart.app" style="color:#0d9488;text-decoration:none;">replycart.app</a>
+          Sent by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://silarai.app" style="color:#0d9488;text-decoration:none;">silarai.app</a>
         </p>
       </td></tr>
     </table>
@@ -299,7 +299,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
       <!-- Footer -->
       <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
         <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
-          Powered by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://replycart.app" style="color:#0d9488;text-decoration:none;">replycart.app</a>
+          Powered by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://silarai.app" style="color:#0d9488;text-decoration:none;">silarai.app</a>
         </p>
       </td></tr>
     </table>
@@ -393,7 +393,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
       <!-- Footer -->
       <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
         <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
-          Powered by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://replycart.app" style="color:#0d9488;text-decoration:none;">replycart.app</a>
+          Powered by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://silarai.app" style="color:#0d9488;text-decoration:none;">silarai.app</a>
         </p>
       </td></tr>
     </table>
@@ -510,7 +510,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
       <!-- Footer -->
       <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
         <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
-          Powered by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://replycart.app" style="color:#0d9488;text-decoration:none;">replycart.app</a>
+          Powered by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://silarai.app" style="color:#0d9488;text-decoration:none;">silarai.app</a>
         </p>
       </td></tr>
     </table>
@@ -565,7 +565,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
       <!-- Footer -->
       <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
         <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
-          Powered by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://replycart.app" style="color:#0d9488;text-decoration:none;">replycart.app</a>
+          Powered by <strong style="color:#0f766e;">ReplyCart</strong> Â· <a href="https://silarai.app" style="color:#0d9488;text-decoration:none;">silarai.app</a>
         </p>
       </td></tr>
     </table>
@@ -670,7 +670,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
       <!-- Footer -->
       <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
         <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
-          This confirmation was sent by <strong style="color:#0f766e;">{{storeName}}</strong> via ReplyCart Â· <a href="https://replycart.app" style="color:#0d9488;text-decoration:none;">replycart.app</a>
+          This confirmation was sent by <strong style="color:#0f766e;">{{storeName}}</strong> via ReplyCart Â· <a href="https://silarai.app" style="color:#0d9488;text-decoration:none;">silarai.app</a>
         </p>
       </td></tr>
     </table>
@@ -691,7 +691,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
         var billing  = isAnnual ? "Annual" : "Monthly";
         var subject  = $"â¬†ï¸ Plan upgrade requested â€” {tenantName} â†’ {requestedPlanName}";
         var html     = BuildUpgradeRequestHtml(tenantName, tenantEmail, requestedPlanName, billing, pricePaid, reviewUrl);
-        await SendAsync(adminEmail, "ReplyCart Admin", subject, html, ct);
+        await SendAsync(adminEmail, "Silarai Admin", subject, html, ct);
     }
 
     private static string BuildUpgradeRequestHtml(
@@ -764,5 +764,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
 </html>
 """;
 }
+
+
 
 

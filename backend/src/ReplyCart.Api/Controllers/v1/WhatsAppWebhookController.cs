@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -191,3 +191,5 @@ public class WhatsAppTextContent
 {
     [JsonPropertyName("body")] public string? Body { get; set; }
 }
+
+

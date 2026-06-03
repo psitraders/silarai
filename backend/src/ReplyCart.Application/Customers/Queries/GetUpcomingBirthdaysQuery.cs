@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -65,3 +65,5 @@ public class GetUpcomingBirthdaysQueryHandler(IAppDbContext db, ITenantContext t
         return thisYear.DayNumber - today.DayNumber;
     }
 }
+
+

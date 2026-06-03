@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public interface IFacebookService
 {
@@ -12,3 +12,5 @@ public interface IFacebookService
     /// </summary>
     Task<string?> CreatePagePostAsync(string message, string? imageUrl = null, CancellationToken ct = default);
 }
+
+

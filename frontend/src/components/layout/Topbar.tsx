@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Bell, Menu, Search, Globe, ShoppingBag, Users, MessageSquare, X, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -270,7 +270,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <div className="w-7 h-7 rounded-lg bg-teal-600 flex items-center justify-center">
             <ShoppingBag className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="font-bold text-slate-900 text-sm hidden xs:inline sm:inline">ReplyCart</span>
+          <span className="font-bold text-slate-900 text-sm hidden xs:inline sm:inline">Silarai</span>
         </div>
         {/* Global search */}
         <div className="hidden lg:block relative" ref={searchRef}>
@@ -328,7 +328,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             <button
               onClick={handleInstall}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-colors text-xs font-semibold"
-              title="Install ReplyCart as an app"
+              title="Install Silarai as an app"
             >
               <Download className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Install App</span>
@@ -341,7 +341,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                   <div className="w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center shrink-0">
                     <Download className="w-4 h-4 text-teal-600" />
                   </div>
-                  <p className="font-semibold text-slate-900 text-sm">Install ReplyCart</p>
+                  <p className="font-semibold text-slate-900 text-sm">Install Silarai</p>
                 </div>
                 {isIos ? (
                   <ol className="space-y-2 text-xs text-slate-600">
@@ -513,3 +513,4 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     </header>
   );
 }
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using ReplyCart.Application.Common.Interfaces;
@@ -32,3 +32,5 @@ public class ForgotPasswordCommandHandler(IAppDbContext db, IEmailService emailS
         await emailService.SendRegistrationOtpAsync(email, user.Name, otp, cancellationToken);
     }
 }
+
+

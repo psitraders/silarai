@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -70,7 +70,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
   // Set browser tab title to store name
   useEffect(() => {
     if (storeName) document.title = `Order Confirmed — ${storeName}`;
-    return () => { document.title = 'ReplyCart'; };
+    return () => { document.title = 'Silarai'; };
   }, [storeName]);
 
   if (isLoading) {
@@ -319,3 +319,4 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
     </div>
   );
 }
+

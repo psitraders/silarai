@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Sidebar } from './Sidebar';
@@ -24,8 +24,8 @@ export function AppShell() {
 
   // Set browser tab title to tenant's business name
   useEffect(() => {
-    document.title = business?.name ? `${business.name} — ReplyCart` : 'ReplyCart';
-    return () => { document.title = 'ReplyCart'; };
+    document.title = business?.name ? `${business.name} — Silarai` : 'Silarai';
+    return () => { document.title = 'Silarai'; };
   }, [business?.name]);
 
   return (
@@ -41,3 +41,4 @@ export function AppShell() {
     </div>
   );
 }
+

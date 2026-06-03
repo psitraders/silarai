@@ -1,4 +1,4 @@
-import { LandingLayout } from '../../components/landing/LandingLayout';
+﻿import { LandingLayout } from '../../components/landing/LandingLayout';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -29,13 +29,13 @@ export function PrivacyPage() {
 
           <Section title="1. Who we are">
             <p>
-              ReplyCart ("we", "our", "us") is an e-commerce SaaS platform operated from India.
+              Silarai ("we", "our", "us") is an e-commerce SaaS platform operated from India.
               We provide online store, order management, AI chat, and marketing tools to small businesses.
             </p>
             <p>
               For any privacy-related queries, contact us at{' '}
-              <a href="mailto:support@replycart.app" className="text-teal-600 hover:underline">
-                support@replycart.app
+              <a href="mailto:support@Silarai.app" className="text-teal-600 hover:underline">
+                support@Silarai.app
               </a>.
             </p>
           </Section>
@@ -52,7 +52,7 @@ export function PrivacyPage() {
           <Section title="3. How we use your information">
             <p>We use your data to:</p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Provide, operate, and maintain the ReplyCart platform</li>
+              <li>Provide, operate, and maintain the Silarai platform</li>
               <li>Process your orders and payments</li>
               <li>Send transactional emails (order confirmations, password resets, etc.)</li>
               <li>Respond to support requests</li>
@@ -91,23 +91,23 @@ export function PrivacyPage() {
             </ul>
             <p>
               To exercise any of these rights, email us at{' '}
-              <a href="mailto:support@replycart.app" className="text-teal-600 hover:underline">
-                support@replycart.app
+              <a href="mailto:support@Silarai.app" className="text-teal-600 hover:underline">
+                support@Silarai.app
               </a>.
             </p>
           </Section>
 
           <Section title="7. Security">
             <p>We take security seriously. All data is encrypted in transit (TLS) and at rest. We use Microsoft Azure infrastructure with enterprise-grade security controls. Access to customer data is restricted to authorised personnel only.</p>
-            <p>However, no system is 100% secure. If you discover a security issue, please report it to us immediately at support@replycart.app.</p>
+            <p>However, no system is 100% secure. If you discover a security issue, please report it to us immediately at support@Silarai.app.</p>
           </Section>
 
           <Section title="8. Children's privacy">
-            <p>ReplyCart is not intended for use by anyone under the age of 18. We do not knowingly collect personal information from children. If we become aware that a child has provided us data, we will delete it promptly.</p>
+            <p>Silarai is not intended for use by anyone under the age of 18. We do not knowingly collect personal information from children. If we become aware that a child has provided us data, we will delete it promptly.</p>
           </Section>
 
           <Section title="9. Changes to this policy">
-            <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by email or via an in-app notice. Continued use of ReplyCart after changes constitutes acceptance of the updated policy.</p>
+            <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by email or via an in-app notice. Continued use of Silarai after changes constitutes acceptance of the updated policy.</p>
           </Section>
 
           <Section title="10. Applicable law">
@@ -116,8 +116,8 @@ export function PrivacyPage() {
 
           <div className="mt-10 p-5 bg-gray-50 rounded-xl border border-gray-100 text-sm text-gray-500">
             Questions about this policy? Contact us at{' '}
-            <a href="mailto:support@replycart.app" className="text-teal-600 hover:underline font-medium">
-              support@replycart.app
+            <a href="mailto:support@Silarai.app" className="text-teal-600 hover:underline font-medium">
+              support@Silarai.app
             </a>
           </div>
         </div>
@@ -125,3 +125,4 @@ export function PrivacyPage() {
     </LandingLayout>
   );
 }
+

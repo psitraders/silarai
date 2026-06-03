@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -205,3 +205,5 @@ public record UpdateProfileRequest(string Name, string? Phone, string? AvatarUrl
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 public record TotpCodeRequest(string Code);
 public record DisableTotpRequest(string Password);
+
+

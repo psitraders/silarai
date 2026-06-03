@@ -1,4 +1,4 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
+﻿import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
@@ -22,7 +22,7 @@ const processQueue = (error: unknown, token: string | null) => {
  * Wipes ALL auth state (both individual keys AND the zustand persisted store)
  * then navigates to /login.
  *
- * Without clearing 'replycart-auth', zustand rehydrates isAuthenticated=true
+ * Without clearing 'Silarai-auth', zustand rehydrates isAuthenticated=true
  * on the next page load and GuestGuard immediately bounces the user back to
  * /dashboard — causing the login ↔ dashboard redirect loop seen after every
  * backend restart (when the DB refresh tokens are invalidated).
@@ -31,7 +31,7 @@ function forceLogout() {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   // Clear the entire zustand persist snapshot so isAuthenticated resets to false
-  localStorage.removeItem('replycart-auth');
+  localStorage.removeItem('Silarai-auth');
   // Use replace so the broken page isn't in browser history
   window.location.replace('/login');
 }
@@ -90,3 +90,4 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+

@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -236,3 +236,5 @@ public record PaymentOrderItem(
     string? VariantInfo,
     int Quantity,
     decimal UnitPrice);
+
+

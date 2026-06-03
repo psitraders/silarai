@@ -1,4 +1,4 @@
-using ReplyCart.Domain.Conversation;
+﻿using ReplyCart.Domain.Conversation;
 using System.Text;
 
 namespace ReplyCart.Application.Rag;
@@ -105,3 +105,5 @@ public static class ConversationSystemPromptBuilder
             : string.Join(' ', words[..wordCount]) + "...";
     }
 }
+
+

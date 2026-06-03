@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReplyCart.Application.Storefront.Commands;
@@ -50,3 +50,5 @@ public class B2BController(IMediator mediator) : ControllerBase
 }
 
 public record QuoteReplyRequest(string Reply, string? Status);
+
+

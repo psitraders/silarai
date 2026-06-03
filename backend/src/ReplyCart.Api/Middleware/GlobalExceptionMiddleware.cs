@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using ReplyCart.Application.Common.Exceptions;
@@ -56,3 +56,5 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
         }));
     }
 }
+
+

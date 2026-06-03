@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReplyCart.Application.Business.Commands;
@@ -165,3 +165,5 @@ public class BusinessController(IMediator mediator, ITenantContext tenantContext
 }
 
 public record ImportFromCatalogRequest(IReadOnlyList<string>? RetailerIds);
+
+

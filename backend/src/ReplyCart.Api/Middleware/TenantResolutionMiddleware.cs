@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using ReplyCart.Application.Common.Interfaces;
@@ -105,3 +105,5 @@ public class TenantResolutionMiddleware(RequestDelegate next, ILogger<TenantReso
         await next(context);
     }
 }
+
+

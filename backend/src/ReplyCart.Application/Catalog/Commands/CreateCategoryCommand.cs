@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Catalog;
 
@@ -24,3 +24,5 @@ public class CreateCategoryCommandHandler(IAppDbContext db, ITenantContext tenan
         return category.Id;
     }
 }
+
+

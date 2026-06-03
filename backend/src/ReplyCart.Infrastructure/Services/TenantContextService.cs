@@ -1,4 +1,4 @@
-using ReplyCart.Application.Common.Interfaces;
+﻿using ReplyCart.Application.Common.Interfaces;
 
 namespace ReplyCart.Infrastructure.Services;
 
@@ -21,3 +21,5 @@ public class TenantContextService : ITenantContext
         IsResolved = true;
     }
 }
+
+

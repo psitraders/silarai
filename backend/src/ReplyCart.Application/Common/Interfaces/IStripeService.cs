@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 /// <summary>
 /// Abstracts Stripe Checkout Session creation for the Application layer.
@@ -19,3 +19,5 @@ public interface IStripeService
         string   businessName,
         CancellationToken cancellationToken = default);
 }
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
@@ -41,3 +41,5 @@ public class AddLeadNoteCommandHandler(IAppDbContext db, ICurrentUser currentUse
         return note.Id;
     }
 }
+
+

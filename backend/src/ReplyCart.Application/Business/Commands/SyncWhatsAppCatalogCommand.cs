@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Enums;
@@ -85,3 +85,5 @@ public class SyncWhatsAppCatalogCommandHandler(
             Message: $"Successfully synced {products.Count} products to WhatsApp Catalog.");
     }
 }
+
+

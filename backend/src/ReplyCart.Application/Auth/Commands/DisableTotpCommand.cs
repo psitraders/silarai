@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -22,3 +22,5 @@ public class DisableTotpCommandHandler(IAppDbContext db)
         await db.SaveChangesAsync(cancellationToken);
     }
 }
+
+

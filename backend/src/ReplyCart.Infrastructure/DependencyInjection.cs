@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ReplyCart.Application.Common.Interfaces;
@@ -89,3 +89,5 @@ public static class DependencyInjection
         return services;
     }
 }
+
+

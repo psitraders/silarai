@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -25,3 +25,5 @@ public class GetCategoriesQueryHandler(IAppDbContext db) : IRequestHandler<GetCa
             .ToListAsync(cancellationToken);
     }
 }
+
+

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Chatbot;
 using System.Text;
@@ -197,3 +197,5 @@ public static class ChatbotClientWebhookHelper
         return sb.ToString();
     }
 }
+
+

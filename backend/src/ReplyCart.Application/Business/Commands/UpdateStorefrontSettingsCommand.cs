@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Business;
@@ -91,3 +91,5 @@ public class UpdateStorefrontSettingsCommandHandler(IAppDbContext db, ITenantCon
         await db.SaveChangesAsync(cancellationToken);
     }
 }
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReplyCart.Application.Analytics.Queries;
@@ -18,3 +18,5 @@ public class ActivityController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetReminders([FromQuery] int staleAfterDays = 2, CancellationToken ct = default)
         => Ok(await mediator.Send(new GetFollowUpRemindersQuery(staleAfterDays), ct));
 }
+
+

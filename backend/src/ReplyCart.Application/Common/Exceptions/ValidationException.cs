@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Exceptions;
+﻿namespace ReplyCart.Application.Common.Exceptions;
 
 public class ValidationException : Exception
 {
@@ -17,3 +17,5 @@ public class ValidationException : Exception
             .ToDictionary(fg => fg.Key, fg => fg.ToArray());
     }
 }
+
+

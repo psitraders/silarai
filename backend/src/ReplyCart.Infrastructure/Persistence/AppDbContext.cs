@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Admin;
 using ReplyCart.Domain.Marketing;
@@ -162,3 +162,5 @@ public class AppDbContext : DbContext, IAppDbContext
         return await base.SaveChangesAsync(cancellationToken);
     }
 }
+
+

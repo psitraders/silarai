@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+﻿import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { optimizeImage } from '../../utils/imageUrl';
@@ -48,7 +48,7 @@ export function StorefrontCustomPage({ overrideSlug }: { overrideSlug?: string }
   const { slug: paramSlug, pageSlug } = useParams<{ slug: string; pageSlug: string }>();
   const slug = overrideSlug ?? paramSlug;
 
-  // Determine link bases (custom domain vs replycart.app subdomain)
+  // Determine link bases (custom domain vs Silarai.app subdomain)
   const storeBase = overrideSlug ? '/' : `/${slug}`;
   const pageBase  = overrideSlug ? '/p' : `/${slug}/p`;
 
@@ -286,10 +286,11 @@ export function StorefrontCustomPage({ overrideSlug }: { overrideSlug?: string }
         <div className="border-t border-slate-800 px-4 py-4 text-center text-xs text-slate-500">
           © {new Date().getFullYear()} {store?.name}.
           {!store?.allowsCustomBranding && (
-            <> Powered by <span className="text-slate-400 font-medium">ReplyCart</span></>
+            <> Powered by <span className="text-slate-400 font-medium">Silarai</span></>
           )}
         </div>
       </footer>
     </div>
   );
 }
+

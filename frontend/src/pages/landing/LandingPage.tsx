@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { Navbar } from '../../components/landing/Navbar';
 import { Footer } from '../../components/landing/Footer';
 import { LeadChatWidget } from '../../components/landing/LeadChatWidget';
@@ -9,7 +9,7 @@ import {
   ChevronRight, Sparkles, Store, ExternalLink, Lock,
 } from 'lucide-react';
 
-const DEMO_WA = 'https://wa.me/918849549690?text=Hi%2C%20I%27d%20like%20to%20book%20a%20demo%20of%20ReplyCart%20%F0%9F%9A%80';
+const DEMO_WA = 'https://wa.me/918849549690?text=Hi%2C%20I%27d%20like%20to%20book%20a%20demo%20of%20Silarai%20%F0%9F%9A%80';
 
 /* ══════════════════════════════════════════════════════════════════════════
    HERO
@@ -38,7 +38,7 @@ function Hero() {
             </h1>
 
             <p className="text-lg text-gray-500 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              ReplyCart gives boutiques, bakeries, jewellers, and home sellers a branded storefront,
+              Silarai gives boutiques, bakeries, jewellers, and home sellers a branded storefront,
               AI-powered customer chat, and a full order management system — in 15 minutes.
             </p>
 
@@ -91,7 +91,7 @@ function Hero() {
                     </div>
                     <div>
                       <p className="text-white font-bold text-sm">Floraved Beauty</p>
-                      <p className="text-teal-200 text-xs">floraved.replycart.app</p>
+                      <p className="text-teal-200 text-xs">floraved.Silarai.app</p>
                     </div>
                   </div>
                   <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full">Live ●</span>
@@ -230,7 +230,7 @@ function Features() {
             All the tools your business needs
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto">
-            No juggling 5 different apps. ReplyCart brings your store, chat, orders, and customers under one roof.
+            No juggling 5 different apps. Silarai brings your store, chat, orders, and customers under one roof.
           </p>
         </div>
 
@@ -466,7 +466,7 @@ const testimonials = [
     name: 'Priya Mehta',
     role: 'Boutique owner, Surat',
     emoji: '🧕',
-    quote: 'I was taking orders on WhatsApp manually for 3 years. ReplyCart gave me a proper store in one evening. My customers love browsing it.',
+    quote: 'I was taking orders on WhatsApp manually for 3 years. Silarai gave me a proper store in one evening. My customers love browsing it.',
   },
   {
     name: 'Rohan Patel',
@@ -537,8 +537,8 @@ const demoStores = [
   {
     name: "Priya's Boutique",
     category: 'Women\'s Ethnic Fashion',
-    url: 'https://www.replycart.app/priya-boutique',
-    displayUrl: 'replycart.app/priya-boutique',
+    url: 'https://www.Silarai.app/priya-boutique',
+    displayUrl: 'Silarai.app/priya-boutique',
     emoji: '👗',
     color: 'bg-pink-50',
     accent: 'text-pink-600',
@@ -551,8 +551,8 @@ const demoStores = [
   {
     name: 'Sugar & Crumbs',
     category: 'Custom Cakes & Bakery',
-    url: 'https://www.replycart.app/sugar-crumbs',
-    displayUrl: 'replycart.app/sugar-crumbs',
+    url: 'https://www.Silarai.app/sugar-crumbs',
+    displayUrl: 'Silarai.app/sugar-crumbs',
     emoji: '🎂',
     color: 'bg-amber-50',
     accent: 'text-amber-600',
@@ -571,13 +571,13 @@ function LiveDemoStores() {
         <div className="text-center mb-14">
           <span className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-            Live stores built on ReplyCart
+            Live stores built on Silarai
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
             See real stores in action
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto">
-            Click any store below to browse it live — these are real sellers using ReplyCart right now.
+            Click any store below to browse it live — these are real sellers using Silarai right now.
           </p>
         </div>
 
@@ -678,7 +678,7 @@ function CustomDomainHighlight() {
               <br />Not someone else's.
             </h2>
             <p className="text-slate-300 mb-8 leading-relaxed text-lg">
-              Connect your existing domain — like <span className="text-white font-semibold">www.yourbrand.com</span> — to your ReplyCart store.
+              Connect your existing domain — like <span className="text-white font-semibold">www.yourbrand.com</span> — to your Silarai store.
               Customers see your brand, not ours. SSL included, zero technical setup required.
             </p>
 
@@ -750,7 +750,7 @@ function CustomDomainHighlight() {
                   </div>
 
                   <div className="bg-teal-500/20 border border-teal-500/30 rounded-xl px-4 py-3 text-center">
-                    <p className="text-teal-300 text-xs font-semibold">✓ Powered by ReplyCart · SSL Secured</p>
+                    <p className="text-teal-300 text-xs font-semibold">✓ Powered by Silarai · SSL Secured</p>
                   </div>
                 </div>
               </div>
@@ -872,3 +872,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
@@ -36,3 +36,5 @@ public class UpdateOrderStatusCommandHandler(IAppDbContext db, ICurrentUser curr
         await db.SaveChangesAsync(cancellationToken);
     }
 }
+
+

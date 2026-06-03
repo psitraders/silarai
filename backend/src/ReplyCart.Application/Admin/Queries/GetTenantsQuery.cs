@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.Common.Models;
@@ -40,3 +40,5 @@ public class GetTenantsQueryHandler(IAppDbContext db) : IRequestHandler<GetTenan
         return await PagedList<TenantAdminDto>.CreateAsync(projected, request.Page, request.PageSize);
     }
 }
+
+

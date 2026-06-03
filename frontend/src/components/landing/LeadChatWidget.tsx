@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { X, Send, ChevronRight, Copy, Check, ExternalLink } from 'lucide-react';
 import { submitPlatformLead, chatbotOnboard } from '../../api/platformLeads.api';
 
@@ -123,7 +123,7 @@ export function LeadChatWidget() {
   useEffect(() => {
     if (!open || messages.length > 0) return;
     (async () => {
-      await addBotMessage("👋 Hey there! I'm Reya, ReplyCart's assistant.", 500);
+      await addBotMessage("👋 Hey there! I'm Reya, Silarai's assistant.", 500);
       await addBotMessage("I'll help you launch your own WhatsApp store in minutes — completely free! What kind of business do you run?", 1200);
       setStep('business');
     })();
@@ -260,9 +260,9 @@ export function LeadChatWidget() {
       setBotTyping(false);
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       if (msg?.includes('already exists')) {
-        setMessages(m => [...m, { from: 'bot', text: `👋 You already have an account! Log in at replycart.app/auth/login with your email.` }]);
+        setMessages(m => [...m, { from: 'bot', text: `👋 You already have an account! Log in at Silarai.app/auth/login with your email.` }]);
       } else {
-        setMessages(m => [...m, { from: 'bot', text: `Something went wrong on our end. Sign up at replycart.app/auth/register or chat with us below.` }]);
+        setMessages(m => [...m, { from: 'bot', text: `Something went wrong on our end. Sign up at Silarai.app/auth/register or chat with us below.` }]);
       }
       setStep('error');
     } finally {
@@ -323,7 +323,7 @@ export function LeadChatWidget() {
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-teal-600 rounded-full" />
           </div>
           <div className="flex-1">
-            <p className="text-white font-semibold text-sm">Reya · ReplyCart Assistant</p>
+            <p className="text-white font-semibold text-sm">Reya · Silarai Assistant</p>
             <p className="text-teal-100 text-xs flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-green-400 rounded-full inline-block" /> Online now
             </p>
@@ -429,7 +429,7 @@ export function LeadChatWidget() {
                 <span>Login to your store dashboard →</span>
                 <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </a>
-              <a href="https://wa.me/918849549690?text=Hi%2C+I+just+set+up+my+store+on+ReplyCart!"
+              <a href="https://wa.me/918849549690?text=Hi%2C+I+just+set+up+my+store+on+Silarai!"
                 target="_blank" rel="noreferrer"
                 className="flex items-center justify-between bg-white border border-slate-200 text-slate-700 text-sm font-medium px-4 py-3 rounded-2xl hover:bg-slate-50 transition-colors">
                 <span>💬 Need help? Chat with us</span>
@@ -446,7 +446,7 @@ export function LeadChatWidget() {
                 <span>Sign up manually →</span>
                 <ExternalLink className="w-4 h-4" />
               </a>
-              <a href="https://wa.me/918849549690?text=Hi%2C+I+want+to+set+up+my+store+on+ReplyCart!"
+              <a href="https://wa.me/918849549690?text=Hi%2C+I+want+to+set+up+my+store+on+Silarai!"
                 target="_blank" rel="noreferrer"
                 className="flex items-center justify-between bg-white border border-slate-200 text-slate-700 text-sm font-medium px-4 py-3 rounded-2xl hover:bg-slate-50 transition-colors">
                 <span>💬 Chat with us on WhatsApp</span>
@@ -489,7 +489,7 @@ export function LeadChatWidget() {
 
         {/* Footer branding */}
         <div className="px-4 py-2 border-t border-slate-100 text-center flex-shrink-0">
-          <p className="text-[10px] text-slate-400">Powered by <span className="font-semibold text-teal-600">ReplyCart</span></p>
+          <p className="text-[10px] text-slate-400">Powered by <span className="font-semibold text-teal-600">Silarai</span></p>
         </div>
       </div>
 
@@ -579,3 +579,4 @@ export function LeadChatWidget() {
     </>
   );
 }
+

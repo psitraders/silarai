@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Campaigns;
@@ -74,3 +74,5 @@ public class GetAutoCampaignsQueryHandler(IAppDbContext db, ITenantContext tenan
         return new AutoCampaignsResult(items, total, request.Page, request.PageSize);
     }
 }
+
+

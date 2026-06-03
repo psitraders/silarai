@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Helpers;
@@ -119,3 +119,5 @@ public class UpdateProductCommandHandler(IAppDbContext db, IMediator mediator)
         }
     }
 }
+
+

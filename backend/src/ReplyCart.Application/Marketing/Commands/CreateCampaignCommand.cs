@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Enums;
 using ReplyCart.Domain.Marketing;
@@ -49,3 +49,5 @@ public class CreateCampaignCommandHandler(IAppDbContext db, ITenantContext tenan
         return campaign.Id;
     }
 }
+
+

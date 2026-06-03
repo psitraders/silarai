@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
+﻿import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect, Suspense } from 'react';
 import { useAuthStore } from './store/auth.store';
@@ -102,7 +102,7 @@ const AdminChatbotClientDetailPage = React.lazy(() => import('./pages/admin/Admi
 const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 const isCustomDomain = (() => {
   const h = window.location.hostname;
-  return h !== 'localhost' && h !== '127.0.0.1' && !h.includes('replycart') && !h.includes('azurestaticapps');
+  return h !== 'localhost' && h !== '127.0.0.1' && !h.includes('Silarai') && !h.includes('azurestaticapps');
 })();
 
 function CustomDomainStorefront() {
@@ -120,7 +120,7 @@ function CustomDomainStorefront() {
     <div className="min-h-screen flex items-center justify-center text-center px-4">
       <div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Store not found</h1>
-        <p className="text-gray-500">This domain is not connected to any ReplyCart store.</p>
+        <p className="text-gray-500">This domain is not connected to any Silarai store.</p>
       </div>
     </div>
   );
@@ -141,12 +141,12 @@ function CustomDomainStorefront() {
       <div className="w-full py-3 text-center text-xs text-slate-400 bg-white border-t border-slate-100">
         Powered by{' '}
         <a
-          href="https://replycart.app"
+          href="https://Silarai.app"
           target="_blank"
           rel="noreferrer"
           className="font-semibold text-teal-600 hover:underline"
         >
-          ReplyCart.app
+          Silarai.app
         </a>
       </div>
     </CartProvider>
@@ -350,3 +350,4 @@ export default function App() {
     </QueryClientProvider>
   );
 }
+

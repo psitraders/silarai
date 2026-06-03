@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public interface IAiProvider
 {
@@ -133,3 +133,5 @@ public record AutoCampaignContent(
     string Hashtags,
     string Cta
 );
+
+

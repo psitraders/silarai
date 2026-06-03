@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Save, Download, QrCode, Upload, X, ImageIcon, Lock } from 'lucide-react';
@@ -517,7 +517,7 @@ export function StorefrontSettingsPage() {
           </div>
           <p className="text-sm text-gray-600 mb-4">
             Connect your own domain (e.g. <span className="font-semibold">www.yourstore.com</span>) so customers
-            see your brand, not replycart.app. Upgrade to unlock this feature.
+            see your brand, not Silarai.app. Upgrade to unlock this feature.
           </p>
           <a href="/settings/subscription">
             <Button variant="outline" size="sm">
@@ -529,3 +529,4 @@ export function StorefrontSettingsPage() {
     </div>
   );
 }
+

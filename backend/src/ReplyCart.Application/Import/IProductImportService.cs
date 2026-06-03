@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Import;
+﻿namespace ReplyCart.Application.Import;
 
 public interface IProductImportService
 {
@@ -8,3 +8,5 @@ public interface IProductImportService
     /// <summary>Saves the selected products (and optionally categories) into the tenant catalog.</summary>
     Task<ImportConfirmResponse> ConfirmAsync(ImportConfirmRequest request, CancellationToken ct = default);
 }
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Storefront;
@@ -83,3 +83,5 @@ public class GetWishlistHandler(IAppDbContext db)
             .ToListAsync(ct);
     }
 }
+
+

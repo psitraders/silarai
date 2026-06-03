@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -32,3 +32,5 @@ public class LocalStorageProvider(IWebHostEnvironment env, IConfiguration config
 
     public string GetPublicUrl(string blobPath) => $"{_baseUrl}/{blobPath}";
 }
+
+

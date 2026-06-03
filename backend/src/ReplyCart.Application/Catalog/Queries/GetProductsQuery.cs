@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.Common.Models;
@@ -68,3 +68,5 @@ public class GetProductsQueryHandler(IAppDbContext db, ITenantContext tenantCont
         return await PagedList<ProductDto>.CreateAsync(projected, request.Page, request.PageSize);
     }
 }
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -45,3 +45,5 @@ public class UpdateBusinessCommandHandler(IAppDbContext db, ITenantContext tenan
         await db.SaveChangesAsync(cancellationToken);
     }
 }
+
+

@@ -1,5 +1,5 @@
-/**
- * ReplyCart Analytics — thin wrapper around GA4 gtag
+﻿/**
+ * Silarai Analytics — thin wrapper around GA4 gtag
  *
  * Usage:
  *   import { track } from '../lib/analytics';
@@ -76,3 +76,4 @@ export const track = {
   languageSwitch: (lang: string) =>
     send('language_switch', { language: lang }),
 };
+

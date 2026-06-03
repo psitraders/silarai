@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+﻿import { useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -502,7 +502,7 @@ function ChannelsTab({ client, onRefresh }: { client: ChatbotClientDetail; onRef
         </div>
         <InfoBox color="blue" title="Webhook to configure">
           <span>Callback URL: <code className="font-mono">{API_BASE}/api/v1/webhooks/facebook</code></span><br />
-          <span>Verify Token: <code className="font-mono">replycart-fb-verify</code> · Subscribe: <code className="font-mono">messages</code></span>
+          <span>Verify Token: <code className="font-mono">Silarai-fb-verify</code> · Subscribe: <code className="font-mono">messages</code></span>
         </InfoBox>
       </Card>
 
@@ -525,7 +525,7 @@ function ChannelsTab({ client, onRefresh }: { client: ChatbotClientDetail; onRef
         </div>
         <InfoBox color="pink" title="Webhook to configure">
           <span>Callback URL: <code className="font-mono">{API_BASE}/api/v1/webhooks/instagram</code></span><br />
-          <span>Verify Token: <code className="font-mono">replycart-ig-verify</code> · Subscribe: <code className="font-mono">messages</code></span>
+          <span>Verify Token: <code className="font-mono">Silarai-ig-verify</code> · Subscribe: <code className="font-mono">messages</code></span>
         </InfoBox>
       </Card>
 
@@ -773,3 +773,4 @@ function InfoBox({ color, title, children }: { color: string; title: string; chi
     </div>
   );
 }
+

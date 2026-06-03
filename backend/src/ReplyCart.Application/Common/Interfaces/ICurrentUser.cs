@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public interface ICurrentUser
 {
@@ -10,3 +10,5 @@ public interface ICurrentUser
     bool IsAuthenticated { get; }
     bool IsInRole(string role);
 }
+
+

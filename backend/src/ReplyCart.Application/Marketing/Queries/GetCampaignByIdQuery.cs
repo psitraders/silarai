@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
@@ -32,3 +32,5 @@ public class GetCampaignByIdQueryHandler(IAppDbContext db)
             c.Recipients.Select(r => new CampaignRecipientDto(r.Id, r.Name, r.Phone, r.Email, r.IsSent, r.SentAt)).ToList());
     }
 }
+
+

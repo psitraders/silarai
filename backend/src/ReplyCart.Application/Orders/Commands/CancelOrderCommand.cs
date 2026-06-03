@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Enums;
@@ -38,3 +38,5 @@ public class CancelOrderHandler(IAppDbContext db, ICurrentUser currentUser)
         await db.SaveChangesAsync(cancellationToken);
     }
 }
+
+

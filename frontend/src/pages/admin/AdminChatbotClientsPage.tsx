@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Bot, Plus, ToggleLeft, ToggleRight, Trash2, Eye, Search } from 'lucide-react';
@@ -54,7 +54,7 @@ export function AdminChatbotClientsPage() {
             <Bot className="w-7 h-7 text-teal-600" /> Chatbot Clients
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            Manage external clients using ReplyCart AI chatbot on their own websites
+            Manage external clients using Silarai AI chatbot on their own websites
           </p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
@@ -261,3 +261,4 @@ function CreateClientModal({ onClose, onCreated }: { onClose: () => void; onCrea
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReplyCart.Application.Ai.Commands;
@@ -50,3 +50,5 @@ public class AiSuggestionsController(IMediator mediator) : ControllerBase
 
 public record AiSuggestRequest(Guid? LeadId, string CustomerQuestion, Guid? ProductId, string? Channel, string? ToneMode);
 public record UpdateTemplateRequest(string Name, string Content, string Category, string ToneMode, bool IsActive);
+
+

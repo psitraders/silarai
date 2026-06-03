@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using ReplyCart.Application.Common.Exceptions;
@@ -136,3 +136,5 @@ public class RegisterTenantCommandHandler(IAppDbContext db, IJwtTokenService jwt
         return role;
     }
 }
+
+

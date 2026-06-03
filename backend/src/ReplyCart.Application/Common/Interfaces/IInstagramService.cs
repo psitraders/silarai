@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public interface IInstagramService
 {
@@ -12,3 +12,5 @@ public interface IInstagramService
     /// </summary>
     Task<string?> CreatePhotoPostAsync(string imageUrl, string caption, CancellationToken ct = default);
 }
+
+

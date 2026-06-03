@@ -1,4 +1,4 @@
-using ReplyCart.Application.Common.Interfaces;
+﻿using ReplyCart.Application.Common.Interfaces;
 
 namespace ReplyCart.Infrastructure.Ai;
 
@@ -187,3 +187,5 @@ public class MockAiProvider : IAiProvider
             : "I'm here to help! Could you please share more details about what you're looking for?";
     }
 }
+
+

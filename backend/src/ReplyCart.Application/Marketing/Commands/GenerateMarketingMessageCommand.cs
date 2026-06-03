@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.Business.Queries;
 
@@ -35,3 +35,5 @@ public class GenerateMarketingMessageCommandHandler(
             cancellationToken);
     }
 }
+
+

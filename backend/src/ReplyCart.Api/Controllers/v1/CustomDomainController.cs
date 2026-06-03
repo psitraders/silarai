@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
@@ -15,7 +15,7 @@ public class CustomDomainController(
     ITenantContext tenantContext,
     ICloudflareService cloudflare) : ControllerBase
 {
-    private const string CnameTarget = "cname.replycart.app";
+    private const string CnameTarget = "cname.silarai.app";
 
     // ── GET ───────────────────────────────────────────────────────────────────
 
@@ -202,3 +202,5 @@ public class CustomDomainController(
 }
 
 public record SaveCustomDomainRequest(string? Domain);
+
+

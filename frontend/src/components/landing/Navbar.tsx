@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MessageSquareQuote, ArrowRight, Menu, X } from 'lucide-react';
 
 const DEMO_WA_LINK =
-  'https://wa.me/918849549690?text=Hi%2C%20I%27d%20like%20to%20book%20a%20demo%20of%20ReplyCart%20%F0%9F%9A%80';
+  'https://wa.me/918849549690?text=Hi%2C%20I%27d%20like%20to%20book%20a%20demo%20of%20Silarai%20%F0%9F%9A%80';
 
 interface NavLink {
   label: string;
@@ -74,7 +74,7 @@ export function Navbar() {
           <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-teal-700 transition-colors">
             <MessageSquareQuote className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-gray-900 text-[15px] tracking-tight">ReplyCart</span>
+          <span className="font-bold text-gray-900 text-[15px] tracking-tight">Silarai</span>
         </Link>
 
         {/* Desktop nav */}
@@ -192,3 +192,4 @@ export function Navbar() {
     </header>
   );
 }
+

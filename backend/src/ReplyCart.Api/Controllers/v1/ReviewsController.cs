@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
@@ -65,3 +65,5 @@ public class ReviewsController(AppDbContext db, ITenantContext tenantContext) : 
         return NoContent();
     }
 }
+
+

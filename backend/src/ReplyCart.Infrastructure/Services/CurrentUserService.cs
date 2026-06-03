@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using ReplyCart.Application.Common.Interfaces;
@@ -47,3 +47,5 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
 
     public bool IsInRole(string role) => Principal?.IsInRole(role) == true;
 }
+
+

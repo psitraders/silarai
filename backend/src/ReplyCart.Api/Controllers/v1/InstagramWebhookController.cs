@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
@@ -159,3 +159,5 @@ public class InstagramMessage
     [JsonPropertyName("text")] public string? Text { get; set; }
     [JsonPropertyName("is_echo")] public bool IsEcho { get; set; }
 }
+
+

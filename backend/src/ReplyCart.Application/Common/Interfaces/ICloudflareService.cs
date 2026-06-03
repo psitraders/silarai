@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public record CloudflareHostnameResult(
     string Id,
@@ -42,9 +42,11 @@ public interface ICloudflareService
     /// <summary>Get the status of a Cloudflare zone ("pending" | "active").</summary>
     Task<string> GetZoneStatusAsync(string zoneId, CancellationToken ct = default);
 
-    /// <summary>Add a proxied CNAME @ → cname.replycart.app inside a seller zone.</summary>
+    /// <summary>Add a proxied CNAME @ → cname.silarai.app inside a seller zone.</summary>
     Task AddApexCnameAsync(string zoneId, CancellationToken ct = default);
 
     /// <summary>Delete a Cloudflare zone (when seller removes their apex domain).</summary>
     Task DeleteZoneAsync(string zoneId, CancellationToken ct = default);
 }
+
+

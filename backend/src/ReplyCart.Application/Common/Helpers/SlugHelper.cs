@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace ReplyCart.Application.Common.Helpers;
 
@@ -48,3 +48,5 @@ public static class SlugHelper
         return slug;
     }
 }
+
+

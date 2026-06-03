@@ -1,4 +1,4 @@
-import { LandingLayout } from '../../components/landing/LandingLayout';
+﻿import { LandingLayout } from '../../components/landing/LandingLayout';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, Heart, Zap, Users } from 'lucide-react';
 
@@ -13,7 +13,7 @@ const values = [
     icon: Zap,
     color: 'bg-amber-50 text-amber-600',
     title: 'Simple by design',
-    desc: 'If your grandmother can use WhatsApp, she should be able to use ReplyCart. We obsess over simplicity so you can focus on selling.',
+    desc: 'If your grandmother can use WhatsApp, she should be able to use Silarai. We obsess over simplicity so you can focus on selling.',
   },
   {
     icon: Heart,
@@ -42,7 +42,7 @@ export function AboutPage() {
             We're on a mission to put every seller online
           </h1>
           <p className="text-lg text-gray-500 leading-relaxed">
-            ReplyCart was born from a simple frustration: millions of talented
+            Silarai was born from a simple frustration: millions of talented
             makers, bakers, jewellers, and boutique owners worldwide struggle to go online —
             it's too complicated, too expensive, or too foreign. We're changing that.
           </p>
@@ -68,7 +68,7 @@ export function AboutPage() {
                 relationship-first way people like to shop.
               </p>
               <p className="text-gray-500 leading-relaxed">
-                ReplyCart is the platform we wish existed — a beautiful storefront, an AI chat
+                Silarai is the platform we wish existed — a beautiful storefront, an AI chat
                 that knows your catalogue, and a simple order dashboard. All in one. All built
                 for how the world actually sells.
               </p>
@@ -122,7 +122,7 @@ export function AboutPage() {
             We're a small, passionate team. We've all been close to small
             businesses — through family, friends, or our own side projects — and we know
             firsthand how hard it is to compete without the right tools. That's why we
-            show up every day to build ReplyCart.
+            show up every day to build Silarai.
           </p>
           <p className="text-gray-500 leading-relaxed mb-10">
             We're not backed by big VCs with pressure to extract value. We're focused
@@ -147,3 +147,4 @@ export function AboutPage() {
     </LandingLayout>
   );
 }
+

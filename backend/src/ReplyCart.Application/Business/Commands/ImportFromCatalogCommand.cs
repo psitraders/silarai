@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Catalog;
@@ -189,3 +189,5 @@ public class ImportFromCatalogCommandHandler(
                   (skipped > 0 ? $" Skipped {skipped} already existing." : ""));
     }
 }
+
+

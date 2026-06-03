@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 /// <summary>
 /// WhatsApp Business Cloud API (graph.facebook.com) — per-tenant credentials.
@@ -45,3 +45,5 @@ public interface IWhatsAppService
     /// </summary>
     Task<Guid?> ResolveTenantByPhoneNumberIdAsync(string phoneNumberId, CancellationToken ct = default);
 }
+
+

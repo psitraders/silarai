@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 /// <summary>
 /// Abstracts Razorpay payment link creation so the Application layer stays infrastructure-free.
@@ -21,3 +21,5 @@ public interface IRazorpayService
         string   businessName,
         CancellationToken cancellationToken = default);
 }
+
+

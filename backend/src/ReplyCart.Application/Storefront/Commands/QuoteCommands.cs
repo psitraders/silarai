@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Storefront;
@@ -92,3 +92,5 @@ public class ReplyToQuoteHandler(IAppDbContext db)
         await db.SaveChangesAsync(ct);
     }
 }
+
+

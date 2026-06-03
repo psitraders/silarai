@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 /// <summary>
 /// Abstracts PayPal Invoice creation for the Application layer.
@@ -22,3 +22,5 @@ public interface IPayPalService
         string   businessName,
         CancellationToken cancellationToken = default);
 }
+
+

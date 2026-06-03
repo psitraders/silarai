@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,8 +12,8 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
 {
     private readonly string _secret = configuration["Jwt:Secret"]
         ?? throw new InvalidOperationException("JWT Secret not configured.");
-    private readonly string _issuer = configuration["Jwt:Issuer"] ?? "replycart.app";
-    private readonly string _audience = configuration["Jwt:Audience"] ?? "replycart.app";
+    private readonly string _issuer = configuration["Jwt:Issuer"] ?? "silarai.app";
+    private readonly string _audience = configuration["Jwt:Audience"] ?? "silarai.app";
     private readonly int _accessTokenExpiryMinutes = int.Parse(configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
 
     public string GenerateAccessToken(Guid userId, Guid tenantId, string email, IEnumerable<string> roles)
@@ -60,3 +60,5 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
     public bool ValidateRefreshToken(string token, string hash)
         => HashToken(token) == hash;
 }
+
+

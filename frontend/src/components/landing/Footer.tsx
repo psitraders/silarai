@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+﻿import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MessageSquareQuote } from 'lucide-react';
 
 function scrollToSection(id: string) {
@@ -66,16 +66,16 @@ export function Footer() {
               <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center">
                 <MessageSquareQuote className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-gray-900 text-[15px] tracking-tight">ReplyCart</span>
+              <span className="font-bold text-gray-900 text-[15px] tracking-tight">Silarai</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-4">
               The all-in-one selling platform for social sellers worldwide.
             </p>
             <a
-              href="mailto:support@replycart.app"
+              href="mailto:support@Silarai.app"
               className="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors"
             >
-              support@replycart.app
+              support@Silarai.app
             </a>
           </div>
 
@@ -111,7 +111,7 @@ export function Footer() {
 
         <div className="border-t border-gray-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} ReplyCart. All rights reserved.
+            © {new Date().getFullYear()} Silarai. All rights reserved.
           </p>
           <p className="text-xs text-gray-400">Made with ❤️ for sellers everywhere</p>
         </div>
@@ -119,3 +119,4 @@ export function Footer() {
     </footer>
   );
 }
+

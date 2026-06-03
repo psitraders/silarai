@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
@@ -33,3 +33,5 @@ public class SendOtpCommandHandler(IAppDbContext db, IOtpService otpService)
                 "Phone", "Could not send OTP. Please try again or contact support.")]);
     }
 }
+
+

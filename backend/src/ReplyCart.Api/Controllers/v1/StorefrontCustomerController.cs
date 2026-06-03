@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -192,3 +192,5 @@ public record SubmitQuoteRequest(
     string ItemsJson,
     string? Notes
 );
+
+

@@ -54,6 +54,6 @@ export const useAuthStore = create<AuthState>()(
 
       hasRole: (role: string) => get().user?.roles.includes(role) ?? false,
     }),
-    { name: 'replycart-auth' }
+    { name: 'silarai-auth' }
   )
 );

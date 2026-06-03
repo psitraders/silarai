@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 /// <summary>Single line-item used in owner order-notification emails.</summary>
 public record OrderNotificationItem(string Title, string? VariantInfo, int Qty, decimal UnitPrice);
@@ -10,7 +10,7 @@ public interface IEmailService
 
     /// <summary>
     /// Sends a 6-digit OTP to the given email for registration verification.
-    /// From: support@replycart.app
+    /// From: support@silarai.app
     /// </summary>
     Task SendRegistrationOtpAsync(string toEmail, string toName, string otp, CancellationToken ct = default);
 
@@ -102,3 +102,5 @@ public interface IEmailService
         string reviewUrl,
         CancellationToken ct = default);
 }
+
+

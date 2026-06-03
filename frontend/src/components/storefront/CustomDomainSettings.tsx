@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Globe, CheckCircle, Clock, XCircle, RefreshCw, Trash2, Copy, ExternalLink, Server } from 'lucide-react';
 import { customDomainApi } from '../../api/customDomain.api';
@@ -59,7 +59,7 @@ export function CustomDomainSettings() {
         </div>
         <div>
           <h2 className="font-bold text-gray-900">Custom Domain</h2>
-          <p className="text-sm text-gray-500">Point your own domain to your ReplyCart store</p>
+          <p className="text-sm text-gray-500">Point your own domain to your Silarai store</p>
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export function CustomDomainSettings() {
               <p className="font-semibold mb-1">📋 www domain detected</p>
               <p>
                 After connecting, add a <strong>CNAME record</strong> at your registrar pointing{' '}
-                <code className="bg-blue-100 px-1 rounded">www</code> → <code className="bg-blue-100 px-1 rounded">cname.replycart.app</code>.
+                <code className="bg-blue-100 px-1 rounded">www</code> → <code className="bg-blue-100 px-1 rounded">cname.Silarai.app</code>.
               </p>
             </div>
           )}
@@ -280,3 +280,4 @@ function CnameInstructions({
     </div>
   );
 }
+

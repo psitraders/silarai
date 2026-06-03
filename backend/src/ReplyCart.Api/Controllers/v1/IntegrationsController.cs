@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -596,3 +596,5 @@ public record SaveRazorpaySettingsRequest(string KeyId, string KeySecret);
 public record RazorpaySettingsResponse(bool IsConfigured, string? KeyId, string? MaskedSecret);
 public record SaveStripeRequest(string SecretKey);
 public record SavePayPalRequest(string ClientId, string ClientSecret, bool Sandbox);
+
+

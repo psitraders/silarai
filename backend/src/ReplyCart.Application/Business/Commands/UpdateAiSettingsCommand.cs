@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -29,3 +29,5 @@ public class UpdateAiSettingsCommandHandler(IAppDbContext db, ITenantContext ten
         await db.SaveChangesAsync(ct);
     }
 }
+
+

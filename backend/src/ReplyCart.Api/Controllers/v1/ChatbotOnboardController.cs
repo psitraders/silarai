@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Domain.Config;
 using ReplyCart.Domain.Enums;
@@ -171,7 +171,7 @@ public class ChatbotOnboardController(AppDbContext db) : ControllerBase
         catch { /* lead upsert is non-critical — store already created above */ }
 
         // ── Build response URLs ────────────────────────────────────────────────
-        var appBase  = "https://replycart.app";
+        var appBase  = "https://silarai.app";
         var storeUrl = $"{appBase}/store/{slug}";
         var loginUrl = $"{appBase}/auth/login";
 
@@ -208,3 +208,4 @@ public class ChatbotOnboardController(AppDbContext db) : ControllerBase
             _                                   => ("USD", "en"),
         };
 }
+

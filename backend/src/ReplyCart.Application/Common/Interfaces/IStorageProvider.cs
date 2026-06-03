@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public interface IStorageProvider
 {
@@ -6,3 +6,5 @@ public interface IStorageProvider
     Task DeleteAsync(string blobPath, CancellationToken cancellationToken = default);
     string GetPublicUrl(string blobPath);
 }
+
+

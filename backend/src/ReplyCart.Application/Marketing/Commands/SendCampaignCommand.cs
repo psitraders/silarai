@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
@@ -45,3 +45,5 @@ public class SendCampaignCommandHandler(IAppDbContext db) : IRequestHandler<Send
         return new SendCampaignResult(campaign.Id, campaign.SentCount, targets);
     }
 }
+
+

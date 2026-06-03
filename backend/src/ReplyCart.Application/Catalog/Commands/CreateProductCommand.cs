@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Helpers;
@@ -126,3 +126,5 @@ public class CreateProductCommandHandler(IAppDbContext db, ITenantContext tenant
         return product.Id;
     }
 }
+
+

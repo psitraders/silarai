@@ -1,8 +1,8 @@
 {
-  "name": "ReplyCart",
-  "short_name": "ReplyCart",
+  "name": "Silarai",
+  "short_name": "Silarai",
   "id": "/",
-  "description": "Turn WhatsApp Chats Into Orders — manage leads, products and marketing from one dashboard.",
+  "description": "Turn WhatsApp Chats Into Orders — manage leads, products and marketing from one dashboard. Powered by Silarai.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

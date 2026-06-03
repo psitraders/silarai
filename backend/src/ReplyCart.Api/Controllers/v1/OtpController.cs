@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using ReplyCart.Application.Auth.Commands;
@@ -62,7 +62,7 @@ public class OtpController(IMediator mediator, IOtpService otpService, IEmailSer
         cache.Set(EmailOtpPrefix + email, otp, OtpTtl);
         cache.Set(cooldownKey, true, TimeSpan.FromSeconds(60));
 
-        // Send email (from support@replycart.app)
+        // Send email (from support@silarai.app)
         var name = req.Name?.Trim() ?? "there";
         try
         {
@@ -188,3 +188,5 @@ public record SendOtpRequest(string Phone);
 public record VerifyOtpRequest(string Phone, string Otp, string? DeviceInfo = null);
 public record SendEmailOtpRequest(string Email, string? Name = null);
 public record VerifyEmailOtpRequest(string Email, string Otp);
+
+

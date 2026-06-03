@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Infrastructure.Persistence;
 
@@ -6,7 +6,7 @@ namespace ReplyCart.Api.Controllers.v1;
 
 /// <summary>
 /// Public endpoint — resolves a custom domain to a store slug.
-/// Called by the frontend SPA when it detects it is running on a non-replycart.app hostname.
+/// Called by the frontend SPA when it detects it is running on a non-silarai.app hostname.
 /// </summary>
 [ApiController]
 [Route("api/v1/public")]
@@ -36,3 +36,4 @@ public class PublicDomainController(AppDbContext db) : ControllerBase
         return Ok(new { slug = tenant.Slug, storeName = tenant.Name });
     }
 }
+

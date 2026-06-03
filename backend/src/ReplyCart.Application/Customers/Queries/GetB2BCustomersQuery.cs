@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -53,3 +53,5 @@ public class GetB2BCustomersQueryHandler(IAppDbContext db, ITenantContext tenant
         return result;
     }
 }
+
+

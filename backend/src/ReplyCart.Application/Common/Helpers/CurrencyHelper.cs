@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Helpers;
+﻿namespace ReplyCart.Application.Common.Helpers;
 
 /// <summary>
 /// Utilities for converting between decimal amounts and the smallest currency subunit
@@ -33,3 +33,5 @@ public static class CurrencyHelper
     public static decimal FromSubunits(long subunits, string currency)
         => subunits / (decimal)GetSubunitMultiplier(currency);
 }
+
+

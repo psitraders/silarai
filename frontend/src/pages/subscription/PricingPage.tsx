@@ -440,7 +440,7 @@ export function PricingPage() {
                 Get started free
               </button>
               <a
-                href="https://wa.me/910000000000?text=Hi! I'd like to know more about ReplyCart plans."
+                href="https://wa.me/910000000000?text=Hi! I'd like to know more about Silarai plans."
                 target="_blank"
                 rel="noreferrer"
                 className="px-7 py-3 border border-white/30 text-white rounded-2xl font-semibold hover:bg-white/10 transition flex items-center gap-2"
@@ -454,3 +454,4 @@ export function PricingPage() {
     </div>
   );
 }
+

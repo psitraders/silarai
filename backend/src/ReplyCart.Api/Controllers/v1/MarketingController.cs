@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReplyCart.Application.Marketing.Commands;
@@ -98,3 +98,5 @@ public record SocialPostRequest(string ProductName, string? ProductDescription, 
 public record ProductDescriptionRequest(string ProductName, string? Category, string? Features, string Tone, string? BusinessName, string? Language = "English");
 public record ReelScriptRequest(string ProductName, string? ProductDescription, int DurationSeconds, string Tone, string? BusinessName);
 public record GenerateMessageRequest(string Goal, string Tone, string? ExtraContext);
+
+

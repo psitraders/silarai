@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import apiClient from './client';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
@@ -28,9 +28,9 @@ export interface LandingPageContent {
 
 export const DEFAULT_CONTENT: LandingPageContent = {
   hero: {
-    badge:        '🚀 500+ boutiques & sellers trust ReplyCart',
+    badge:        '🚀 500+ boutiques & sellers trust Silarai',
     headline:     'Turn WhatsApp DMs into a Full Online Store — in 10 Minutes',
-    subheadline:  'Stop taking orders manually. ReplyCart gives you a shareable store link, AI-powered replies, order tracking, and campaigns — all in one place.',
+    subheadline:  'Stop taking orders manually. Silarai gives you a shareable store link, AI-powered replies, order tracking, and campaigns — all in one place.',
     ctaPrimary:   'Start Free — No Card Needed',
     ctaSecondary: 'See Live Demo',
   },
@@ -54,7 +54,7 @@ export const DEFAULT_CONTENT: LandingPageContent = {
     { step: '3', title: 'Manage everything in one place', description: 'Convert inquiries to orders, track delivery, send campaigns and grow — all from one dashboard.' },
   ],
   testimonials: [
-    { name: "Priya Sharma", business: "Priya's Sarees, Mumbai", quote: "ReplyCart helped me manage 10x more orders without hiring extra staff. It's honestly a game changer for my boutique.", avatar: 'P' },
+    { name: "Priya Sharma", business: "Priya's Sarees, Mumbai", quote: "Silarai helped me manage 10x more orders without hiring extra staff. It's honestly a game changer for my boutique.", avatar: 'P' },
     { name: "Rahul Mehta",  business: "FreshBites Co., Pune",   quote: "The AI reply feature saves me 2 hours every single day. My customers love the fast, personalised responses.",         avatar: 'R' },
     { name: "Anjali Patel", business: "Craft House, Surat",      quote: "Finally a tool built for Indian sellers. The WhatsApp integration and storefront are exactly what I needed.",          avatar: 'A' },
   ],
@@ -89,3 +89,4 @@ export const landingApi = {
   updateContent: (content: LandingPageContent) =>
     apiClient.put('/admin/landing-content', { contentJson: JSON.stringify(content) }),
 };
+

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -185,7 +185,7 @@ export function RegisterPage() {
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
             <MessageSquareQuote className="w-5 h-5 text-white" />
           </div>
-          <span className="text-white font-bold text-lg">ReplyCart</span>
+          <span className="text-white font-bold text-lg">Silarai</span>
         </div>
 
         <div>
@@ -238,7 +238,7 @@ export function RegisterPage() {
           {/* Heading (desktop) */}
           <div className="hidden lg:block mb-5">
             <h1 className="text-2xl font-bold text-slate-900">Start selling smarter</h1>
-            <p className="text-slate-500 mt-1 text-sm">Create your ReplyCart store in 2 minutes</p>
+            <p className="text-slate-500 mt-1 text-sm">Create your Silarai store in 2 minutes</p>
           </div>
 
           {/* Step indicator */}
@@ -509,3 +509,4 @@ export function RegisterPage() {
     </div>
   );
 }
+

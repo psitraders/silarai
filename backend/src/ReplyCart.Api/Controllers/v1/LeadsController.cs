@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReplyCart.Application.Leads.Commands;
@@ -65,3 +65,5 @@ public record CreateLeadRequest(
 public record UpdateLeadStatusRequest(LeadStatus Status, DateTime? FollowUpDate);
 public record AddLeadNoteRequest(string Content);
 public record ConvertLeadRequest(List<OrderItemInput> Items, string? Notes);
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Customers;
@@ -147,3 +147,5 @@ public class StorefrontLoginHandler(IAppDbContext db, IJwtTokenService jwt)
             customer.IsB2BCustomer, customer.IsB2BApproved, customer.LoyaltyPoints);
     }
 }
+
+

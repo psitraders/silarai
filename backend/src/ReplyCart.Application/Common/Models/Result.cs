@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Models;
+﻿namespace ReplyCart.Application.Common.Models;
 
 public class Result<T>
 {
@@ -49,3 +49,5 @@ public class Result
     public static Result Success() => new(true);
     public static Result Failure(string error) => new(false, error);
 }
+
+

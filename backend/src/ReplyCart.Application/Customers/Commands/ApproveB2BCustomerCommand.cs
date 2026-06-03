@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
@@ -31,3 +31,5 @@ public class ApproveB2BCustomerCommandHandler(IAppDbContext db, ITenantContext t
         await db.SaveChangesAsync(ct);
     }
 }
+
+

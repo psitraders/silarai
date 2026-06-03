@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+﻿import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import en from './locales/en.json';
@@ -14,7 +14,7 @@ import bn from './locales/bn.json';
 import ta from './locales/ta.json';
 import zh from './locales/zh.json';
 
-const LANG_KEY = 'replycart_lang';
+const LANG_KEY = 'Silarai_lang';
 const savedLang = localStorage.getItem(LANG_KEY) ?? 'en';
 
 i18n
@@ -50,3 +50,4 @@ export function setAppLanguage(lang: string) {
 document.documentElement.lang = savedLang;
 
 export default i18n;
+

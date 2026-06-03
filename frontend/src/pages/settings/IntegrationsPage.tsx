@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -266,7 +266,7 @@ function WhatsAppCard({ configured, data }: { configured: boolean; data?: Integr
               {[
                 { n: 1, text: 'Click "Connect with Facebook" below' },
                 { n: 2, text: 'Log in with your Facebook account & select your WhatsApp Business number (or register a new one)' },
-                { n: 3, text: 'Done! ReplyCart will automatically capture all credentials — no manual copy-paste' },
+                { n: 3, text: 'Done! Silarai will automatically capture all credentials — no manual copy-paste' },
               ].map(s => (
                 <div key={s.n} className="flex gap-3 items-start">
                   <div className="w-5 h-5 rounded-full bg-green-600 text-white text-[10px] font-extrabold flex items-center justify-center flex-shrink-0 mt-0.5">{s.n}</div>
@@ -1167,3 +1167,4 @@ export function IntegrationsPage() {
     </div>
   );
 }
+

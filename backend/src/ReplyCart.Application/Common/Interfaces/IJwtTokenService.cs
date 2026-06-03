@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public interface IJwtTokenService
 {
@@ -7,3 +7,5 @@ public interface IJwtTokenService
     string HashToken(string token);
     bool ValidateRefreshToken(string token, string hash);
 }
+
+

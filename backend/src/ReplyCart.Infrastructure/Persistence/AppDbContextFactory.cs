@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -36,3 +36,5 @@ public class NullCurrentUser : ICurrentUser
     public bool IsAuthenticated => false;
     public bool IsInRole(string role) => false;
 }
+
+

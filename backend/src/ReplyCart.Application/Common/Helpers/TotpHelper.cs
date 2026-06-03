@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 
 namespace ReplyCart.Application.Common.Helpers;
 
@@ -105,3 +105,5 @@ public static class TotpHelper
         return [.. output];
     }
 }
+
+

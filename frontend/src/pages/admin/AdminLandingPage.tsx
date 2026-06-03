@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, Save, RefreshCw, Eye } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
@@ -181,7 +181,7 @@ function TestimonialsEditor({ data, onChange }: { data: TestimonialItem[]; onCha
             <input value={t.business} onChange={e => update(i, 'business', e.target.value)}
               placeholder="Business name, City" className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500" />
             <textarea value={t.quote} onChange={e => update(i, 'quote', e.target.value)}
-              placeholder="What they said about ReplyCart..." rows={2}
+              placeholder="What they said about Silarai..." rows={2}
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
           </div>
         ))}
@@ -284,3 +284,4 @@ export function AdminLandingPage() {
     </div>
   );
 }
+

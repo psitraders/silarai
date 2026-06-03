@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -182,3 +182,5 @@ public record UpdateProductRequest(
     ProductStatus Status, bool IsFeatured, int? StockQuantity,
     Guid? CategoryId, string? Attributes, List<string> Tags,
     IEnumerable<VariantRequest>? Variants = null);
+
+

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Ai;
 
@@ -27,3 +27,5 @@ public class CreateAiTemplateHandler(IAppDbContext db, ITenantContext tenantCont
         return template.Id;
     }
 }
+
+

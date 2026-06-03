@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -176,3 +176,5 @@ public class SmartMergeCustomersCommandHandler(IAppDbContext db, ITenantContext 
         return new string(phone.Where(char.IsDigit).ToArray());
     }
 }
+
+

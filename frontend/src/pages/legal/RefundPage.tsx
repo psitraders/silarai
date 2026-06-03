@@ -1,4 +1,4 @@
-import { LandingLayout } from '../../components/landing/LandingLayout';
+﻿import { LandingLayout } from '../../components/landing/LandingLayout';
 import { Link } from 'react-router-dom';
 import { CheckCircle, XCircle } from 'lucide-react';
 
@@ -25,7 +25,7 @@ export function RefundPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
 
           <div className="bg-teal-50 border border-teal-100 rounded-xl p-5 mb-10 text-sm text-teal-800 leading-relaxed">
-            <strong>Our goal is fair and transparent pricing.</strong> We want you to feel confident trying ReplyCart. If something isn't right, reach out to us and we'll do our best to help.
+            <strong>Our goal is fair and transparent pricing.</strong> We want you to feel confident trying Silarai. If something isn't right, reach out to us and we'll do our best to help.
           </div>
 
           {/* Quick summary */}
@@ -72,7 +72,7 @@ export function RefundPage() {
           </Section>
 
           <Section title="4. Service disruptions">
-            <p>If ReplyCart experiences a significant outage or service disruption that materially impacts your ability to use the platform for more than 24 continuous hours, you may be eligible for a service credit.</p>
+            <p>If Silarai experiences a significant outage or service disruption that materially impacts your ability to use the platform for more than 24 continuous hours, you may be eligible for a service credit.</p>
             <p>Credits are calculated as a pro-rated amount for the affected period and applied to your next billing cycle. Credits are not transferable and have no cash value.</p>
           </Section>
 
@@ -82,8 +82,8 @@ export function RefundPage() {
 
           <Section title="6. How to request a refund">
             <p>To request a refund, email us at{' '}
-              <a href="mailto:support@replycart.app" className="text-teal-600 hover:underline">
-                support@replycart.app
+              <a href="mailto:support@Silarai.app" className="text-teal-600 hover:underline">
+                support@Silarai.app
               </a>{' '}
               with:
             </p>
@@ -106,8 +106,8 @@ export function RefundPage() {
 
           <div className="mt-10 p-5 bg-gray-50 rounded-xl border border-gray-100 text-sm text-gray-500">
             <p className="mb-2">Have a billing issue or refund request?</p>
-            <a href="mailto:support@replycart.app" className="text-teal-600 hover:underline font-medium">
-              support@replycart.app
+            <a href="mailto:support@Silarai.app" className="text-teal-600 hover:underline font-medium">
+              support@Silarai.app
             </a>
             {' '}or{' '}
             <Link to="/contact" className="text-teal-600 hover:underline font-medium">
@@ -119,3 +119,4 @@ export function RefundPage() {
     </LandingLayout>
   );
 }
+

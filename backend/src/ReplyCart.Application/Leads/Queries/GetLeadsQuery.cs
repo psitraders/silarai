@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.Common.Models;
@@ -73,3 +73,5 @@ public class GetLeadsQueryHandler(IAppDbContext db, ITenantContext tenantContext
         return await PagedList<LeadDto>.CreateAsync(projected, request.Page, request.PageSize);
     }
 }
+
+

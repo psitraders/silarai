@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Enums;
 using ReplyCart.Domain.Leads;
@@ -50,3 +50,5 @@ public class CreateLeadCommandHandler(IAppDbContext db, ITenantContext tenantCon
         return lead.Id;
     }
 }
+
+

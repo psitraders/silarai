@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Marketing;
@@ -161,3 +161,5 @@ public class SendWaCampaignHandler(IAppDbContext db, IWhatsAppService whatsApp)
         );
     }
 }
+
+

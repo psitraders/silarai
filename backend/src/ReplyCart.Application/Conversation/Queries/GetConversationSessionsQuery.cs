@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Conversation;
@@ -75,3 +75,5 @@ public class GetConversationSessionsQueryHandler(IAppDbContext db, ITenantContex
         return new ConversationSessionsResult(items, total, request.Page, request.PageSize);
     }
 }
+
+

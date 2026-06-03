@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Helpers;
 using ReplyCart.Application.Common.Interfaces;
@@ -26,3 +26,5 @@ public class VerifyTotpCommandHandler(IAppDbContext db)
         await db.SaveChangesAsync(cancellationToken);
     }
 }
+
+

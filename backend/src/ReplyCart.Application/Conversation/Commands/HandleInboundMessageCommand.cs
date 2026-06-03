@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.Rag;
@@ -277,3 +277,5 @@ public class HandleInboundMessageHandler(
     private static string TruncateForLog(string text, int maxLen = 200)
         => text.Length <= maxLen ? text : text[..maxLen] + "…";
 }
+
+

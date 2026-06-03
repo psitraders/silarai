@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.Rag;
@@ -160,3 +160,5 @@ public class ResetSimulatorSessionCommandHandler(
         await db.SaveChangesAsync(ct);
     }
 }
+
+

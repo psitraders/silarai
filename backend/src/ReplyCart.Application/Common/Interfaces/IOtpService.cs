@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Common.Interfaces;
+﻿namespace ReplyCart.Application.Common.Interfaces;
 
 public interface IOtpService
 {
@@ -14,3 +14,5 @@ public interface IOtpService
     /// </summary>
     Task<bool> VerifyOtpAsync(string phone, string otp, CancellationToken ct = default);
 }
+
+

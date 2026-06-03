@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 
@@ -35,3 +35,5 @@ public class GetDuplicateCustomersQueryHandler(IAppDbContext db, ITenantContext 
         return duplicates;
     }
 }
+
+

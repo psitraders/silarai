@@ -1,4 +1,4 @@
-using BCrypt.Net;
+﻿using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +18,7 @@ namespace ReplyCart.Infrastructure.Persistence;
 //
 //  Credentials
 //  ──────────────────────────────────────────────────────────────────────────
-//  Admin (SuperAdmin)       admin@replycart.app      Admin@2024
+//  Admin (SuperAdmin)       admin@silarai.app      Admin@2024
 //  Store 1 – Boutique       owner@priyaboutique.in   Demo@1234
 //  Store 2 – Bakery         hello@sugarcrumbs.in     Demo@1234
 //  Store 3 – Jewelry        hello@aradhyajewels.in   Demo@1234
@@ -102,7 +102,7 @@ public static class DataSeeder
         await SeedStore3_JewelryAsync(db, logger);
 
         logger.LogInformation("=== DataSeeder complete ===");
-        logger.LogInformation("  Admin:    admin@replycart.app      / Admin@2024");
+        logger.LogInformation("  Admin:    admin@silarai.app      / Admin@2024");
         logger.LogInformation("  Store 1:  owner@priyaboutique.in   / Demo@1234  → /priya-boutique");
         logger.LogInformation("  Store 2:  hello@sugarcrumbs.in     / Demo@1234  → /sugar-crumbs");
         logger.LogInformation("  Store 3:  hello@aradhyajewels.in   / Demo@1234  → /aradhya-jewels");
@@ -158,8 +158,8 @@ public static class DataSeeder
         logger.LogInformation("Seeding admin tenant...");
         db.Tenants.Add(new Tenant
         {
-            Id = AdminTenantId, Name = "ReplyCart System", Slug = "admin-system",
-            ContactEmail = "system@replycart.app", IsActive = true, IsEmailVerified = true,
+            Id = AdminTenantId, Name = "Silarai System", Slug = "admin-system",
+            ContactEmail = "system@silarai.app", IsActive = true, IsEmailVerified = true,
             CreatedAt = DateTime.UtcNow,
         });
         db.Roles.Add(new Role
@@ -170,7 +170,7 @@ public static class DataSeeder
         db.Users.Add(new User
         {
             Id = AdminUserId, TenantId = AdminTenantId,
-            Name = "ReplyCart Admin", Email = "admin@replycart.app",
+            Name = "Silarai Admin", Email = "admin@silarai.app",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@2024"),
             IsActive = true, IsEmailVerified = true, CreatedAt = DateTime.UtcNow,
         });
@@ -665,3 +665,4 @@ public static class DataSeeder
         logger.LogInformation("Store 3 (Aradhya Jewels) seeded.");
     }
 }
+

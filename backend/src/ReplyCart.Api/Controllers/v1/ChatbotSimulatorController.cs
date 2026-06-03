@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReplyCart.Application.Conversation.Commands;
@@ -58,3 +58,5 @@ public record SimulateRequest(
     string? Channel    = "WhatsApp",
     string? SenderName = "You"
 );
+
+

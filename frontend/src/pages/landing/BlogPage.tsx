@@ -1,4 +1,4 @@
-import { LandingLayout } from '../../components/landing/LandingLayout';
+﻿import { LandingLayout } from '../../components/landing/LandingLayout';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Rss } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export function BlogPage() {
             <Rss className="w-6 h-6 text-teal-600" />
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-5">
-            The ReplyCart Blog
+            The Silarai Blog
           </h1>
           <p className="text-lg text-gray-500 leading-relaxed">
             Tips, guides, and stories to help sellers worldwide grow their business online.
@@ -60,7 +60,7 @@ export function BlogPage() {
               Drop us your email and we'll let you know when our first articles go live.
             </p>
             <a
-              href="mailto:support@replycart.app?subject=Notify me when the blog is live"
+              href="mailto:support@Silarai.app?subject=Notify me when the blog is live"
               className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
             >
               Notify me <ArrowRight className="w-4 h-4" />
@@ -84,3 +84,4 @@ export function BlogPage() {
     </LandingLayout>
   );
 }
+

@@ -1,4 +1,4 @@
-namespace ReplyCart.Application.Import;
+﻿namespace ReplyCart.Application.Import;
 
 // ── Preview (fetch without saving) ───────────────────────────────────────────
 
@@ -57,3 +57,5 @@ public class ImportedProductDto
     /// <summary>True = user has checked this row for import.</summary>
     public bool Selected { get; set; } = true;
 }
+
+

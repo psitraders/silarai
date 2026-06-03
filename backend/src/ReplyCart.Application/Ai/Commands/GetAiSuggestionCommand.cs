@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Ai;
@@ -87,3 +87,5 @@ public class GetAiSuggestionCommandHandler(IAppDbContext db, ITenantContext tena
         return new AiSuggestionResult(suggestion.Id, reply, usedProvider);
     }
 }
+
+

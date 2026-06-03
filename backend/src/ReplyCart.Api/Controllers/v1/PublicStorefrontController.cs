@@ -38,11 +38,11 @@ public class PublicStorefrontController(
         .Replace(">", "&gt;").Replace("\"", "&quot;").Replace("'", "&apos;");
 
     /// <summary>Base URL for the merchant dashboard — always the main ReplyCart app.</summary>
-    private string DashboardUrl => (configuration["FrontendUrl"] ?? "https://replycart.app").TrimEnd('/');
+    private string DashboardUrl => (configuration["FrontendUrl"] ?? "https://silarai.app").TrimEnd('/');
 
     /// <summary>
     /// Returns the storefront base URL for a given slug, respecting the tenant's custom domain.
-    /// Custom domain takes priority; falls back to https://replycart.app/store/{slug}.
+    /// Custom domain takes priority; falls back to https://silarai.app/store/{slug}.
     /// </summary>
     private async Task<string> StorefrontBaseUrlAsync(string slug, CancellationToken ct)
     {
@@ -194,7 +194,7 @@ public class PublicStorefrontController(
 
         // Fallback icons live on the Vercel frontend â€” must be absolute URLs
         // because this manifest is served from the Azure API domain, not Vercel.
-        var frontendUrl = (configuration["FrontendUrl"] ?? "https://replycart.app").TrimEnd('/');
+        var frontendUrl = (configuration["FrontendUrl"] ?? "https://silarai.app").TrimEnd('/');
 
         // Build icons array â€” use store logo if available, else fall back to ReplyCart PNGs
         object[] icons;
@@ -1871,5 +1871,7 @@ public record AiCartItem(
     [property: System.Text.Json.Serialization.JsonPropertyName("qty")]        int Qty,
     [property: System.Text.Json.Serialization.JsonPropertyName("unit_price")] decimal UnitPrice
 );
+
+
 
 
