@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, Save, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Plus, Trash2, Save, RefreshCw, Eye } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { PageLoader } from '../../components/ui/Spinner';
