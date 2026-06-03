@@ -18,6 +18,24 @@ const processQueue = (error: unknown, token: string | null) => {
   failedQueue = [];
 };
 
+/**
+ * Wipes ALL auth state (both individual keys AND the zustand persisted store)
+ * then navigates to /login.
+ *
+ * Without clearing 'replycart-auth', zustand rehydrates isAuthenticated=true
+ * on the next page load and GuestGuard immediately bounces the user back to
+ * /dashboard — causing the login ↔ dashboard redirect loop seen after every
+ * backend restart (when the DB refresh tokens are invalidated).
+ */
+function forceLogout() {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  // Clear the entire zustand persist snapshot so isAuthenticated resets to false
+  localStorage.removeItem('replycart-auth');
+  // Use replace so the broken page isn't in browser history
+  window.location.replace('/login');
+}
+
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem('accessToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -44,7 +62,8 @@ apiClient.interceptors.response.use(
 
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
-        window.location.href = '/login';
+        // No refresh token at all — clear everything and go to login
+        forceLogout();
         return Promise.reject(error);
       }
 
@@ -56,10 +75,10 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
+        // Refresh token rejected (e.g. backend restarted, token rotated, expired)
+        // Must clear zustand persist or isAuthenticated stays true → redirect loop
         processQueue(refreshError, null);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        forceLogout();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

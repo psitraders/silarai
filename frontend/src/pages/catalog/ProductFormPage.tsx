@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Save, Upload, Trash2, Star, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, Star, Plus, X, Sparkles, Package, Building2 } from 'lucide-react';
+import { AiDescriptionPanel } from '../../components/ai/AiDescriptionPanel';
+import { WholesaleTiersEditor } from '../../components/catalog/WholesaleTiersEditor';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -189,9 +191,20 @@ export function ProductFormPage() {
     queryFn: catalogApi.getCategories,
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: { status: 'Draft', isFeatured: false },
   });
+
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'wholesale'>('details');
+
+  const watchedStock = watch('stockQuantity');
+  const watchedStatus = watch('status');
+  // Show a hint when the store owner sets stock to 0 while the product is Active
+  const willAutoOutOfStock =
+    watchedStatus === 'Active' &&
+    watchedStock !== '' &&
+    Number(watchedStock) <= 0;
 
   useEffect(() => {
     if (product) {
@@ -242,6 +255,7 @@ export function ProductFormPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['products'] });
+      if (id) qc.invalidateQueries({ queryKey: ['product', id] });
       navigate('/catalog/products');
     },
   });
@@ -259,17 +273,19 @@ export function ProductFormPage() {
 
   // ── Image upload ─────────────────────────────────────────────────────────────
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !id) return;
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length || !id) return;
     setUploadingImage(true);
     setImageError(null);
     try {
-      const form = new FormData();
-      form.append('file', file);
-      const { data: newImage } = await apiClient.post(`/products/${id}/images`, form, {
-        headers: { 'Content-Type': undefined },
-      });
-      setLocalImages(prev => [...prev, newImage]);
+      for (const file of files) {
+        const form = new FormData();
+        form.append('file', file);
+        const { data: newImage } = await apiClient.post(`/products/${id}/images`, form, {
+          headers: { 'Content-Type': undefined },
+        });
+        setLocalImages(prev => [...prev, newImage]);
+      }
     } catch (err: any) {
       setImageError(err?.response?.data?.errors?.[0] ?? 'Upload failed. Please try again.');
     } finally {
@@ -307,6 +323,7 @@ export function ProductFormPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
+      {/* Header */}
       <div className="flex items-center gap-4">
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-slate-100">
           <ArrowLeft className="w-5 h-5 text-slate-600" />
@@ -317,24 +334,111 @@ export function ProductFormPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(v => mutation.mutate(v))} className="space-y-6">
+      {/* Tabs — only when editing an existing product */}
+      {isEdit && (
+        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+          <button
+            type="button"
+            onClick={() => setActiveTab('details')}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'details' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Package className="w-3.5 h-3.5" /> Product Details
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('wholesale')}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'wholesale' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5" /> B2B Wholesale
+          </button>
+        </div>
+      )}
+
+      {/* ── B2B Wholesale tab ── */}
+      {isEdit && activeTab === 'wholesale' && id && (
+        <div className="space-y-4">
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-700">
+            <p className="font-semibold mb-0.5">Wholesale / Quantity-break Pricing</p>
+            <p className="text-xs text-indigo-600">
+              Set tiered prices for B2B buyers. These override the standard price when a buyer
+              orders within the specified quantity range on your storefront.
+            </p>
+          </div>
+          <WholesaleTiersEditor productId={id} />
+        </div>
+      )}
+
+      {/* ── Product Details form (hidden when on wholesale tab) ── */}
+      <form
+        onSubmit={handleSubmit(v => mutation.mutate(v))}
+        className={`space-y-6 ${isEdit && activeTab === 'wholesale' ? 'hidden' : ''}`}
+      >
         {/* Basic Info */}
         <Card>
           <h2 className="font-semibold text-slate-900 mb-4">Basic Info</h2>
           <div className="space-y-4">
             <Input label="Product Title *" error={errors.title?.message} {...register('title', { required: 'Title is required' })} />
-            <Textarea label="Description" rows={4} {...register('description')} />
+
+            {/* Description + AI panel */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-medium text-slate-700">Description</label>
+                <button
+                  type="button"
+                  onClick={() => setShowAiPanel(v => !v)}
+                  disabled={!watch('title')?.trim()}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-teal-500 to-violet-500 text-white hover:from-teal-600 hover:to-violet-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {showAiPanel ? 'Hide AI' : 'Write with AI'}
+                </button>
+              </div>
+              <Textarea rows={4} {...register('description')} />
+              {!watch('title')?.trim() && (
+                <p className="text-xs text-slate-400 mt-1">Enter a product title to unlock AI suggestions.</p>
+              )}
+
+              {showAiPanel && watch('title')?.trim() && (
+                <AiDescriptionPanel
+                  productTitle={watch('title')}
+                  onSelect={text => {
+                    setValue('description', text, { shouldDirty: true });
+                  }}
+                  onClose={() => setShowAiPanel(false)}
+                />
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <Input label="Base Price (₹) *" type="number" step="0.01" error={errors.basePrice?.message} {...register('basePrice', { required: 'Price is required', min: 0 })} />
               <Input label="Discounted Price (₹)" type="number" step="0.01" {...register('discountedPrice')} />
             </div>
-            <Input
-              label="Stock Quantity"
-              type="number"
-              min={0}
-              placeholder={variants.length > 0 ? 'Managed per variant below' : undefined}
-              {...register('stockQuantity', { valueAsNumber: false })}
-            />
+            <div>
+              <Input
+                label="Stock Quantity"
+                type="number"
+                min={0}
+                disabled={variants.length > 0}
+                placeholder={variants.length > 0 ? 'Managed per variant below' : undefined}
+                {...register('stockQuantity', { valueAsNumber: true })}
+              />
+              {variants.length > 0 && (
+                <p className="mt-1 text-xs text-slate-400">
+                  Stock is managed individually per variant below.
+                </p>
+              )}
+              {variants.length === 0 && willAutoOutOfStock && (
+                <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                  ⚠️ Stock is 0 — this product will automatically be marked <strong>Out of Stock</strong> when saved.
+                </p>
+              )}
+              {variants.length === 0 && !willAutoOutOfStock && (watchedStock === '' || watchedStock === null) && (
+                <p className="mt-1 text-xs text-slate-400">Leave blank for unlimited stock (no tracking).</p>
+              )}
+            </div>
           </div>
         </Card>
 
@@ -346,7 +450,16 @@ export function ProductFormPage() {
               <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{variants.length} option{variants.length !== 1 ? 's' : ''}</span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mb-4">Add size, color, or any other options customers can choose from.</p>
+          <p className="text-xs text-slate-400 mb-2">Add size, color, or any other options customers can choose from.</p>
+
+          {/* Red ordering rule */}
+          <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 mb-4">
+            <span className="text-red-500 text-sm leading-none mt-0.5">⚠️</span>
+            <p className="text-xs text-red-600 font-medium leading-relaxed">
+              Always add size variants in <strong>increasing order</strong> — e.g. XS → S → M → L → XL → XXL. The first variant is shown as the default on your storefront and its stock is tracked separately.
+            </p>
+          </div>
+
           <VariantEditor variants={variants} onChange={setVariants} />
         </Card>
 
@@ -378,7 +491,7 @@ export function ProductFormPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-slate-900">Product Images</h2>
               <div>
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
                 <Button type="button" variant="outline" size="sm" loading={uploadingImage} onClick={() => fileInputRef.current?.click()}>
                   <Upload className="w-4 h-4 mr-2" /> Upload Image
                 </Button>
@@ -441,6 +554,7 @@ export function ProductFormPage() {
 
         {saveError && <p className="text-sm text-red-500">{saveError}</p>}
       </form>
+
     </div>
   );
 }

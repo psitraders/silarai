@@ -31,7 +31,7 @@ export interface SaveCouponDto {
 
 export const couponsApi = {
   getAll: () => apiClient.get<CouponDto[]>('/coupons').then(r => r.data),
-  create: (data: SaveCouponDto) => apiClient.post('/coupons', data),
+  create: (data: SaveCouponDto) => apiClient.post<{ id: string }>('/coupons', data).then(r => r.data),
   update: (id: string, data: SaveCouponDto) => apiClient.put(`/coupons/${id}`, data),
   delete: (id: string) => apiClient.delete(`/coupons/${id}`),
 };

@@ -59,6 +59,24 @@ body {
 .theme-store-panel { background-color: var(--rc-primary-bg); }
 .theme-store-text  { color: var(--rc-primary-text); }
 
+/* ── Shimmer animation for skeleton loaders ──────────────────────────── */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* ── Storefront hero tag fade-in-up ──────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hide scrollbar (for horizontal scroll strips) ───────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
 /* ── Scrollbar ───────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;

@@ -75,7 +75,33 @@ export const marketingApi = {
     platform: string;
     tone: string;
     businessName?: string;
+    language?: string;
   }) => apiClient.post<SocialPostResult>('/marketing/social-post', data).then(r => r.data),
+
+  generateProductDescription: (data: {
+    productName: string;
+    category?: string;
+    features?: string;
+    tone: string;
+    businessName?: string;
+    language?: string;
+  }) => apiClient.post<{ whatsAppDesc: string; instagramDesc: string; tags: string }>('/marketing/product-description', data).then(r => r.data),
+
+  generateReelScript: (data: {
+    productName: string;
+    productDescription?: string;
+    durationSeconds: number;
+    tone: string;
+    businessName?: string;
+  }) => apiClient.post<{ script: string }>('/marketing/reel-script', data).then(r => r.data),
+
+  generatePoster: (data: {
+    productName: string;
+    productDescription?: string;
+    platform: string;
+    tone: string;
+    businessName?: string;
+  }) => apiClient.post<{ imageUrl: string | null; error?: string }>('/marketing/generate-poster', data).then(r => r.data),
 
   generateMarketingMessage: (data: {
     goal: string;

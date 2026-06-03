@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Check, Zap, Crown, Star, ArrowRight, ShieldCheck, Calendar,
@@ -28,6 +28,13 @@ interface Plan {
   allowsAiSuggestions: boolean;
 }
 
+interface PendingRequest {
+  id: string;
+  planName: string;
+  planSlug: string;
+  isAnnual: boolean;
+}
+
 interface Subscription {
   hasSubscription: boolean;
   status: string;
@@ -39,6 +46,7 @@ interface Subscription {
   daysRemaining?: number;
   isExpired: boolean;
   plan?: Plan;
+  pendingRequest?: PendingRequest;
 }
 
 const PLAN_META: Record<string, { icon: React.ElementType; color: string; bg: string; border: string; popular?: boolean; badge?: string }> = {
@@ -85,7 +93,8 @@ export function SubscriptionPage() {
 
   if (subLoading || plansLoading) return <PageLoader />;
 
-  const currentPlanSlug = sub?.planSlug ?? 'basic';
+  const currentPlanSlug  = sub?.planSlug ?? 'basic';
+  const pendingRequest   = sub?.pendingRequest;
 
   return (
     <div className="space-y-8 max-w-4xl">
@@ -100,8 +109,23 @@ export function SubscriptionPage() {
         <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-2xl p-4">
           <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold text-green-900 text-sm">Plan selected!</p>
+            <p className="font-semibold text-green-900 text-sm">Request sent!</p>
             <p className="text-green-700 text-sm mt-0.5">{success}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Pending request banner */}
+      {pendingRequest && !success && (
+        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+          <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-amber-900 text-sm">
+              {pendingRequest.planName} plan — awaiting admin approval
+            </p>
+            <p className="text-amber-700 text-sm mt-0.5">
+              Your upgrade request is being reviewed. We'll activate it shortly and notify you.
+            </p>
           </div>
         </div>
       )}
@@ -126,8 +150,8 @@ export function SubscriptionPage() {
               <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
                 {sub.status === 'Trial'
-                  ? `Trial ends ${new Date(sub.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} (${sub.daysRemaining} days left)`
-                  : `Renews ${new Date(sub.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                  ? `Trial ends ${new Date(sub.endDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })} (${sub.daysRemaining} days left)`
+                  : `Renews ${new Date(sub.endDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}`}
               </p>
             )}
           </div>
@@ -213,6 +237,7 @@ export function SubscriptionPage() {
             const price = annual && plan.annualPrice > 0 ? Math.round(plan.annualPrice / 12) : plan.monthlyPrice;
             const isFree = plan.monthlyPrice === 0;
             const isCurrent = plan.slug === currentPlanSlug;
+            const isPending = pendingRequest?.planSlug === plan.slug;
 
             return (
               <div
@@ -245,12 +270,12 @@ export function SubscriptionPage() {
                   ) : (
                     <>
                       <p className="text-2xl font-bold text-slate-900">
-                        ₹{price.toLocaleString('en-IN')}
+                        ₹{price.toLocaleString(undefined)}
                         <span className="text-sm text-slate-400 font-normal">/mo</span>
                       </p>
                       {annual && (
                         <p className="text-xs text-green-600 font-medium">
-                          ₹{plan.annualPrice.toLocaleString('en-IN')}/year
+                          ₹{plan.annualPrice.toLocaleString(undefined)}/year
                         </p>
                       )}
                     </>
@@ -269,16 +294,18 @@ export function SubscriptionPage() {
                 <Button
                   onClick={() => selectMutation.mutate({ planId: plan.id, isAnnual: annual })}
                   loading={selectMutation.isPending && selectMutation.variables?.planId === plan.id}
-                  disabled={isCurrent}
-                  variant={isCurrent ? 'outline' : meta.popular ? 'primary' : 'outline'}
+                  disabled={isCurrent || isPending}
+                  variant={isCurrent || isPending ? 'outline' : meta.popular ? 'primary' : 'outline'}
                   className="w-full justify-center"
                 >
                   {isCurrent ? (
                     <><Check className="w-3.5 h-3.5 mr-1.5" /> Current Plan</>
+                  ) : isPending ? (
+                    <><AlertCircle className="w-3.5 h-3.5 mr-1.5 text-amber-500" /> Pending Approval</>
                   ) : isFree ? (
                     'Switch to Free'
                   ) : (
-                    <>{plan.name === 'Pro' ? '⚡' : '👑'} Select {plan.name} <ArrowRight className="w-3.5 h-3.5 ml-1" /></>
+                    <>{plan.name === 'Pro' ? '⚡' : '👑'} Request {plan.name} <ArrowRight className="w-3.5 h-3.5 ml-1" /></>
                   )}
                 </Button>
               </div>

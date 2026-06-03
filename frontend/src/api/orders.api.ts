@@ -18,4 +18,17 @@ export const ordersApi = {
 
   cancelOrder: (id: string, reason?: string) =>
     apiClient.post(`/orders/${id}/cancel`, { reason }),
+
+  openInvoice: async (id: string) => {
+    const res = await apiClient.get(`/orders/${id}/invoice`, { responseType: 'text' });
+    const blob = new Blob([res.data], { type: 'text/html' });
+    const url  = URL.createObjectURL(blob);
+    const win  = window.open(url, '_blank');
+    // Revoke after the window has loaded so the blob stays available for print
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return win;
+  },
+
+  createPaymentLink: (id: string) =>
+    apiClient.post<{ url: string }>(`/orders/${id}/payment-link`).then((r) => r.data),
 };

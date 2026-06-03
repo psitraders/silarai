@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ReplyCart — Feature Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0f172a;
+    color: #f1f5f9;
+    min-height: 100vh;
+    padding: 48px 32px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 8px 24px rgba(13,148,136,0.4);
+  }
+  .logo-text { font-size: 28px; font-weight: 800; color: #fff; }
+  .header h1 {
+    font-size: 42px; font-weight: 900; letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 30%, #94a3b8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .header p { font-size: 16px; color: #64748b; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(13,148,136,0.15); border: 1px solid rgba(13,148,136,0.3);
+    color: #2dd4bf; font-size: 12px; font-weight: 600;
+    padding: 5px 14px; border-radius: 99px; margin-bottom: 18px;
+  }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 20px;
+    padding: 22px;
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); }
+
+  .card-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .card-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .card-title { font-size: 14px; font-weight: 700; color: #f1f5f9; }
+  .card-count { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+  /* ── Feature list ── */
+  .feature-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .feature-list li {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #94a3b8;
+  }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* ── Color themes ── */
+  .teal   .card-icon { background: rgba(13,148,136,0.15); }
+  .teal   .dot        { background: #0d9488; }
+  .teal   .card-title-area .card-title { color: #2dd4bf; }
+
+  .violet .card-icon { background: rgba(139,92,246,0.15); }
+  .violet .dot        { background: #8b5cf6; }
+
+  .blue   .card-icon { background: rgba(59,130,246,0.15); }
+  .blue   .dot        { background: #3b82f6; }
+
+  .amber  .card-icon { background: rgba(245,158,11,0.15); }
+  .amber  .dot        { background: #f59e0b; }
+
+  .rose   .card-icon { background: rgba(244,63,94,0.15); }
+  .rose   .dot        { background: #f43f5e; }
+
+  .green  .card-icon { background: rgba(34,197,94,0.15); }
+  .green  .dot        { background: #22c55e; }
+
+  .indigo .card-icon { background: rgba(99,102,241,0.15); }
+  .indigo .dot        { background: #6366f1; }
+
+  .orange .card-icon { background: rgba(249,115,22,0.15); }
+  .orange .dot        { background: #f97316; }
+
+  .cyan   .card-icon { background: rgba(6,182,212,0.15); }
+  .cyan   .dot        { background: #06b6d4; }
+
+  .pink   .card-icon { background: rgba(236,72,153,0.15); }
+  .pink   .dot        { background: #ec4899; }
+
+  /* ── Span helpers ── */
+  .col-span-2 { grid-column: span 2; }
+
+  /* ── Footer stats ── */
+  .stats-row {
+    max-width: 1280px; margin: 32px auto 0;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+  }
+  .stat-box {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 16px; padding: 18px 20px; text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: 800; color: #2dd4bf; }
+  .stat-label { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+  .footer {
+    text-align: center; margin-top: 40px; font-size: 11px; color: #334155;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">💬</div>
+    <span class="logo-text">ReplyCart</span>
+  </div>
+  <div class="badge">✦ Complete Feature Map — v1.0</div>
+  <h1>Everything That's Built</h1>
+  <p>Full-stack SaaS — Frontend · Backend · Auth · AI · Marketing · Admin</p>
+</div>
+
+<!-- Main Grid -->
+<div class="grid">
+
+  <!-- Auth & Security -->
+  <div class="card teal col-span-2">
+    <div class="card-header">
+      <div class="card-icon">🔐</div>
+      <div>
+        <div class="card-title">Authentication & Security</div>
+        <div class="card-count">14 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot teal" style="background:#0d9488"></span> Register with email & password</li>
+      <li><span class="dot" style="background:#0d9488"></span> Login with JWT access + refresh tokens</li>
+      <li><span class="dot" style="background:#0d9488"></span> TOTP 2FA — setup, verify & disable</li>
+      <li><span class="dot" style="background:#0d9488"></span> 2FA gate on login (6-digit step)</li>
+      <li><span class="dot" style="background:#0d9488"></span> Forgot password (email token flow)</li>
+      <li><span class="dot" style="background:#0d9488"></span> Reset password via secure link</li>
+      <li><span class="dot" style="background:#0d9488"></span> Email verification (send + verify)</li>
+      <li><span class="dot" style="background:#0d9488"></span> Change password</li>
+      <li><span class="dot" style="background:#0d9488"></span> Update profile (name, phone)</li>
+      <li><span class="dot" style="background:#0d9488"></span> Session list — see all active devices</li>
+      <li><span class="dot" style="background:#0d9488"></span> Remote session revocation</li>
+      <li><span class="dot" style="background:#0d9488"></span> Refresh token rotation</li>
+      <li><span class="dot" style="background:#0d9488"></span> Token revocation on logout</li>
+      <li><span class="dot" style="background:#0d9488"></span> Device info detection (UA parsing)</li>
+    </ul>
+  </div>
+
+  <!-- Storefront -->
+  <div class="card green">
+    <div class="card-header">
+      <div class="card-icon">🏪</div>
+      <div>
+        <div class="card-title">Public Storefront</div>
+        <div class="card-count">5 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#22c55e"></span> Public store page (shareable link)</li>
+      <li><span class="dot" style="background:#22c55e"></span> Product listing & detail</li>
+      <li><span class="dot" style="background:#22c55e"></span> Product variants picker</li>
+      <li><span class="dot" style="background:#22c55e"></span> Cart with localStorage persistence</li>
+      <li><span class="dot" style="background:#22c55e"></span> Customer checkout / inquiry</li>
+    </ul>
+  </div>
+
+  <!-- Catalog -->
+  <div class="card blue">
+    <div class="card-header">
+      <div class="card-icon">📦</div>
+      <div>
+        <div class="card-title">Catalog Management</div>
+        <div class="card-count">5 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#3b82f6"></span> Products list with search & filters</li>
+      <li><span class="dot" style="background:#3b82f6"></span> Create / edit product (with images)</li>
+      <li><span class="dot" style="background:#3b82f6"></span> Categories management</li>
+      <li><span class="dot" style="background:#3b82f6"></span> Coupons & discount codes</li>
+      <li><span class="dot" style="background:#3b82f6"></span> Product reviews moderation</li>
+    </ul>
+  </div>
+
+  <!-- Orders -->
+  <div class="card amber">
+    <div class="card-header">
+      <div class="card-icon">📋</div>
+      <div>
+        <div class="card-title">Order Management</div>
+        <div class="card-count">3 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#f59e0b"></span> Orders list with status filters</li>
+      <li><span class="dot" style="background:#f59e0b"></span> Order detail view & timeline</li>
+      <li><span class="dot" style="background:#f59e0b"></span> Create / edit order form</li>
+    </ul>
+  </div>
+
+  <!-- Leads & Customers -->
+  <div class="card violet">
+    <div class="card-header">
+      <div class="card-icon">👥</div>
+      <div>
+        <div class="card-title">Leads & Customers</div>
+        <div class="card-count">5 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#8b5cf6"></span> Leads list & pipeline view</li>
+      <li><span class="dot" style="background:#8b5cf6"></span> Lead detail page</li>
+      <li><span class="dot" style="background:#8b5cf6"></span> Lead create / edit form</li>
+      <li><span class="dot" style="background:#8b5cf6"></span> Customers list</li>
+      <li><span class="dot" style="background:#8b5cf6"></span> Customer detail & history</li>
+    </ul>
+  </div>
+
+  <!-- Marketing -->
+  <div class="card rose">
+    <div class="card-header">
+      <div class="card-icon">📣</div>
+      <div>
+        <div class="card-title">Marketing</div>
+        <div class="card-count">5 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#f43f5e"></span> Marketing hub dashboard</li>
+      <li><span class="dot" style="background:#f43f5e"></span> Campaign list & management</li>
+      <li><span class="dot" style="background:#f43f5e"></span> Campaign detail & analytics</li>
+      <li><span class="dot" style="background:#f43f5e"></span> Campaign create / edit form</li>
+      <li><span class="dot" style="background:#f43f5e"></span> Abandoned carts list & recovery</li>
+    </ul>
+  </div>
+
+  <!-- AI -->
+  <div class="card indigo">
+    <div class="card-header">
+      <div class="card-icon">🤖</div>
+      <div>
+        <div class="card-title">AI Features</div>
+        <div class="card-count">3 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#6366f1"></span> AI WhatsApp reply suggestions</li>
+      <li><span class="dot" style="background:#6366f1"></span> AI reply templates library</li>
+      <li><span class="dot" style="background:#6366f1"></span> AI social post generator</li>
+    </ul>
+  </div>
+
+  <!-- Analytics -->
+  <div class="card cyan">
+    <div class="card-header">
+      <div class="card-icon">📊</div>
+      <div>
+        <div class="card-title">Analytics & Dashboard</div>
+        <div class="card-count">3 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#06b6d4"></span> Main dashboard (revenue, orders, leads)</li>
+      <li><span class="dot" style="background:#06b6d4"></span> Analytics page (trends & charts)</li>
+      <li><span class="dot" style="background:#06b6d4"></span> Activity feed (backend)</li>
+    </ul>
+  </div>
+
+  <!-- Settings -->
+  <div class="card orange">
+    <div class="card-header">
+      <div class="card-icon">⚙️</div>
+      <div>
+        <div class="card-title">Settings</div>
+        <div class="card-count">4 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#f97316"></span> Business profile settings</li>
+      <li><span class="dot" style="background:#f97316"></span> Storefront customization</li>
+      <li><span class="dot" style="background:#f97316"></span> Channel integrations (WA / IG / FB)</li>
+      <li><span class="dot" style="background:#f97316"></span> Account & security page</li>
+    </ul>
+  </div>
+
+  <!-- Subscription -->
+  <div class="card pink">
+    <div class="card-header">
+      <div class="card-icon">💳</div>
+      <div>
+        <div class="card-title">Subscription & Billing</div>
+        <div class="card-count">3 features</div>
+      </div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="dot" style="background:#ec4899"></span> Pricing page (monthly / annual toggle)</li>
+      <li><span class="dot" style="background:#ec4899"></span> Subscription management page</li>
+      <li><span class="dot" style="background:#ec4899"></span> Razorpay payment controller</li>
+    </ul>
+  </div>
+
+  <!-- Landing & Admin -->
+  <div class="card teal col-span-2">
+    <div class="card-header">
+      <div class="card-icon">🌐</div>
+      <div>
+        <div class="card-title">Landing Page & Admin Panel</div>
+        <div class="card-count">7 features</div>
+      </div>
+    </div>
+    <ul class="feature-list" style="display:grid;grid-template-columns:1fr 1fr;gap:7px 24px;">
+      <li><span class="dot" style="background:#0d9488"></span> Landing page (full redesign)</li>
+      <li><span class="dot" style="background:#0d9488"></span> Admin: landing content editor</li>
+      <li><span class="dot" style="background:#0d9488"></span> Hero, stats, features, how-it-works</li>
+      <li><span class="dot" style="background:#0d9488"></span> Admin: tenant list & management</li>
+      <li><span class="dot" style="background:#0d9488"></span> Testimonials, CTA banner, footer</li>
+      <li><span class="dot" style="background:#0d9488"></span> Admin: tenant detail view</li>
+      <li><span class="dot" style="background:#0d9488"></span> Shared Navbar component (landing + pricing)</li>
+      <li><span class="dot" style="background:#0d9488"></span> WA / IG / FB webhook handlers</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Stats Row -->
+<div class="stats-row">
+  <div class="stat-box">
+    <div class="stat-num">57+</div>
+    <div class="stat-label">Total Features</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num">24</div>
+    <div class="stat-label">API Controllers</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num">38</div>
+    <div class="stat-label">Frontend Pages</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num">10</div>
+    <div class="stat-label">Feature Modules</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Channel Webhooks</div>
+  </div>
+</div>
+
+<div class="footer">ReplyCart · Full-Stack SaaS · Built with .NET 8 · React 18 · TypeScript · TailwindCSS</div>
+
+</body>
+</html>

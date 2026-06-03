@@ -3,31 +3,15 @@ import { clsx } from 'clsx';
 import {
   LayoutDashboard, Inbox, Users, ShoppingBag, Package, Store,
   BarChart2, Settings, LogOut, MessageSquareQuote, X, Plug, Zap, Shield, Send, Sparkles,
-  Tag, Star, ShoppingCart, Globe,
+  Tag, Star, ShoppingCart, Globe, UserCircle, Bot, MessagesSquare, Download, FlaskConical, FileText, MessageCircle,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/auth.store';
 import { useQuery } from '@tanstack/react-query';
 import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 import apiClient from '../../api/client';
-
-const navItems = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/leads', icon: Inbox, label: 'Inbox / Leads' },
-  { path: '/orders', icon: ShoppingBag, label: 'Orders' },
-  { path: '/customers', icon: Users, label: 'Customers' },
-  { path: '/catalog/products', icon: Package, label: 'Products' },
-  { path: '/catalog/categories', icon: Store, label: 'Categories' },
-  { path: '/catalog/coupons', icon: Tag, label: 'Coupons' },
-  { path: '/catalog/reviews', icon: Star, label: 'Reviews' },
-  { path: '/storefront', icon: Store, label: 'Storefront' },
-  { path: '/marketing', icon: Send, label: 'Marketing' },
-  { path: '/marketing/abandoned-carts', icon: ShoppingCart, label: 'Abandoned Carts' },
-  { path: '/ai/replies', icon: MessageSquareQuote, label: 'AI Replies' },
-  { path: '/ai/social-post', icon: Sparkles, label: 'Social Posts' },
-  { path: '/analytics', icon: BarChart2, label: 'Analytics' },
-  { path: '/integrations', icon: Plug, label: 'Integrations' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
-];
+import { businessApi } from '../../api/business.api';
+import { customDomainApi } from '../../api/customDomain.api';
 
 interface SidebarProps {
   open: boolean;
@@ -36,12 +20,59 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const { logout, user } = useAuthStore();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { path: '/dashboard',                icon: LayoutDashboard,   label: t('nav.dashboard') },
+    { path: '/leads',                    icon: Inbox,             label: t('nav.leads') },
+    { path: '/orders',                   icon: ShoppingBag,       label: t('nav.orders') },
+    { path: '/customers',               icon: Users,             label: t('nav.customers') },
+    { path: '/catalog/products',        icon: Package,           label: t('nav.products') },
+    { path: '/catalog/categories',      icon: Store,             label: t('nav.categories') },
+    { path: '/catalog/coupons',         icon: Tag,               label: t('nav.coupons') },
+    { path: '/catalog/reviews',         icon: Star,              label: t('nav.reviews') },
+    { path: '/catalog/import',          icon: Download,          label: 'Import Products' },
+    { path: '/storefront',              icon: Store,             label: t('nav.storefront') },
+    { path: '/pages',                  icon: FileText,          label: 'Custom Pages' },
+    { path: '/marketing',               icon: Send,              label: t('nav.marketing') },
+
+    { path: '/marketing/abandoned-carts', icon: ShoppingCart,    label: t('nav.abandonedCarts') },
+    { path: '/marketing/wa-templates',    icon: MessageCircle,   label: 'WA Templates' },
+    { path: '/ai/autopilot',            icon: Bot,                label: 'AI Autopilot' },
+    { path: '/ai/conversations',        icon: MessagesSquare,     label: 'AI Conversations' },
+    { path: '/ai/simulator',            icon: FlaskConical,       label: 'Chatbot Simulator' },
+    { path: '/b2b/quotes',             icon: FileText,           label: 'B2B Quote Inbox' },
+    { path: '/ai/auto-campaigns',       icon: Zap,               label: 'Auto-Campaigns' },
+    { path: '/ai/replies',              icon: MessageSquareQuote, label: t('nav.aiReplies') },
+    { path: '/ai/social-post',          icon: Sparkles,          label: t('nav.socialPosts') },
+    { path: '/analytics',               icon: BarChart2,         label: t('nav.analytics') },
+    { path: '/integrations',            icon: Plug,              label: t('nav.integrations') },
+    { path: '/settings',                icon: Settings,          label: t('nav.settings') },
+    { path: '/settings/account',        icon: UserCircle,        label: t('nav.accountSecurity') },
+  ];
 
   const { data: sub } = useQuery({
     queryKey: ['subscription'],
     queryFn: () => apiClient.get('/subscription').then(r => r.data),
     staleTime: 5 * 60 * 1000,
   });
+
+  const { data: storefront } = useQuery({
+    queryKey: ['storefront-settings'],
+    queryFn: businessApi.getStorefrontSettings,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: customDomain } = useQuery({
+    queryKey: ['custom-domain'],
+    queryFn: customDomainApi.get,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Show custom domain when active, otherwise fall back to replycart.app/slug
+  const storeUrl = customDomain?.status === 'active' && customDomain.domain
+    ? `https://${customDomain.domain}`
+    : storefront?.slug ? `${window.location.origin}/${storefront.slug}` : null;
 
   const planName: string = sub?.planName ?? 'Basic';
   const isFreeTier = planName === 'Basic' || !sub?.hasSubscription;
@@ -100,8 +131,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             <div className="mt-2 pt-2 border-t border-slate-100">
               <p className="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Admin</p>
               {[
-                { to: '/admin/tenants',      icon: Shield, label: 'Tenants' },
-                { to: '/admin/landing-page', icon: Globe,  label: 'Landing Page' },
+                { to: '/admin/tenants',          icon: Shield,  label: 'Tenants' },
+                { to: '/admin/chatbot-clients', icon: Bot,     label: 'Chatbot Clients' },
+                { to: '/admin/landing-page',    icon: Globe,   label: 'Landing Page' },
+                { to: '/admin/platform-leads',  icon: Inbox,   label: 'Platform Leads' },
               ].map(({ to, icon: Icon, label }) => (
                 <NavLink key={to} to={to} onClick={onClose}
                   className={({ isActive }) =>
@@ -158,12 +191,29 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </NavLink>
 
           {/* Store link */}
-          <div className="theme-store-panel rounded-xl p-3">
-            <p className="text-xs text-slate-500 mb-1">Your Store Link</p>
-            <p className="text-xs theme-store-text font-medium truncate">
-              replycart.in/{user?.tenantId?.slice(0, 8)}
-            </p>
-          </div>
+          {storeUrl ? (
+            <a
+              href={storeUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={onClose}
+              className="block theme-store-panel rounded-xl p-3 hover:opacity-80 transition-opacity"
+              title="Open your storefront"
+            >
+              <p className="text-xs text-slate-500 mb-1">{t('nav.yourStoreLink')}</p>
+              <p className="text-xs theme-store-text font-medium truncate">{storeUrl.replace(/^https?:\/\//, '')}</p>
+            </a>
+          ) : (
+            <NavLink
+              to="/storefront"
+              onClick={onClose}
+              className="block theme-store-panel rounded-xl p-3 hover:opacity-80 transition-opacity"
+              title="Set up your store URL"
+            >
+              <p className="text-xs text-slate-500 mb-1">{t('nav.yourStoreLink')}</p>
+              <p className="text-xs text-amber-500 font-medium">Tap to set your store URL →</p>
+            </NavLink>
+          )}
 
           {/* Theme switcher */}
           <ThemeSwitcher />
@@ -174,7 +224,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             className="flex items-center gap-2 text-sm text-slate-500 hover:text-red-600 transition-colors w-full px-2 py-1"
           >
             <LogOut className="w-4 h-4" />
-            Sign out
+            {t('auth.logout')}
           </button>
         </div>
       </aside>

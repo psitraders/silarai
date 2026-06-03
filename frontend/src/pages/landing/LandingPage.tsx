@@ -1,350 +1,456 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { Navbar } from '../../components/landing/Navbar';
+import { Footer } from '../../components/landing/Footer';
+import { LeadChatWidget } from '../../components/landing/LeadChatWidget';
+import { track } from '../../lib/analytics';
 import {
-  MessageSquareQuote, ShoppingBag, Package, BarChart2, Send, Store,
-  Zap, Users, Shield, Star, ArrowRight, Check, MessageCircle,
-  ChevronRight, Bot, Menu, X,
+  ArrowRight, ShoppingBag, Bot, BarChart3, CheckCircle,
+  Star, Package, Globe, Zap, TrendingUp,
+  ChevronRight, Sparkles, Store, ExternalLink, Lock,
 } from 'lucide-react';
-import { useState } from 'react';
-import { landingApi, DEFAULT_CONTENT, type LandingPageContent, type FeatureItem } from '../../api/landing.api';
 
-// ── Icon map for dynamic feature icons ───────────────────────────────────────
-const ICON_MAP: Record<string, React.ElementType> = {
-  MessageSquareQuote, ShoppingBag, Package, BarChart2, Send, Store,
-  Zap, Users, Shield, Star, MessageCircle, Bot,
-};
+const DEMO_WA = 'https://wa.me/918849549690?text=Hi%2C%20I%27d%20like%20to%20book%20a%20demo%20of%20ReplyCart%20%F0%9F%9A%80';
 
-function DynIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = ICON_MAP[name] ?? Package;
-  return <Icon className={className} />;
-}
-
-// ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar() {
-  const [open, setOpen] = useState(false);
+/* ══════════════════════════════════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════════════════════════════════ */
+function Hero() {
   return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center shadow-sm">
-            <MessageSquareQuote className="w-4 h-4 text-white" />
+    <section className="bg-white pt-24 pb-20 overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col lg:flex-row items-center gap-16">
+          {/* Left copy */}
+          <div className="flex-1 text-center lg:text-left">
+            <span className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+              Trusted by 500+ businesses worldwide
+            </span>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-extrabold text-gray-900 leading-[1.1] tracking-tight mb-5">
+              Sell more with your{' '}
+              <span className="relative">
+                <span className="relative z-10 text-teal-600">own online store</span>
+                <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 300 12" fill="none">
+                  <path d="M2 9 Q75 2 150 8 Q225 14 298 7" stroke="#99f6e4" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                </svg>
+              </span>
+              {' '}+ AI chat
+            </h1>
+
+            <p className="text-lg text-gray-500 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              ReplyCart gives boutiques, bakeries, jewellers, and home sellers a branded storefront,
+              AI-powered customer chat, and a full order management system — in 15 minutes.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <Link
+                to="/register"
+                onClick={() => track.ctaClick('hero_start_free')}
+                className="inline-flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-lg shadow-teal-100"
+              >
+                Start free — no card needed <ArrowRight className="w-4 h-4" />
+              </Link>
+              <a
+                href={DEMO_WA}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => track.demoClick('hero')}
+                className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 hover:border-teal-300 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-colors"
+              >
+                Book a demo
+              </a>
+            </div>
+
+            {/* Social proof row */}
+            <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start">
+              <div className="flex -space-x-2">
+                {['🧕','👩','👨','👩','🧑'].map((e, i) => (
+                  <span key={i} className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center text-sm">{e}</span>
+                ))}
+              </div>
+              <p className="text-sm text-gray-500">
+                <span className="font-semibold text-gray-800">4.8 ★</span> from 200+ happy sellers
+              </p>
+            </div>
           </div>
-          <span className="font-bold text-slate-900 text-base">ReplyCart</span>
-        </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-6">
-          <a href="#features" className="text-sm text-slate-600 hover:text-teal-700 transition-colors">Features</a>
-          <a href="#how-it-works" className="text-sm text-slate-600 hover:text-teal-700 transition-colors">How it works</a>
-          <a href="#testimonials" className="text-sm text-slate-600 hover:text-teal-700 transition-colors">Reviews</a>
-          <Link to="/pricing" className="text-sm text-slate-600 hover:text-teal-700 transition-colors">Pricing</Link>
-        </nav>
+          {/* Right — store mockup card */}
+          <div className="flex-1 w-full max-w-lg lg:max-w-none">
+            <div className="relative">
+              {/* Decorative blob */}
+              <div className="absolute -top-8 -right-8 w-72 h-72 bg-teal-50 rounded-full blur-3xl opacity-80" />
+              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-amber-50 rounded-full blur-2xl opacity-60" />
 
-        <div className="hidden md:flex items-center gap-2">
-          <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 rounded-xl hover:bg-slate-100 transition-colors">
-            Log in
-          </Link>
-          <Link to="/register" className="text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
-            Start Free <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+              {/* Main card */}
+              <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                {/* Store header bar */}
+                <div className="bg-teal-600 px-5 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <Store className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm">Floraved Beauty</p>
+                      <p className="text-teal-200 text-xs">floraved.replycart.app</p>
+                    </div>
+                  </div>
+                  <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full">Live ●</span>
+                </div>
+
+                {/* Product grid */}
+                <div className="p-4 grid grid-cols-2 gap-3">
+                  {[
+                    { name: 'Rose Mist Toner', price: '₹349', cat: 'Skincare', color: 'bg-rose-50', emoji: '🌹' },
+                    { name: 'Hair Growth Serum', price: '₹599', cat: 'Hair Care', color: 'bg-amber-50', emoji: '✨' },
+                    { name: 'Glow Face Pack', price: '₹249', cat: 'Skincare', color: 'bg-purple-50', emoji: '🌿' },
+                    { name: 'Vitamin C Cream', price: '₹449', cat: 'Skincare', color: 'bg-teal-50', emoji: '🍊' },
+                  ].map((p) => (
+                    <div key={p.name} className="rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                      <div className={`${p.color} h-24 flex items-center justify-center text-4xl`}>{p.emoji}</div>
+                      <div className="p-2.5">
+                        <p className="text-xs text-gray-400">{p.cat}</p>
+                        <p className="text-sm font-semibold text-gray-800 leading-tight">{p.name}</p>
+                        <p className="text-teal-600 font-bold text-sm mt-0.5">{p.price}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Order bar */}
+                <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between bg-gray-50">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-xs text-gray-500">3 new orders today</span>
+                  </div>
+                  <span className="text-xs font-semibold text-teal-600">View dashboard →</span>
+                </div>
+              </div>
+
+              {/* Floating chat bubble */}
+              <div className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-lg border border-gray-100 p-3 max-w-[190px]">
+                <div className="flex items-start gap-2">
+                  <div className="w-7 h-7 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+                  <div>
+                    <p className="text-xs text-gray-700 leading-snug">"Here are our top serums! Which one suits your hair type?"</p>
+                    <p className="text-[10px] text-gray-400 mt-1">AI assistant · just now</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating order badge */}
+              <div className="absolute -top-3 -right-3 bg-amber-400 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                +₹1,249 order 🎉
+              </div>
+            </div>
+          </div>
         </div>
-
-        {/* Mobile menu toggle */}
-        <button onClick={() => setOpen(o => !o)} className="md:hidden p-2 rounded-xl hover:bg-slate-100">
-          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
       </div>
-
-      {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-2">
-          {['#features', '#how-it-works', '#testimonials'].map((href, i) => (
-            <a key={i} href={href} onClick={() => setOpen(false)}
-              className="block text-sm text-slate-700 py-2 px-3 rounded-xl hover:bg-slate-50">
-              {['Features', 'How it works', 'Reviews'][i]}
-            </a>
-          ))}
-          <Link to="/pricing" onClick={() => setOpen(false)} className="block text-sm text-slate-700 py-2 px-3 rounded-xl hover:bg-slate-50">Pricing</Link>
-          <div className="flex gap-2 pt-2">
-            <Link to="/login" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50">Log in</Link>
-            <Link to="/register" className="flex-1 text-center text-sm font-semibold text-white bg-teal-600 py-2.5 rounded-xl hover:bg-teal-700">Start Free</Link>
-          </div>
-        </div>
-      )}
-    </header>
+    </section>
   );
 }
 
-// ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero({ content }: { content: LandingPageContent['hero'] }) {
+/* ══════════════════════════════════════════════════════════════════════════
+   CATEGORY STRIP
+══════════════════════════════════════════════════════════════════════════ */
+const categories = [
+  { emoji: '👗', label: 'Boutiques' },
+  { emoji: '🎂', label: 'Bakeries' },
+  { emoji: '💍', label: 'Jewellers' },
+  { emoji: '🌿', label: 'Home Sellers' },
+  { emoji: '💄', label: 'Beauty Brands' },
+  { emoji: '🍱', label: 'Food & Tiffin' },
+  { emoji: '🛍️', label: 'Handicrafts' },
+  { emoji: '🌸', label: 'Wellness' },
+];
+
+function CategoryStrip() {
   return (
-    <section className="pt-24 pb-16 sm:pt-32 sm:pb-24 bg-gradient-to-b from-teal-50/60 via-white to-white relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-teal-400/10 rounded-full blur-3xl" />
-        <div className="absolute top-20 right-0 w-[300px] h-[300px] bg-teal-300/10 rounded-full blur-2xl" />
+    <section className="border-y border-gray-100 bg-gray-50 py-5">
+      <div className="max-w-6xl mx-auto px-4">
+        <p className="text-center text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
+          Built for every type of seller, everywhere
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          {categories.map((c) => (
+            <span key={c.label} className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-600 text-sm font-medium px-3 py-1.5 rounded-full">
+              <span>{c.emoji}</span> {c.label}
+            </span>
+          ))}
+        </div>
       </div>
+    </section>
+  );
+}
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-        <div className="text-center max-w-3xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-100 text-teal-700 text-xs font-semibold px-4 py-1.5 rounded-full mb-6">
-            {content.badge}
-          </div>
+/* ══════════════════════════════════════════════════════════════════════════
+   FEATURES
+══════════════════════════════════════════════════════════════════════════ */
+const features = [
+  {
+    icon: Globe,
+    color: 'text-teal-600',
+    bg: 'bg-teal-50',
+    title: 'Beautiful Storefront',
+    desc: 'Your own branded store live in minutes. No developers, no hosting, no stress.',
+    points: ['Your own domain (www.yourbrand.com)', 'Free SSL certificate included', 'Mobile-first design', 'Shareable store link'],
+  },
+  {
+    icon: Bot,
+    color: 'text-violet-600',
+    bg: 'bg-violet-50',
+    title: 'AI Customer Chat',
+    desc: 'An AI assistant answers customer questions 24/7, recommends products, and collects orders.',
+    points: ['Knows your full catalogue', 'Captures name, phone & address', 'Handles FAQs automatically', 'Works via WhatsApp & web'],
+  },
+  {
+    icon: Package,
+    color: 'text-amber-600',
+    bg: 'bg-amber-50',
+    title: 'Orders & Inventory',
+    desc: 'Every order in one place — track status, manage stock, and never miss a sale.',
+    points: ['Real-time order dashboard', 'Stock alerts & variants', 'Invoice generation', 'COD & online payments'],
+  },
+  {
+    icon: BarChart3,
+    color: 'text-rose-500',
+    bg: 'bg-rose-50',
+    title: 'CRM & Analytics',
+    desc: 'Know your best customers, track revenue, and grow smarter every month.',
+    points: ['Customer purchase history', 'Sales & revenue charts', 'Top products report', 'Repeat buyer insights'],
+  },
+];
 
-          {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight tracking-tight mb-5">
-            {content.headline.split(' ').map((word, i) => {
-              const highlighted = ['WhatsApp', 'Orders', 'Chats'].includes(word.replace(/[^a-zA-Z]/g, ''));
-              return highlighted
-                ? <span key={i} className="text-teal-600">{word} </span>
-                : <span key={i}>{word} </span>;
-            })}
-          </h1>
-
-          {/* Subheadline */}
-          <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-8 leading-relaxed">
-            {content.subheadline}
+function Features() {
+  return (
+    <section id="features" className="bg-white py-20 scroll-mt-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-14">
+          <p className="text-teal-600 text-sm font-semibold uppercase tracking-wider mb-2">Everything in one place</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
+            All the tools your business needs
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto">
+            No juggling 5 different apps. ReplyCart brings your store, chat, orders, and customers under one roof.
           </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link to="/register"
-              className="inline-flex items-center gap-2 text-white bg-teal-600 hover:bg-teal-700 font-semibold px-7 py-3.5 rounded-2xl shadow-lg shadow-teal-200 hover:shadow-teal-300 transition-all text-sm">
-              {content.ctaPrimary} <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link to="/pricing"
-              className="inline-flex items-center gap-2 text-slate-700 hover:text-teal-700 font-semibold px-7 py-3.5 rounded-2xl border border-slate-200 hover:border-teal-200 bg-white transition-all text-sm">
-              {content.ctaSecondary} <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <p className="text-xs text-slate-400 mt-3">No credit card required · Free forever plan available</p>
         </div>
 
-        {/* Mock UI cards */}
-        <div className="mt-16 relative max-w-4xl mx-auto">
-          {/* Main dashboard preview */}
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-            {/* Fake window chrome */}
-            <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-400" />
-              <div className="w-3 h-3 rounded-full bg-amber-400" />
-              <div className="w-3 h-3 rounded-full bg-green-400" />
-              <div className="flex-1 mx-4 bg-slate-200 rounded-lg h-5 text-[10px] text-slate-500 flex items-center justify-center">
-                app.replycart.in/dashboard
+        <div className="grid sm:grid-cols-2 gap-6">
+          {features.map((f) => (
+            <div key={f.title} className="rounded-2xl border border-gray-100 p-7 hover:shadow-lg transition-shadow group">
+              <div className={`w-11 h-11 ${f.bg} rounded-xl flex items-center justify-center mb-5`}>
+                <f.icon className={`w-5 h-5 ${f.color}`} />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{f.title}</h3>
+              <p className="text-gray-500 text-sm mb-4 leading-relaxed">{f.desc}</p>
+              <ul className="space-y-2">
+                {f.points.map((pt) => (
+                  <li key={pt} className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className={`w-4 h-4 flex-shrink-0 ${f.color}`} />
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STATS
+══════════════════════════════════════════════════════════════════════════ */
+const stats = [
+  { value: '500+', label: 'Active stores', icon: ShoppingBag, color: 'text-teal-600', bg: 'bg-teal-50' },
+  { value: '₹2Cr+', label: 'Orders processed', icon: TrendingUp, color: 'text-violet-600', bg: 'bg-violet-50' },
+  { value: '15 min', label: 'Average setup time', icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50' },
+  { value: '4.8 ★', label: 'Seller satisfaction', icon: Star, color: 'text-rose-500', bg: 'bg-rose-50' },
+];
+
+function Stats() {
+  return (
+    <section className="bg-gray-50 py-16 border-y border-gray-100">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+          {stats.map((s) => (
+            <div key={s.label} className="text-center">
+              <div className={`w-12 h-12 ${s.bg} rounded-xl flex items-center justify-center mx-auto mb-3`}>
+                <s.icon className={`w-5 h-5 ${s.color}`} />
+              </div>
+              <p className={`text-3xl font-extrabold ${s.color} mb-1`}>{s.value}</p>
+              <p className="text-sm text-gray-500">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HOW IT WORKS
+══════════════════════════════════════════════════════════════════════════ */
+const steps = [
+  {
+    step: '01',
+    title: 'Create your store',
+    desc: 'Sign up, add your business name and logo, and you have a live storefront in minutes.',
+    color: 'bg-teal-600',
+  },
+  {
+    step: '02',
+    title: 'Add your products',
+    desc: 'Upload photos, set prices, and organise products into categories — it\'s as simple as filling a form.',
+    color: 'bg-violet-600',
+  },
+  {
+    step: '03',
+    title: 'Share & start selling',
+    desc: 'Share your store link on WhatsApp or Instagram. Customers browse, chat with AI, and place orders.',
+    color: 'bg-amber-500',
+  },
+];
+
+function HowItWorks() {
+  return (
+    <section id="how-it-works" className="bg-white py-20 scroll-mt-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-14">
+          <p className="text-teal-600 text-sm font-semibold uppercase tracking-wider mb-2">Simple to get started</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+            Up and running in 3 steps
+          </h2>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-8">
+          {steps.map((s, i) => (
+            <div key={s.step} className="relative">
+              {i < steps.length - 1 && (
+                <div className="hidden sm:block absolute top-6 left-[calc(100%_-_12px)] w-full h-px bg-gray-200 z-0" />
+              )}
+              <div className="relative z-10">
+                <div className={`w-12 h-12 ${s.color} rounded-2xl flex items-center justify-center text-white font-black text-sm mb-5`}>
+                  {s.step}
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{s.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
               </div>
             </div>
-            {/* Dashboard mock */}
-            <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: 'Total Orders', value: '1,284', color: 'text-teal-600', bg: 'bg-teal-50' },
-                { label: 'Revenue', value: '₹3.2L', color: 'text-blue-600', bg: 'bg-blue-50' },
-                { label: 'Customers', value: '428', color: 'text-purple-600', bg: 'bg-purple-50' },
-                { label: 'Pending', value: '12', color: 'text-amber-600', bg: 'bg-amber-50' },
-              ].map(stat => (
-                <div key={stat.label} className={`${stat.bg} rounded-2xl p-4`}>
-                  <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <Link
+            to="/register"
+            className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-lg shadow-teal-100"
+          >
+            Get started for free <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   AI HIGHLIGHT
+══════════════════════════════════════════════════════════════════════════ */
+const chatMessages = [
+  { from: 'customer', text: 'Hi! Do you have anything for hair fall?' },
+  { from: 'bot', text: 'Yes! We have 3 options for hair fall. Let me share them with you 👇', products: true },
+  { from: 'customer', text: 'I like the serum. How much is it?' },
+  { from: 'bot', text: 'The Hair Growth Serum is ₹599. It\'s our bestseller this month! Want to place an order?' },
+  { from: 'customer', text: 'Yes please!' },
+  { from: 'bot', text: 'Great! Could I have your name and delivery address? 😊' },
+];
+
+function AiHighlight() {
+  return (
+    <section id="ai" className="bg-gray-50 py-20 border-y border-gray-100 scroll-mt-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col lg:flex-row items-center gap-14">
+          {/* Chat mockup */}
+          <div className="flex-1 w-full max-w-sm mx-auto lg:mx-0">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+              {/* Chat header */}
+              <div className="bg-teal-600 px-4 py-3 flex items-center gap-3">
+                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-lg">🤖</div>
+                <div>
+                  <p className="text-white font-semibold text-sm">Floraved AI Assistant</p>
+                  <p className="text-teal-200 text-xs">Online · replies instantly</p>
                 </div>
-              ))}
-            </div>
-            <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Recent orders mock */}
-              <div className="bg-slate-50 rounded-2xl p-4">
-                <p className="text-xs font-semibold text-slate-700 mb-3">Recent Orders</p>
-                {[
-                  { num: 'RC-1042', name: 'Priya S.', amount: '₹1,240', status: 'Confirmed', color: 'bg-teal-100 text-teal-700' },
-                  { num: 'RC-1041', name: 'Rahul M.', amount: '₹890',   status: 'Shipped',   color: 'bg-blue-100 text-blue-700' },
-                  { num: 'RC-1040', name: 'Anjali P.', amount: '₹2,100', status: 'Delivered', color: 'bg-green-100 text-green-700' },
-                ].map(o => (
-                  <div key={o.num} className="flex items-center gap-2 py-1.5">
-                    <span className="text-[10px] font-mono text-slate-500 w-14 shrink-0">{o.num}</span>
-                    <span className="text-xs text-slate-700 flex-1">{o.name}</span>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${o.color}`}>{o.status}</span>
-                    <span className="text-xs font-bold text-slate-900">{o.amount}</span>
+              </div>
+
+              {/* Messages */}
+              <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
+                {chatMessages.map((m, i) => (
+                  <div key={i} className={`flex ${m.from === 'customer' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[78%] ${
+                      m.from === 'customer'
+                        ? 'bg-teal-600 text-white'
+                        : 'bg-gray-100 text-gray-800'
+                    } rounded-2xl px-3.5 py-2.5 text-sm leading-snug`}>
+                      {m.text}
+                      {m.products && (
+                        <div className="mt-2 grid grid-cols-3 gap-1.5">
+                          {['🌿','✨','🌸'].map((e, j) => (
+                            <div key={j} className="bg-white rounded-lg p-1.5 text-center border border-gray-100">
+                              <span className="text-xl">{e}</span>
+                              <p className="text-gray-600 text-[10px] mt-0.5 font-medium">₹{[399,599,299][j]}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
-              {/* AI reply mock */}
-              <div className="bg-slate-50 rounded-2xl p-4">
-                <p className="text-xs font-semibold text-slate-700 mb-3">AI Reply Generator</p>
-                <div className="space-y-2">
-                  <div className="bg-white rounded-xl px-3 py-2 text-xs text-slate-600 border border-slate-100">
-                    "Do you have this kurta in blue?"
-                  </div>
-                  <div className="bg-teal-600 rounded-xl px-3 py-2 text-xs text-white">
-                    "Yes! We have it in Sky Blue and Navy. Would you like to see photos? 😊"
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex-1 h-7 bg-white rounded-xl border border-slate-200 px-2 flex items-center">
-                      <span className="text-[10px] text-slate-400">Type your query...</span>
-                    </div>
-                    <div className="w-7 h-7 bg-teal-600 rounded-xl flex items-center justify-center">
-                      <Zap className="w-3.5 h-3.5 text-white" />
-                    </div>
-                  </div>
+
+              <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 flex items-center gap-2">
+                <div className="flex-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-400">
+                  Type a message...
                 </div>
+                <button className="w-8 h-8 bg-teal-600 rounded-xl flex items-center justify-center">
+                  <ArrowRight className="w-3.5 h-3.5 text-white" />
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Floating notification badges */}
-          <div className="absolute -top-4 -right-4 sm:-right-8 bg-white rounded-2xl shadow-xl border border-slate-100 px-3 py-2.5 flex items-center gap-2.5 hidden sm:flex">
-            <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
-              <ShoppingBag className="w-4 h-4 text-green-600" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-900">New Order</p>
-              <p className="text-[10px] text-slate-400">₹1,240 · just now</p>
-            </div>
-          </div>
-          <div className="absolute -bottom-4 -left-4 sm:-left-8 bg-white rounded-2xl shadow-xl border border-slate-100 px-3 py-2.5 flex items-center gap-2.5 hidden sm:flex">
-            <div className="w-8 h-8 bg-teal-100 rounded-xl flex items-center justify-center shrink-0">
-              <MessageSquareQuote className="w-4 h-4 text-teal-600" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-900">AI Reply Ready</p>
-              <p className="text-[10px] text-slate-400">Generated in 1.2s</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Stats bar ─────────────────────────────────────────────────────────────────
-function StatsBar({ stats }: { stats: LandingPageContent['stats'] }) {
-  return (
-    <section className="border-y border-slate-100 bg-slate-50/50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 sm:grid-cols-4 gap-8">
-        {stats.map((stat, i) => (
-          <div key={i} className="text-center">
-            <p className="text-3xl font-extrabold text-teal-600">{stat.value}</p>
-            <p className="text-sm text-slate-500 mt-1">{stat.label}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ── Features ──────────────────────────────────────────────────────────────────
-function FeaturesSection({ features }: { features: FeatureItem[] }) {
-  return (
-    <section id="features" className="py-20 sm:py-28 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14">
-          <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">Features</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">Everything you need to sell more</h2>
-          <p className="text-slate-500 mt-3 max-w-xl mx-auto">One platform built for D2C sellers who want to grow without the complexity.</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((f, i) => (
-            <div key={i} className="group p-6 rounded-2xl border border-slate-100 hover:border-teal-200 hover:shadow-lg hover:shadow-teal-50 transition-all bg-white">
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center mb-4 transition-colors">
-                <DynIcon name={f.icon} className="w-6 h-6 text-teal-600" />
-              </div>
-              <h3 className="font-bold text-slate-900 mb-2">{f.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">{f.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── How it works ──────────────────────────────────────────────────────────────
-function HowItWorksSection({ steps }: { steps: LandingPageContent['howItWorks'] }) {
-  return (
-    <section id="how-it-works" className="py-20 sm:py-28 bg-gradient-to-b from-slate-50 to-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14">
-          <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">How it works</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">Up and running in minutes</h2>
-          <p className="text-slate-500 mt-3">No technical setup required. Just sign up and start selling.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-          {/* Connecting line (desktop) */}
-          <div className="hidden md:block absolute top-10 left-1/3 right-1/3 h-0.5 bg-gradient-to-r from-teal-200 via-teal-400 to-teal-200 -translate-y-1/2" style={{ top: '2.5rem' }} />
-          {steps.map((s, i) => (
-            <div key={i} className="relative text-center flex flex-col items-center">
-              <div className="w-20 h-20 rounded-3xl bg-teal-600 text-white flex items-center justify-center text-3xl font-black mb-6 shadow-xl shadow-teal-200 relative z-10">
-                {s.step}
-              </div>
-              <h3 className="font-bold text-slate-900 text-lg mb-2">{s.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed max-w-xs">{s.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Testimonials ──────────────────────────────────────────────────────────────
-function TestimonialsSection({ testimonials }: { testimonials: LandingPageContent['testimonials'] }) {
-  return (
-    <section id="testimonials" className="py-20 sm:py-28 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14">
-          <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">Testimonials</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">Sellers love ReplyCart</h2>
-          <p className="text-slate-500 mt-3">Real stories from sellers growing their businesses with us.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map((t, i) => (
-            <div key={i} className="bg-slate-50 rounded-3xl p-6 border border-slate-100 flex flex-col gap-4">
-              {/* Stars */}
-              <div className="flex gap-1">
-                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
-              </div>
-              {/* Quote */}
-              <p className="text-slate-700 text-sm leading-relaxed flex-1">"{t.quote}"</p>
-              {/* Author */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-teal-600 text-white text-sm font-bold flex items-center justify-center shrink-0">
-                  {t.avatar}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{t.name}</p>
-                  <p className="text-xs text-slate-400">{t.business}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── CTA Banner ────────────────────────────────────────────────────────────────
-function CtaBanner({ content }: { content: LandingPageContent['ctaBanner'] }) {
-  return (
-    <section className="py-20 sm:py-28">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="relative bg-gradient-to-br from-teal-600 to-teal-700 rounded-3xl px-8 py-14 text-center overflow-hidden shadow-2xl shadow-teal-200">
-          {/* Decorative blobs */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/3 -translate-x-1/4" />
-          <div className="relative">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">{content.headline}</h2>
-            <p className="text-teal-100 mb-8 max-w-md mx-auto">{content.subtext}</p>
-            <Link to="/register"
-              className="inline-flex items-center gap-2 bg-white text-teal-700 hover:bg-teal-50 font-bold px-8 py-4 rounded-2xl shadow-lg transition-all text-sm">
-              {content.ctaText} <ArrowRight className="w-4 h-4" />
-            </Link>
-            <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-4 text-teal-100 text-xs">
-              {['Free plan forever', 'No credit card required', 'Set up in 5 minutes'].map(item => (
-                <span key={item} className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5" /> {item}
-                </span>
+          {/* Copy */}
+          <div className="flex-1 text-center lg:text-left">
+            <span className="inline-flex items-center gap-1.5 bg-violet-100 text-violet-700 text-xs font-semibold px-3 py-1 rounded-full mb-5">
+              <Sparkles className="w-3.5 h-3.5" /> AI-powered
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-5 leading-tight">
+              Your AI sales assistant,<br />
+              <span className="text-teal-600">working around the clock</span>
+            </h2>
+            <p className="text-gray-500 mb-6 leading-relaxed">
+              Customers get instant answers about your products, prices, and stock — even at 2am.
+              The AI recommends the right products, handles objections, and collects order details
+              so you wake up to confirmed sales.
+            </p>
+            <ul className="space-y-3 mb-8">
+              {[
+                'Trained on your exact product catalogue',
+                'Captures name, phone & delivery address',
+                'Recommends upsells naturally',
+                'Speaks in the customer\'s language',
+              ].map((pt) => (
+                <li key={pt} className="flex items-center gap-2.5 text-sm text-gray-700">
+                  <CheckCircle className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                  {pt}
+                </li>
               ))}
-            </div>
+            </ul>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 text-teal-600 font-semibold hover:text-teal-700 transition-colors"
+            >
+              Try it on your store <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </div>
@@ -352,77 +458,417 @@ function CtaBanner({ content }: { content: LandingPageContent['ctaBanner'] }) {
   );
 }
 
-// ── Footer ────────────────────────────────────────────────────────────────────
-function Footer() {
+/* ══════════════════════════════════════════════════════════════════════════
+   TESTIMONIALS
+══════════════════════════════════════════════════════════════════════════ */
+const testimonials = [
+  {
+    name: 'Priya Mehta',
+    role: 'Boutique owner, Surat',
+    emoji: '🧕',
+    quote: 'I was taking orders on WhatsApp manually for 3 years. ReplyCart gave me a proper store in one evening. My customers love browsing it.',
+  },
+  {
+    name: 'Rohan Patel',
+    role: 'Home baker, Ahmedabad',
+    emoji: '👨',
+    quote: 'The AI chat takes cake orders for me while I\'m baking! It asks the right questions and I just confirm the order. Saves me an hour every day.',
+  },
+  {
+    name: 'Sneha Joshi',
+    role: 'Jewellery seller, Jaipur',
+    emoji: '👩',
+    quote: 'My Instagram followers can now browse all my jewellery and pay online. Orders went up 40% in the first month. Worth every rupee.',
+  },
+];
+
+function Testimonials() {
   return (
-    <footer className="bg-slate-900 text-slate-400">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-          {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-8 h-8 rounded-xl bg-teal-500 flex items-center justify-center">
-                <MessageSquareQuote className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-white text-sm">ReplyCart</span>
-            </div>
-            <p className="text-xs leading-relaxed">Turn chats into orders. Built for Indian social sellers.</p>
-          </div>
-          {/* Product */}
-          <div>
-            <p className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Product</p>
-            <div className="space-y-2 text-xs">
-              <a href="#features" className="block hover:text-teal-400 transition-colors">Features</a>
-              <Link to="/pricing" className="block hover:text-teal-400 transition-colors">Pricing</Link>
-              <a href="#how-it-works" className="block hover:text-teal-400 transition-colors">How it works</a>
-            </div>
-          </div>
-          {/* Account */}
-          <div>
-            <p className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Account</p>
-            <div className="space-y-2 text-xs">
-              <Link to="/login" className="block hover:text-teal-400 transition-colors">Log in</Link>
-              <Link to="/register" className="block hover:text-teal-400 transition-colors">Sign up free</Link>
-            </div>
-          </div>
-          {/* Legal */}
-          <div>
-            <p className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Legal</p>
-            <div className="space-y-2 text-xs">
-              <span className="block">Privacy Policy</span>
-              <span className="block">Terms of Service</span>
-            </div>
-          </div>
+    <section id="testimonials" className="bg-white py-20 scroll-mt-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-12">
+          <p className="text-teal-600 text-sm font-semibold uppercase tracking-wider mb-2">Real sellers, real results</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+            Loved by businesses worldwide
+          </h2>
         </div>
-        <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
-          <p>© {new Date().getFullYear()} ReplyCart. All rights reserved.</p>
-          <p>Made with ❤️ for Indian sellers</p>
+        <div className="grid sm:grid-cols-3 gap-6">
+          {testimonials.map((t) => (
+            <div key={t.name} className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+              <div className="flex gap-0.5 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <p className="text-gray-700 text-sm leading-relaxed mb-5">"{t.quote}"</p>
+              <div className="flex items-center gap-3">
+                <span className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xl">{t.emoji}</span>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                  <p className="text-xs text-gray-400">{t.role}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </footer>
+    </section>
   );
 }
 
-// ── Main landing page ─────────────────────────────────────────────────────────
-export function LandingPage() {
-  const { data: content = DEFAULT_CONTENT } = useQuery({
-    queryKey: ['landing-content'],
-    queryFn: landingApi.getContent,
-    staleTime: 10 * 60 * 1000,
-  });
+/* ══════════════════════════════════════════════════════════════════════════
+   LIVE DEMO STORES
+══════════════════════════════════════════════════════════════════════════ */
+const demoStores = [
+  {
+    name: 'Floraved Beauty',
+    category: 'Skincare & Hair Care',
+    url: 'https://www.floraved.com',
+    displayUrl: 'www.floraved.com',
+    emoji: '🌸',
+    color: 'bg-rose-50',
+    accent: 'text-rose-600',
+    border: 'border-rose-100',
+    badge: 'Custom Domain',
+    badgeColor: 'bg-rose-100 text-rose-700',
+    products: ['Rose Mist Toner', 'Hair Growth Serum', 'Glow Face Pack'],
+    demo: null,
+  },
+  {
+    name: "Priya's Boutique",
+    category: 'Women\'s Ethnic Fashion',
+    url: 'https://www.replycart.app/priya-boutique',
+    displayUrl: 'replycart.app/priya-boutique',
+    emoji: '👗',
+    color: 'bg-pink-50',
+    accent: 'text-pink-600',
+    border: 'border-pink-100',
+    badge: 'Live Demo Store',
+    badgeColor: 'bg-pink-100 text-pink-700',
+    products: ['Banarasi Silk Saree', 'Anarkali Kurti Set', 'Bridal Lehenga'],
+    demo: { email: 'owner@priyaboutique.in', password: 'Demo@1234' },
+  },
+  {
+    name: 'Sugar & Crumbs',
+    category: 'Custom Cakes & Bakery',
+    url: 'https://www.replycart.app/sugar-crumbs',
+    displayUrl: 'replycart.app/sugar-crumbs',
+    emoji: '🎂',
+    color: 'bg-amber-50',
+    accent: 'text-amber-600',
+    border: 'border-amber-100',
+    badge: 'Live Demo Store',
+    badgeColor: 'bg-amber-100 text-amber-700',
+    products: ['Truffle Fantasy Cake', 'Fudge Brownies Box', 'Birthday Hamper'],
+    demo: { email: 'hello@sugarcrumbs.in', password: 'Demo@1234' },
+  },
+];
 
+function LiveDemoStores() {
   return (
-    <div className="min-h-screen bg-white">
+    <section className="bg-white py-20 scroll-mt-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-14">
+          <span className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+            Live stores built on ReplyCart
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
+            See real stores in action
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto">
+            Click any store below to browse it live — these are real sellers using ReplyCart right now.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-6">
+          {demoStores.map((store) => (
+            <div key={store.name} className={`rounded-2xl border ${store.border} overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col`}>
+              {/* Store header — clickable */}
+              <a
+                href={store.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => track.demoStoreView(store.name)}
+                className="group block"
+              >
+                <div className={`${store.color} px-5 py-5`}>
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-4xl">{store.emoji}</span>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${store.badgeColor}`}>
+                      {store.badge}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-lg leading-tight">{store.name}</h3>
+                  <p className={`text-xs font-medium ${store.accent} mt-0.5`}>{store.category}</p>
+                </div>
+
+                {/* Products preview */}
+                <div className="bg-white px-5 py-4 space-y-2">
+                  {store.products.map((p) => (
+                    <div key={p} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{p}</span>
+                      <CheckCircle className={`w-3.5 h-3.5 ${store.accent}`} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* View store footer */}
+                <div className={`border-t ${store.border} px-5 py-3 flex items-center justify-between bg-gray-50`}>
+                  <span className="text-xs text-gray-400 font-mono truncate">{store.displayUrl}</span>
+                  <ExternalLink className={`w-3.5 h-3.5 ${store.accent} flex-shrink-0 group-hover:scale-110 transition-transform`} />
+                </div>
+              </a>
+
+              {/* Demo credentials — only for demo stores */}
+              {store.demo && (
+                <div className={`border-t ${store.border} px-5 py-3 bg-slate-50`}>
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Try the dashboard</p>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-slate-400 w-16 shrink-0">Email</span>
+                      <code className="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-700 text-[11px] select-all">{store.demo.email}</code>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-slate-400 w-16 shrink-0">Password</span>
+                      <code className="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-700 text-[11px] select-all">{store.demo.password}</code>
+                    </div>
+                  </div>
+                  <a
+                    href="/login"
+                    onClick={() => track.demoLoginClick(store.name)}
+                    className={`mt-3 flex items-center justify-center gap-1.5 w-full text-xs font-semibold ${store.accent} hover:opacity-80 transition-opacity`}
+                  >
+                    Login to dashboard <ChevronRight className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <p className="text-center text-sm text-gray-400 mt-8">
+          Want your store featured here?{' '}
+          <a href={DEMO_WA} target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold hover:underline">
+            Talk to us →
+          </a>
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CUSTOM DOMAIN HIGHLIGHT
+══════════════════════════════════════════════════════════════════════════ */
+function CustomDomainHighlight() {
+  return (
+    <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 py-20">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col lg:flex-row items-center gap-14">
+
+          {/* Left copy */}
+          <div className="flex-1 text-center lg:text-left">
+            <span className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-500/30 text-teal-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+              <Globe className="w-3.5 h-3.5" /> Your brand, your domain
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-5 leading-tight">
+              Sell on{' '}
+              <span className="text-teal-400">your own domain.</span>
+              <br />Not someone else's.
+            </h2>
+            <p className="text-slate-300 mb-8 leading-relaxed text-lg">
+              Connect your existing domain — like <span className="text-white font-semibold">www.yourbrand.com</span> — to your ReplyCart store.
+              Customers see your brand, not ours. SSL included, zero technical setup required.
+            </p>
+
+            <ul className="space-y-4 mb-10">
+              {[
+                { icon: '🌐', text: 'Use any domain you already own — GoDaddy, Namecheap, Google Domains' },
+                { icon: '🔒', text: 'Free SSL certificate — your store is always https://' },
+                { icon: '⚡', text: 'Goes live in minutes with a simple CNAME record' },
+                { icon: '💼', text: 'Customers trust your brand domain more — higher conversions' },
+                { icon: '📱', text: 'Works perfectly on mobile, WhatsApp shares, and social links' },
+              ].map((pt) => (
+                <li key={pt.text} className="flex items-start gap-3 text-slate-200 text-sm">
+                  <span className="text-lg flex-shrink-0 mt-0.5">{pt.icon}</span>
+                  {pt.text}
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              to="/register"
+              onClick={() => track.customDomainCta()}
+              className="inline-flex items-center gap-2 bg-teal-500 hover:bg-teal-400 text-white font-bold px-7 py-3.5 rounded-xl transition-colors shadow-lg shadow-teal-500/30"
+            >
+              Get your own domain store <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Right — domain switcher visual */}
+          <div className="flex-1 w-full max-w-md">
+            <div className="relative">
+              {/* Glow */}
+              <div className="absolute inset-0 bg-teal-500/10 rounded-3xl blur-2xl" />
+
+              <div className="relative bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl">
+                {/* Browser bar */}
+                <div className="bg-slate-900 px-4 py-3 flex items-center gap-3 border-b border-slate-700">
+                  <div className="flex gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                    <span className="w-3 h-3 rounded-full bg-amber-500/60" />
+                    <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                  </div>
+                  <div className="flex-1 bg-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                    <Lock className="w-3 h-3 text-green-400 flex-shrink-0" />
+                    <span className="text-sm text-white font-medium">www.floraved.com</span>
+                  </div>
+                </div>
+
+                {/* Store preview */}
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center text-xl">🌸</div>
+                    <div>
+                      <p className="text-white font-bold">Floraved Beauty</p>
+                      <p className="text-slate-400 text-xs">www.floraved.com</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {[
+                      { emoji: '🌹', name: 'Rose Toner', price: '₹349' },
+                      { emoji: '✨', name: 'Hair Serum', price: '₹599' },
+                    ].map((p) => (
+                      <div key={p.name} className="bg-slate-700 rounded-xl p-3">
+                        <span className="text-2xl">{p.emoji}</span>
+                        <p className="text-slate-200 text-xs font-medium mt-1">{p.name}</p>
+                        <p className="text-teal-400 font-bold text-sm">{p.price}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-teal-500/20 border border-teal-500/30 rounded-xl px-4 py-3 text-center">
+                    <p className="text-teal-300 text-xs font-semibold">✓ Powered by ReplyCart · SSL Secured</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating badge */}
+              <div className="absolute -top-4 -right-4 bg-teal-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg shadow-teal-500/40">
+                🔒 SSL included
+              </div>
+              <div className="absolute -bottom-4 -left-4 bg-white text-slate-800 text-xs font-bold px-3 py-2 rounded-xl shadow-lg">
+                ✅ Custom domain live
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PRICING CTA
+══════════════════════════════════════════════════════════════════════════ */
+function PricingCta() {
+  return (
+    <section className="bg-gray-50 py-16 border-y border-gray-100">
+      <div className="max-w-3xl mx-auto px-4 text-center">
+        <p className="text-teal-600 text-sm font-semibold uppercase tracking-wider mb-3">Simple pricing</p>
+        <h2 className="text-3xl font-extrabold text-gray-900 mb-4">
+          Start free. Grow at your pace.
+        </h2>
+        <p className="text-gray-500 mb-8">
+          Our free plan lets you launch a store and take your first orders with zero cost.
+          Upgrade only when you're ready to scale.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+          <Link
+            to="/register"
+            className="inline-flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-lg shadow-teal-100"
+          >
+            Start for free <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            to="/pricing"
+            className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 hover:border-teal-300 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-colors"
+          >
+            See all plans <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+          {['Free plan available', 'No credit card needed', 'Cancel anytime'].map((f) => (
+            <span key={f} className="flex items-center gap-1.5 text-sm text-gray-500">
+              <CheckCircle className="w-4 h-4 text-teal-500" /> {f}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FINAL CTA BANNER
+══════════════════════════════════════════════════════════════════════════ */
+function CtaBanner() {
+  return (
+    <section className="bg-teal-600 py-20">
+      <div className="max-w-3xl mx-auto px-4 text-center">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
+          Ready to grow your business online?
+        </h2>
+        <p className="text-teal-100 mb-8 text-lg">
+          Join 500+ sellers who turned their WhatsApp hustle into a proper online brand.
+          Your store can be live in 15 minutes.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            to="/register"
+            onClick={() => track.ctaClick('final_banner')}
+            className="inline-flex items-center justify-center gap-2 bg-white text-teal-700 hover:bg-teal-50 font-bold px-8 py-3.5 rounded-xl transition-colors shadow-lg"
+          >
+            Create your store — it's free <ArrowRight className="w-4 h-4" />
+          </Link>
+          <a
+            href={DEMO_WA}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track.demoClick('final_banner')}
+            className="inline-flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors"
+          >
+            Book a demo call
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PAGE
+══════════════════════════════════════════════════════════════════════════ */
+export default function LandingPage() {
+  return (
+    <div className="min-h-screen font-sans antialiased">
       <Navbar />
-      <main>
-        <Hero          content={content.hero} />
-        <StatsBar      stats={content.stats} />
-        <FeaturesSection features={content.features} />
-        <HowItWorksSection steps={content.howItWorks} />
-        <TestimonialsSection testimonials={content.testimonials} />
-        <CtaBanner     content={content.ctaBanner} />
-      </main>
+      <Hero />
+      <CategoryStrip />
+      <LiveDemoStores />
+      <Features />
+      <CustomDomainHighlight />
+      <Stats />
+      <HowItWorks />
+      <AiHighlight />
+      <Testimonials />
+      <PricingCta />
+      <CtaBanner />
       <Footer />
+      <LeadChatWidget />
     </div>
   );
 }

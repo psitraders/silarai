@@ -21,6 +21,8 @@ export interface CustomerDetailDto {
   city?: string;
   notes?: string;
   tags?: string;
+  birthday?: string;     // "YYYY-MM-DD"
+  anniversary?: string;  // "YYYY-MM-DD"
   totalOrders: number;
   totalSpend: number;
   lastOrderDate?: string;
@@ -48,11 +50,38 @@ export interface SaveCustomerDto {
   city?: string;
   notes?: string;
   tags?: string;
+  birthday?: string;     // "YYYY-MM-DD" (year is ignored for recurrence)
+  anniversary?: string;  // "YYYY-MM-DD"
+}
+
+export interface UpcomingBirthdayDto {
+  id: string;
+  name: string;
+  phone?: string;
+  type: 'Birthday' | 'Anniversary';
+  date: string;
+  daysUntil: number;
+  totalOrders: number;
+  totalSpend: number;
 }
 
 export interface DuplicateGroupDto {
   phoneNumber: string;
   customers: CustomerDto[];
+}
+
+export interface B2BCustomerDto {
+  crmCustomerId: string;
+  storefrontCustomerId: string;
+  name: string;
+  email?: string;
+  phoneNumber: string;
+  companyName?: string;
+  gstNumber?: string;
+  isB2BApproved: boolean;
+  totalOrders: number;
+  totalSpend: number;
+  createdAt: string;
 }
 
 export interface PagedResult<T> {
@@ -87,6 +116,15 @@ export const customersApi = {
   getDuplicates: () =>
     apiClient.get<DuplicateGroupDto[]>('/customers/duplicates').then(r => r.data),
 
+  smartMerge: () =>
+    apiClient.post<{ groupsMerged: number; customersMerged: number }>('/customers/smart-merge').then(r => r.data),
+
+  getB2BCustomers: () =>
+    apiClient.get<B2BCustomerDto[]>('/customers/b2b').then(r => r.data),
+
+  approveB2BCustomer: (crmCustomerId: string, approve = true) =>
+    apiClient.post(`/customers/${crmCustomerId}/b2b/approve`, null, { params: { approve } }),
+
   exportCsv: () =>
     apiClient.get('/customers/export', { responseType: 'blob' }).then(r => r.data as Blob),
 
@@ -97,4 +135,7 @@ export const customersApi = {
       '/customers/import', form, { headers: { 'Content-Type': 'multipart/form-data' } }
     ).then(r => r.data);
   },
+
+  getUpcomingBirthdays: (daysAhead = 30) =>
+    apiClient.get<UpcomingBirthdayDto[]>('/customers/birthdays', { params: { daysAhead } }).then(r => r.data),
 };

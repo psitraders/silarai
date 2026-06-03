@@ -32,6 +32,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               'transition-colors bg-white',
               leftIcon && 'pl-10',
               error ? 'border-red-400 bg-red-50' : 'border-slate-200',
+              props.disabled && 'bg-slate-50 text-slate-400 cursor-not-allowed opacity-70',
               className
             )}
             {...props}

@@ -3,14 +3,20 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Users, MessageCircle, ChevronRight, Plus,
-  Download, Upload, GitMerge, X, Tag,
+  Download, Upload, GitMerge, X, Tag, Sparkles, CheckCircle2,
+  Building2, ShieldCheck, Clock, ShieldOff,
 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Pagination } from '../../components/ui/Pagination';
 import { PageLoader } from '../../components/ui/Spinner';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { customersApi, type CustomerDto, type SaveCustomerDto } from '../../api/customers.api';
+import {
+  customersApi,
+  type CustomerDto,
+  type SaveCustomerDto,
+  type B2BCustomerDto,
+} from '../../api/customers.api';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 import { generateWhatsAppLink } from '../../utils/whatsappLink';
@@ -100,7 +106,7 @@ function CustomerFormModal({ initial, onSave, onClose, loading, title }: Custome
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-type Tab = 'all' | 'duplicates';
+type Tab = 'all' | 'b2b' | 'duplicates';
 
 export function CustomersPage() {
   const navigate = useNavigate();
@@ -113,6 +119,7 @@ export function CustomersPage() {
   const [tagFilter, setTagFilter] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [importResult, setImportResult] = useState<{ created: number; updated: number; skipped: number } | null>(null);
+  const [mergeResult, setMergeResult] = useState<{ groupsMerged: number; customersMerged: number } | null>(null);
 
   // ── Queries ────────────────────────────────────────────────────────────────
   const { data, isLoading } = useQuery({
@@ -125,6 +132,12 @@ export function CustomersPage() {
     queryKey: ['customer-duplicates'],
     queryFn: customersApi.getDuplicates,
     enabled: tab === 'duplicates',
+  });
+
+  const { data: b2bCustomers = [], isLoading: b2bLoading } = useQuery({
+    queryKey: ['b2b-customers'],
+    queryFn: customersApi.getB2BCustomers,
+    enabled: tab === 'b2b',
   });
 
   // Collect all distinct tags from current page for the filter chips
@@ -146,9 +159,24 @@ export function CustomersPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['customer-duplicates', 'customers'] }),
   });
 
+  const approveMutation = useMutation({
+    mutationFn: ({ id, approve }: { id: string; approve: boolean }) =>
+      customersApi.approveB2BCustomer(id, approve),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['b2b-customers'] }),
+  });
+
   const importMutation = useMutation({
     mutationFn: customersApi.importCsv,
     onSuccess: (result) => { setImportResult(result); qc.invalidateQueries({ queryKey: ['customers'] }); },
+  });
+
+  const smartMergeMutation = useMutation({
+    mutationFn: customersApi.smartMerge,
+    onSuccess: (result) => {
+      setMergeResult(result);
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.invalidateQueries({ queryKey: ['customer-duplicates'] });
+    },
   });
 
   // ── Export ─────────────────────────────────────────────────────────────────
@@ -184,6 +212,14 @@ export function CustomersPage() {
             {importMutation.isPending ? 'Importing…' : 'Import CSV'}
           </Button>
           <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleImportFile} />
+          <Button
+            variant="outline" size="sm"
+            onClick={() => { setMergeResult(null); smartMergeMutation.mutate(); }}
+            loading={smartMergeMutation.isPending}
+          >
+            <Sparkles className="w-4 h-4 mr-1.5 text-purple-500" />
+            {smartMergeMutation.isPending ? 'Merging…' : 'AI Smart Merge'}
+          </Button>
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="w-4 h-4 mr-1.5" /> New Customer
           </Button>
@@ -198,14 +234,47 @@ export function CustomersPage() {
         </div>
       )}
 
+      {/* Smart Merge result toast */}
+      {mergeResult && (
+        <div className="flex items-center justify-between bg-purple-50 border border-purple-100 rounded-xl px-4 py-2.5 text-sm text-purple-700">
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            {mergeResult.groupsMerged === 0
+              ? 'No duplicates found — your customer list is clean!'
+              : `AI merged ${mergeResult.customersMerged} duplicate${mergeResult.customersMerged !== 1 ? 's' : ''} across ${mergeResult.groupsMerged} group${mergeResult.groupsMerged !== 1 ? 's' : ''}`}
+          </span>
+          <button onClick={() => setMergeResult(null)}><X className="w-4 h-4" /></button>
+        </div>
+      )}
+
+      {/* Smart Merge error toast */}
+      {smartMergeMutation.isError && (
+        <div className="flex items-center justify-between bg-red-50 border border-red-100 rounded-xl px-4 py-2.5 text-sm text-red-700">
+          <span>Smart merge failed — please try again.</span>
+          <button onClick={() => smartMergeMutation.reset()}><X className="w-4 h-4" /></button>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
-        {(['all', 'duplicates'] as Tab[]).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${tab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
-            {t === 'duplicates' ? `Duplicates${duplicates.length ? ` (${duplicates.length})` : ''}` : 'All Customers'}
-          </button>
-        ))}
+        <button onClick={() => setTab('all')}
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${tab === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+          All Customers
+        </button>
+        <button onClick={() => setTab('b2b')}
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${tab === 'b2b' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+          <Building2 className="w-3.5 h-3.5" />
+          B2B Customers
+          {b2bCustomers.filter(c => !c.isB2BApproved).length > 0 && (
+            <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+              {b2bCustomers.filter(c => !c.isB2BApproved).length}
+            </span>
+          )}
+        </button>
+        <button onClick={() => setTab('duplicates')}
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${tab === 'duplicates' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+          {`Duplicates${duplicates.length ? ` (${duplicates.length})` : ''}`}
+        </button>
       </div>
 
       {/* ── All Customers tab ── */}
@@ -302,6 +371,109 @@ export function CustomersPage() {
             </>
           )}
         </>
+      )}
+
+      {/* ── B2B Customers tab ── */}
+      {tab === 'b2b' && (
+        b2bLoading ? <PageLoader /> : b2bCustomers.length === 0 ? (
+          <EmptyState
+            icon={<Building2 className="w-8 h-8 text-slate-400" />}
+            title="No B2B customers yet"
+            description="B2B customers appear here once they register via your storefront and select the 'Business/Wholesale' option."
+          />
+        ) : (
+          <div className="space-y-4">
+            {/* Pending approval banner */}
+            {b2bCustomers.some(c => !c.isB2BApproved) && (
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5 text-sm text-amber-700">
+                <Clock className="w-4 h-4 shrink-0" />
+                <span>
+                  <strong>{b2bCustomers.filter(c => !c.isB2BApproved).length}</strong> customer{b2bCustomers.filter(c => !c.isB2BApproved).length !== 1 ? 's' : ''} waiting for B2B approval.
+                </span>
+              </div>
+            )}
+
+            <Card padding="none">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left text-xs font-medium text-slate-500 px-6 py-3">Customer</th>
+                      <th className="text-left text-xs font-medium text-slate-500 px-6 py-3">Company</th>
+                      <th className="text-left text-xs font-medium text-slate-500 px-6 py-3">GST</th>
+                      <th className="text-right text-xs font-medium text-slate-500 px-6 py-3">Orders</th>
+                      <th className="text-right text-xs font-medium text-slate-500 px-6 py-3">Total Spent</th>
+                      <th className="text-left text-xs font-medium text-slate-500 px-6 py-3">Status</th>
+                      <th className="px-6 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {b2bCustomers.map((c: B2BCustomerDto) => (
+                      <tr key={c.crmCustomerId}
+                        onClick={() => navigate(`/customers/${c.crmCustomerId}`)}
+                        className="hover:bg-slate-50 transition-colors cursor-pointer">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-semibold text-indigo-700 flex-shrink-0">
+                              {c.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-slate-900">{c.name}</p>
+                              {c.email && <p className="text-xs text-slate-400">{c.email}</p>}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-700">
+                          {c.companyName ?? <span className="text-slate-400">—</span>}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-500 font-mono text-xs">
+                          {c.gstNumber ?? <span className="text-slate-400">—</span>}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-right text-slate-700">{c.totalOrders}</td>
+                        <td className="px-6 py-4 text-sm text-right font-medium text-slate-900">{formatCurrency(c.totalSpend)}</td>
+                        <td className="px-6 py-4">
+                          {c.isB2BApproved ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
+                              <ShieldCheck className="w-3.5 h-3.5" /> Approved
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+                              <Clock className="w-3.5 h-3.5" /> Pending
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
+                            <a href={generateWhatsAppLink(c.phoneNumber, `Hi ${c.name}!`)}
+                              target="_blank" rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 hover:bg-green-100 px-2 py-1.5 rounded-lg font-medium">
+                              <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                            </a>
+                            {c.isB2BApproved ? (
+                              <button
+                                onClick={() => approveMutation.mutate({ id: c.crmCustomerId, approve: false })}
+                                disabled={approveMutation.isPending}
+                                className="inline-flex items-center gap-1 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-1.5 rounded-lg font-medium disabled:opacity-50">
+                                <ShieldOff className="w-3.5 h-3.5" /> Revoke
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => approveMutation.mutate({ id: c.crmCustomerId, approve: true })}
+                                disabled={approveMutation.isPending}
+                                className="inline-flex items-center gap-1 text-xs text-white bg-teal-600 hover:bg-teal-700 px-2.5 py-1.5 rounded-lg font-medium disabled:opacity-50">
+                                <ShieldCheck className="w-3.5 h-3.5" /> Approve
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        )
       )}
 
       {/* ── Duplicates tab ── */}

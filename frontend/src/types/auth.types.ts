@@ -7,6 +7,7 @@ export interface LoginResult {
   name: string;
   email: string;
   roles: string[];
+  requiresTwoFactor?: boolean;
 }
 
 export interface RegisterRequest {
@@ -15,6 +16,9 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone?: string;
+  country?: string;
+  language?: string;
+  currency?: string;
 }
 
 export interface User {

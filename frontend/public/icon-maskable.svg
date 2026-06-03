@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full bleed background (maskable icons must fill the entire canvas) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- Icon content scaled to sit within the safe zone (center ~80%, ~51px inset each side) -->
+  <!-- Shopping bag body -->
+  <rect x="141" y="226" width="230" height="166" rx="38" fill="white"/>
+
+  <!-- Bag handle -->
+  <g>
+    <path d="M192 226 C192 163 320 163 320 226" fill="none" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  </g>
+
+  <!-- Three chat / typing dots inside the bag -->
+  <circle cx="199" cy="322" r="20.5" fill="#0d9488"/>
+  <circle cx="256" cy="322" r="20.5" fill="#0d9488"/>
+  <circle cx="313" cy="322" r="20.5" fill="#0d9488"/>
+</svg>

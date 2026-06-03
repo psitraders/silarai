@@ -52,7 +52,7 @@ export function CouponsPage() {
   };
 
   const saveMutation = useMutation({
-    mutationFn: (data: SaveCouponDto) => editing ? couponsApi.update(editing.id, data) : couponsApi.create(data),
+    mutationFn: (data: SaveCouponDto) => editing ? couponsApi.update(editing.id, data) : couponsApi.create(data) as Promise<any>,
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['coupons'] }); setOpen(false); },
   });
 

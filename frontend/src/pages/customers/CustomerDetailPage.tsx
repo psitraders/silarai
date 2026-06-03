@@ -21,27 +21,34 @@ interface EditPanelProps {
   onSave: (data: SaveCustomerDto) => void;
   onCancel: () => void;
   loading: boolean;
+  error?: string | null;
+  success?: boolean;
 }
 
-function EditPanel({ initial, onSave, onCancel, loading }: EditPanelProps) {
+function EditPanel({ initial, onSave, onCancel, loading, error, success }: EditPanelProps) {
   const [form, setForm] = useState<SaveCustomerDto>({ ...initial });
   const set = (k: keyof SaveCustomerDto) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm(f => ({ ...f, [k]: e.target.value }));
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(form);
+  };
+
   return (
     <Card>
       <h2 className="font-semibold text-slate-900 mb-4">Edit Customer</h2>
-      <div className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium text-slate-600 block mb-1">Name *</label>
-            <input value={form.name} onChange={set('name')}
+            <input value={form.name} onChange={set('name')} required
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
           </div>
           <div>
             <label className="text-xs font-medium text-slate-600 block mb-1">Phone *</label>
-            <input value={form.phoneNumber} onChange={set('phoneNumber')}
+            <input value={form.phoneNumber} onChange={set('phoneNumber')} required
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
           </div>
         </div>
@@ -62,6 +69,18 @@ function EditPanel({ initial, onSave, onCancel, loading }: EditPanelProps) {
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
           </div>
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-slate-600 block mb-1">Birthday</label>
+            <input value={form.birthday ?? ''} onChange={set('birthday')} type="date"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-600 block mb-1">Anniversary</label>
+            <input value={form.anniversary ?? ''} onChange={set('anniversary')} type="date"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
+        </div>
         <div>
           <label className="text-xs font-medium text-slate-600 block mb-1">Tags <span className="text-slate-400 font-normal">(comma-separated)</span></label>
           <input value={form.tags ?? ''} onChange={set('tags')} placeholder="vip, loyal, wholesale"
@@ -73,13 +92,29 @@ function EditPanel({ initial, onSave, onCancel, loading }: EditPanelProps) {
             placeholder="Internal notes about this customer…"
             className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
         </div>
+
+        {/* Error banner */}
+        {error && (
+          <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+            <span className="text-red-500 text-xs font-medium mt-0.5">⚠</span>
+            <p className="text-red-600 text-xs">{error}</p>
+          </div>
+        )}
+
+        {/* Success banner */}
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+            <p className="text-green-600 text-xs font-medium">✓ Customer details saved successfully.</p>
+          </div>
+        )}
+
         <div className="flex gap-2 pt-1">
-          <Button onClick={() => onSave(form)} loading={loading} disabled={!form.name.trim() || !form.phoneNumber.trim()}>
+          <Button type="submit" loading={loading} disabled={!form.name.trim() || !form.phoneNumber.trim()}>
             Save Changes
           </Button>
-          <Button variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         </div>
-      </div>
+      </form>
     </Card>
   );
 }
@@ -91,7 +126,9 @@ export function CustomerDetailPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const [editing, setEditing]   = useState(false);
+  const [editing, setEditing]       = useState(false);
+  const [editError, setEditError]   = useState<string | null>(null);
+  const [editSuccess, setEditSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showMerge, setShowMerge]   = useState(false);
   const [mergeSearch, setMergeSearch] = useState('');
@@ -105,7 +142,23 @@ export function CustomerDetailPage() {
 
   const updateMutation = useMutation({
     mutationFn: (data: SaveCustomerDto) => customersApi.update(id!, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['customer', id] }); setEditing(false); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customer', id] });
+      setEditError(null);
+      setEditSuccess(true);
+      // Auto-close the edit panel after a short delay so the user sees the success message
+      setTimeout(() => { setEditing(false); setEditSuccess(false); }, 1200);
+    },
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { message?: string; errors?: string[] } } })
+          ?.response?.data?.message
+        ?? (err as { response?: { data?: { errors?: string[] } } })
+          ?.response?.data?.errors?.[0]
+        ?? 'Failed to save changes. Please try again.';
+      setEditError(msg);
+      setEditSuccess(false);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -146,7 +199,8 @@ export function CustomerDetailPage() {
               <MessageCircle className="w-4 h-4" /> WhatsApp
             </button>
           </a>
-          <button onClick={() => setEditing(e => !e)}
+          <button
+            onClick={() => { setEditing(e => !e); setEditError(null); setEditSuccess(false); }}
             className="flex items-center gap-2 text-sm text-slate-600 hover:text-teal-700 bg-slate-100 hover:bg-teal-50 px-3 py-2 rounded-xl transition-colors">
             <Pencil className="w-4 h-4" /> Edit
           </button>
@@ -165,12 +219,21 @@ export function CustomerDetailPage() {
       {editing && (
         <EditPanel
           initial={{
-            name: customer.name, phoneNumber: customer.phoneNumber, email: customer.email,
-            address: customer.address, city: customer.city, notes: customer.notes, tags: customer.tags,
+            name: customer.name,
+            phoneNumber: customer.phoneNumber,
+            email: customer.email,
+            address: customer.address,
+            city: customer.city,
+            notes: customer.notes,
+            tags: customer.tags,
+            birthday: customer.birthday,
+            anniversary: customer.anniversary,
           }}
-          onSave={updateMutation.mutate}
-          onCancel={() => setEditing(false)}
+          onSave={data => { setEditError(null); updateMutation.mutate(data); }}
+          onCancel={() => { setEditing(false); setEditError(null); setEditSuccess(false); }}
           loading={updateMutation.isPending}
+          error={editError}
+          success={editSuccess}
         />
       )}
 
@@ -178,16 +241,20 @@ export function CustomerDetailPage() {
         {/* Left panel */}
         <div className="space-y-4">
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <Card className="text-center">
-              <p className="text-2xl font-bold text-slate-900">{customer.totalOrders}</p>
-              <p className="text-xs text-slate-500 mt-0.5">Orders</p>
-            </Card>
-            <Card className="text-center">
-              <p className="text-2xl font-bold theme-text">{formatCurrency(customer.totalSpend)}</p>
-              <p className="text-xs text-slate-500 mt-0.5">Total Spent</p>
-            </Card>
-          </div>
+          <Card className="p-0 overflow-hidden">
+            <div className="flex divide-x divide-slate-100">
+              <div className="flex-1 flex flex-col items-center justify-center py-4 px-3">
+                <p className="text-3xl font-bold text-slate-900 leading-none">{customer.totalOrders}</p>
+                <p className="text-xs text-slate-500 mt-1.5 font-medium">Orders</p>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center py-4 px-3 min-w-0">
+                <p className="text-lg font-bold theme-text leading-none text-center break-all">
+                  {formatCurrency(customer.totalSpend)}
+                </p>
+                <p className="text-xs text-slate-500 mt-1.5 font-medium">Total Spent</p>
+              </div>
+            </div>
+          </Card>
 
           {/* Contact */}
           <Card>

@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
 import { Card } from '../../components/ui/Card';
 import { StatCard } from '../../components/ui/StatCard';
 import { PageLoader } from '../../components/ui/Spinner';
 import { analyticsApi } from '../../api/analytics.api';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { TrendingUp, ShoppingBag, MessageCircle, Users } from 'lucide-react';
+import { TrendingUp, ShoppingBag, MessageCircle, Users, BarChart2, ArrowRight } from 'lucide-react';
 
 const COLORS = ['#0f766e', '#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
 
@@ -30,6 +31,18 @@ export function AnalyticsPage() {
         <h1 className="text-2xl font-bold text-slate-900">Analytics</h1>
         <p className="text-slate-500 text-sm mt-0.5">Business insights for the last 30 days.</p>
       </div>
+
+      {/* GA4 shortcut banner */}
+      <Link to="/analytics/ga4" className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl px-5 py-4 hover:shadow-md transition-shadow group">
+        <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <BarChart2 className="w-5 h-5 text-orange-600" />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-slate-900 text-sm">Google Analytics 4 Reports</p>
+          <p className="text-xs text-slate-500">Live sessions, traffic sources, top pages &amp; device breakdown from GA4.</p>
+        </div>
+        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-orange-600 transition-colors" />
+      </Link>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Total Revenue" value={formatCurrency(data?.totalRevenue ?? 0)}

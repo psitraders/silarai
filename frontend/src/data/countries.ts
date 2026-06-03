@@ -1,0 +1,95 @@
+export interface CountryData {
+  name: string;
+  code: string;   // ISO 3166-1 alpha-2
+  language: string; // BCP-47 / i18n code
+  currency: string; // ISO 4217
+  currencySymbol: string;
+  dialCode: string;
+}
+
+export const COUNTRIES: CountryData[] = [
+  // South Asia
+  { name: 'India',              code: 'IN', language: 'en', currency: 'INR', currencySymbol: '₹',  dialCode: '+91' },
+  { name: 'Pakistan',           code: 'PK', language: 'en', currency: 'PKR', currencySymbol: '₨',  dialCode: '+92' },
+  { name: 'Bangladesh',         code: 'BD', language: 'en', currency: 'BDT', currencySymbol: '৳',  dialCode: '+880' },
+  { name: 'Sri Lanka',          code: 'LK', language: 'en', currency: 'LKR', currencySymbol: '₨',  dialCode: '+94' },
+  { name: 'Nepal',              code: 'NP', language: 'en', currency: 'NPR', currencySymbol: '₨',  dialCode: '+977' },
+
+  // Middle East
+  { name: 'Saudi Arabia',       code: 'SA', language: 'ar', currency: 'SAR', currencySymbol: '﷼',  dialCode: '+966' },
+  { name: 'United Arab Emirates', code: 'AE', language: 'ar', currency: 'AED', currencySymbol: 'د.إ', dialCode: '+971' },
+  { name: 'Qatar',              code: 'QA', language: 'ar', currency: 'QAR', currencySymbol: '﷼',  dialCode: '+974' },
+  { name: 'Kuwait',             code: 'KW', language: 'ar', currency: 'KWD', currencySymbol: 'د.ك', dialCode: '+965' },
+  { name: 'Bahrain',            code: 'BH', language: 'ar', currency: 'BHD', currencySymbol: '.د.ب', dialCode: '+973' },
+  { name: 'Oman',               code: 'OM', language: 'ar', currency: 'OMR', currencySymbol: '﷼',  dialCode: '+968' },
+  { name: 'Jordan',             code: 'JO', language: 'ar', currency: 'JOD', currencySymbol: 'د.ا', dialCode: '+962' },
+  { name: 'Egypt',              code: 'EG', language: 'ar', currency: 'EGP', currencySymbol: '£',  dialCode: '+20' },
+  { name: 'Morocco',            code: 'MA', language: 'ar', currency: 'MAD', currencySymbol: 'د.م.', dialCode: '+212' },
+  { name: 'Tunisia',            code: 'TN', language: 'ar', currency: 'TND', currencySymbol: 'د.ت', dialCode: '+216' },
+
+  // Southeast Asia
+  { name: 'Indonesia',          code: 'ID', language: 'en', currency: 'IDR', currencySymbol: 'Rp', dialCode: '+62' },
+  { name: 'Malaysia',           code: 'MY', language: 'en', currency: 'MYR', currencySymbol: 'RM', dialCode: '+60' },
+  { name: 'Philippines',        code: 'PH', language: 'en', currency: 'PHP', currencySymbol: '₱',  dialCode: '+63' },
+  { name: 'Thailand',           code: 'TH', language: 'en', currency: 'THB', currencySymbol: '฿',  dialCode: '+66' },
+  { name: 'Singapore',          code: 'SG', language: 'en', currency: 'SGD', currencySymbol: 'S$', dialCode: '+65' },
+  { name: 'Vietnam',            code: 'VN', language: 'en', currency: 'VND', currencySymbol: '₫',  dialCode: '+84' },
+
+  // Americas
+  { name: 'United States',      code: 'US', language: 'en', currency: 'USD', currencySymbol: '$',  dialCode: '+1' },
+  { name: 'Canada',             code: 'CA', language: 'en', currency: 'CAD', currencySymbol: 'C$', dialCode: '+1' },
+  { name: 'Mexico',             code: 'MX', language: 'es', currency: 'MXN', currencySymbol: '$',  dialCode: '+52' },
+  { name: 'Brazil',             code: 'BR', language: 'en', currency: 'BRL', currencySymbol: 'R$', dialCode: '+55' },
+  { name: 'Colombia',           code: 'CO', language: 'es', currency: 'COP', currencySymbol: '$',  dialCode: '+57' },
+  { name: 'Argentina',          code: 'AR', language: 'es', currency: 'ARS', currencySymbol: '$',  dialCode: '+54' },
+  { name: 'Chile',              code: 'CL', language: 'es', currency: 'CLP', currencySymbol: '$',  dialCode: '+56' },
+  { name: 'Peru',               code: 'PE', language: 'es', currency: 'PEN', currencySymbol: 'S/.',dialCode: '+51' },
+
+  // Europe
+  { name: 'United Kingdom',     code: 'GB', language: 'en', currency: 'GBP', currencySymbol: '£',  dialCode: '+44' },
+  { name: 'Germany',            code: 'DE', language: 'en', currency: 'EUR', currencySymbol: '€',  dialCode: '+49' },
+  { name: 'France',             code: 'FR', language: 'en', currency: 'EUR', currencySymbol: '€',  dialCode: '+33' },
+  { name: 'Spain',              code: 'ES', language: 'es', currency: 'EUR', currencySymbol: '€',  dialCode: '+34' },
+  { name: 'Italy',              code: 'IT', language: 'en', currency: 'EUR', currencySymbol: '€',  dialCode: '+39' },
+  { name: 'Netherlands',        code: 'NL', language: 'en', currency: 'EUR', currencySymbol: '€',  dialCode: '+31' },
+  { name: 'Turkey',             code: 'TR', language: 'en', currency: 'TRY', currencySymbol: '₺',  dialCode: '+90' },
+
+  // Africa
+  { name: 'Nigeria',            code: 'NG', language: 'en', currency: 'NGN', currencySymbol: '₦',  dialCode: '+234' },
+  { name: 'Kenya',              code: 'KE', language: 'en', currency: 'KES', currencySymbol: 'KSh',dialCode: '+254' },
+  { name: 'Ghana',              code: 'GH', language: 'en', currency: 'GHS', currencySymbol: '₵',  dialCode: '+233' },
+  { name: 'South Africa',       code: 'ZA', language: 'en', currency: 'ZAR', currencySymbol: 'R',  dialCode: '+27' },
+  { name: 'Tanzania',           code: 'TZ', language: 'en', currency: 'TZS', currencySymbol: 'TSh',dialCode: '+255' },
+  { name: 'Uganda',             code: 'UG', language: 'en', currency: 'UGX', currencySymbol: 'USh',dialCode: '+256' },
+
+  // Oceania
+  { name: 'Australia',          code: 'AU', language: 'en', currency: 'AUD', currencySymbol: 'A$', dialCode: '+61' },
+  { name: 'New Zealand',        code: 'NZ', language: 'en', currency: 'NZD', currencySymbol: 'NZ$',dialCode: '+64' },
+];
+
+export const SUPPORTED_LANGUAGES = [
+  { code: 'en', label: 'English',            nativeLabel: 'English'      },
+  { code: 'fr', label: 'French',             nativeLabel: 'Français'     },
+  { code: 'es', label: 'Spanish',            nativeLabel: 'Español'      },
+  { code: 'pt', label: 'Portuguese',         nativeLabel: 'Português'    },
+  { code: 'de', label: 'German',             nativeLabel: 'Deutsch'      },
+  { code: 'ar', label: 'Arabic',             nativeLabel: 'العربية'      },
+  { code: 'tr', label: 'Turkish',            nativeLabel: 'Türkçe'       },
+  { code: 'id', label: 'Indonesian',         nativeLabel: 'Bahasa Indonesia' },
+  { code: 'hi', label: 'Hindi',              nativeLabel: 'हिंदी'        },
+  { code: 'bn', label: 'Bengali',            nativeLabel: 'বাংলা'        },
+  { code: 'ta', label: 'Tamil',              nativeLabel: 'தமிழ்'        },
+  { code: 'zh', label: 'Chinese (Simplified)', nativeLabel: '中文'       },
+];
+
+export function getCountryByCode(code: string): CountryData | undefined {
+  return COUNTRIES.find(c => c.code === code);
+}
+
+export function getDefaultLanguageForCountry(countryCode: string): string {
+  return COUNTRIES.find(c => c.code === countryCode)?.language ?? 'en';
+}
+
+export function getDefaultCurrencyForCountry(countryCode: string): string {
+  return COUNTRIES.find(c => c.code === countryCode)?.currency ?? 'USD';
+}

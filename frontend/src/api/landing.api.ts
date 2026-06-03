@@ -28,11 +28,11 @@ export interface LandingPageContent {
 
 export const DEFAULT_CONTENT: LandingPageContent = {
   hero: {
-    badge:        '🚀 Trusted by 500+ sellers across India',
-    headline:     'Turn WhatsApp Chats Into Orders',
-    subheadline:  'ReplyCart is the all-in-one platform for social sellers — manage leads, orders, products and marketing from a single dashboard.',
-    ctaPrimary:   'Start for Free',
-    ctaSecondary: 'View Pricing',
+    badge:        '🚀 500+ boutiques & sellers trust ReplyCart',
+    headline:     'Turn WhatsApp DMs into a Full Online Store — in 10 Minutes',
+    subheadline:  'Stop taking orders manually. ReplyCart gives you a shareable store link, AI-powered replies, order tracking, and campaigns — all in one place.',
+    ctaPrimary:   'Start Free — No Card Needed',
+    ctaSecondary: 'See Live Demo',
   },
   stats: [
     { value: '500+',    label: 'Active Sellers' },
@@ -59,9 +59,9 @@ export const DEFAULT_CONTENT: LandingPageContent = {
     { name: "Anjali Patel", business: "Craft House, Surat",      quote: "Finally a tool built for Indian sellers. The WhatsApp integration and storefront are exactly what I needed.",          avatar: 'A' },
   ],
   ctaBanner: {
-    headline: 'Ready to grow your business?',
-    subtext:  'Join 500+ sellers already using ReplyCart. Free plan available — no credit card required.',
-    ctaText:  'Get Started Free',
+    headline: 'Your store could be live in 10 minutes.',
+    subtext:  'Join 500+ sellers already turning WhatsApp DMs into orders. Free forever plan — no card needed.',
+    ctaText:  'Open My Store Free',
   },
 };
 
@@ -71,7 +71,15 @@ export const landingApi = {
       .then(r => {
         try {
           const parsed = typeof r.data === 'string' ? JSON.parse(r.data) : r.data;
-          return { ...DEFAULT_CONTENT, ...parsed };
+          // Merge scalar fields but fall back to DEFAULT arrays when DB has empty []
+          return {
+            ...DEFAULT_CONTENT,
+            ...parsed,
+            stats:        parsed.stats?.length        ? parsed.stats        : DEFAULT_CONTENT.stats,
+            features:     parsed.features?.length     ? parsed.features     : DEFAULT_CONTENT.features,
+            howItWorks:   parsed.howItWorks?.length   ? parsed.howItWorks   : DEFAULT_CONTENT.howItWorks,
+            testimonials: parsed.testimonials?.length ? parsed.testimonials : DEFAULT_CONTENT.testimonials,
+          };
         } catch {
           return DEFAULT_CONTENT;
         }

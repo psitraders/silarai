@@ -1,14 +1,39 @@
-import { useState } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import {
   Check, Zap, Crown, Star, ArrowRight, MessageCircle, ShieldCheck,
-  Users, Package, Bot, BarChart2, Palette, Infinity,
+  Users, Package, Bot, BarChart2, Palette, Infinity, ChevronDown,
 } from 'lucide-react';
 import { PageLoader } from '../../components/ui/Spinner';
+import { Navbar } from '../../components/landing/Navbar';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+
+// ── Currency config — rates from INR (updated periodically) ──────────────────
+const CURRENCIES: Record<string, { symbol: string; rate: number; label: string; flag: string }> = {
+  INR: { symbol: '₹',   rate: 1,       label: 'INR — Indian Rupee',      flag: '🇮🇳' },
+  USD: { symbol: '$',   rate: 0.012,   label: 'USD — US Dollar',          flag: '🇺🇸' },
+  EUR: { symbol: '€',   rate: 0.011,   label: 'EUR — Euro',               flag: '🇪🇺' },
+  GBP: { symbol: '£',   rate: 0.0095,  label: 'GBP — British Pound',      flag: '🇬🇧' },
+  AED: { symbol: 'AED', rate: 0.044,   label: 'AED — UAE Dirham',         flag: '🇦🇪' },
+  SAR: { symbol: 'SR',  rate: 0.045,   label: 'SAR — Saudi Riyal',        flag: '🇸🇦' },
+  SGD: { symbol: 'S$',  rate: 0.016,   label: 'SGD — Singapore Dollar',   flag: '🇸🇬' },
+  AUD: { symbol: 'A$',  rate: 0.018,   label: 'AUD — Australian Dollar',  flag: '🇦🇺' },
+  CAD: { symbol: 'C$',  rate: 0.016,   label: 'CAD — Canadian Dollar',    flag: '🇨🇦' },
+  MYR: { symbol: 'RM',  rate: 0.054,   label: 'MYR — Malaysian Ringgit',  flag: '🇲🇾' },
+  NZD: { symbol: 'NZ$', rate: 0.020,   label: 'NZD — New Zealand Dollar', flag: '🇳🇿' },
+};
+
+function convertPrice(inr: number, code: string): string {
+  const cur = CURRENCIES[code] ?? CURRENCIES.INR;
+  const val = Math.round(inr * cur.rate);
+  if (code === 'INR') return `₹${val.toLocaleString('en-IN')}`;
+  // Nice rounding: sub-10 → nearest 1, else nearest 5
+  const rounded = val < 10 ? val : Math.round(val / 5) * 5;
+  return `≈ ${cur.symbol}${rounded.toLocaleString()}`;
+}
 
 interface Plan {
   id: string;
@@ -100,6 +125,23 @@ function fmt(n: number) {
 export function PricingPage() {
   const navigate = useNavigate();
   const [annual, setAnnual] = useState(false);
+  const [currency, setCurrency] = useState('INR');
+  const [currencyOpen, setCurrencyOpen] = useState(false);
+
+  // Auto-detect visitor's currency via IP geolocation (best-effort, falls back to INR)
+  useEffect(() => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 3000);
+    fetch('https://ipapi.co/json/', { signal: ctrl.signal })
+      .then(r => r.json())
+      .then(data => {
+        const code = data?.currency as string | undefined;
+        if (code && CURRENCIES[code]) setCurrency(code);
+      })
+      .catch(() => {/* keep INR */})
+      .finally(() => clearTimeout(timer));
+    return () => { ctrl.abort(); clearTimeout(timer); };
+  }, []);
 
   const { data: plans = [], isLoading } = useQuery<Plan[]>({
     queryKey: ['plans'],
@@ -113,10 +155,13 @@ export function PricingPage() {
       ? Math.round(((p.monthlyPrice * 12 - p.annualPrice) / (p.monthlyPrice * 12)) * 100)
       : 0;
 
+  const cur = CURRENCIES[currency] ?? CURRENCIES.INR;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
+      <Navbar />
       {/* Header */}
-      <div className="max-w-5xl mx-auto px-4 py-16 text-center">
+      <div className="max-w-5xl mx-auto px-4 pt-28 pb-8 text-center">
         <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
           <ShieldCheck className="w-3.5 h-3.5" /> No credit card required to start
         </div>
@@ -128,28 +173,67 @@ export function PricingPage() {
           WhatsApp ordering, and lead management.
         </p>
 
-        {/* Billing toggle */}
-        <div className="inline-flex items-center gap-3 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm">
-          <button
-            onClick={() => setAnnual(false)}
-            className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
-              !annual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setAnnual(true)}
-            className={`px-5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
-              annual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Annual
-            <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-              Save up to 25%
-            </span>
-          </button>
+        {/* Controls row: billing toggle + currency switcher */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          {/* Billing toggle */}
+          <div className="inline-flex items-center gap-3 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm">
+            <button
+              onClick={() => setAnnual(false)}
+              className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+                !annual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              className={`px-5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                annual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Annual
+              <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                Save up to 25%
+              </span>
+            </button>
+          </div>
+
+          {/* Currency picker */}
+          <div className="relative">
+            <button
+              onClick={() => setCurrencyOpen(o => !o)}
+              className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm text-sm font-medium text-slate-700 hover:border-slate-300 transition-all"
+            >
+              <span>{cur.flag}</span>
+              <span>{currency}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${currencyOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {currencyOpen && (
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden py-1">
+                {Object.entries(CURRENCIES).map(([code, info]) => (
+                  <button
+                    key={code}
+                    onClick={() => { setCurrency(code); setCurrencyOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors text-left ${
+                      code === currency ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-slate-700'
+                    }`}
+                  >
+                    <span className="text-base">{info.flag}</span>
+                    <span>{info.label}</span>
+                    {code === currency && <Check className="w-3.5 h-3.5 ml-auto text-teal-600" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Approximate notice for non-INR */}
+        {currency !== 'INR' && (
+          <p className="text-xs text-slate-400 mt-3">
+            Prices shown in {currency} are approximate. You will be billed in INR at checkout.
+          </p>
+        )}
       </div>
 
       {/* Plan cards */}
@@ -197,21 +281,20 @@ export function PricingPage() {
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-sm font-medium text-slate-500">₹</span>
+                      <div className="flex items-baseline gap-1 flex-wrap">
                         <span className="text-4xl font-bold text-slate-900">
-                          {Math.round(price).toLocaleString('en-IN')}
+                          {convertPrice(price, currency)}
                         </span>
                         <span className="text-slate-400 text-sm">/month</span>
                       </div>
                       {annual && saving > 0 && (
                         <p className="text-xs text-green-600 font-medium mt-1">
-                          You save {saving}% · ₹{plan.annualPrice.toLocaleString('en-IN')} billed annually
+                          You save {saving}% · {convertPrice(plan.annualPrice, currency)} billed annually
                         </p>
                       )}
-                      {!annual && (
+                      {!annual && plan.annualPrice > 0 && (
                         <p className="text-xs text-slate-400 mt-1">
-                          or ₹{Math.round(plan.annualPrice / 12).toLocaleString('en-IN')}/mo billed annually
+                          or {convertPrice(Math.round(plan.annualPrice / 12), currency)}/mo billed annually
                         </p>
                       )}
                     </>
@@ -357,7 +440,7 @@ export function PricingPage() {
                 Get started free
               </button>
               <a
-                href="https://wa.me/919876543210?text=Hi! I'd like to know more about ReplyCart plans."
+                href="https://wa.me/910000000000?text=Hi! I'd like to know more about ReplyCart plans."
                 target="_blank"
                 rel="noreferrer"
                 className="px-7 py-3 border border-white/30 text-white rounded-2xl font-semibold hover:bg-white/10 transition flex items-center gap-2"

@@ -2,9 +2,130 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+
+    <title>ReplyCart — Turn WhatsApp Chats Into Orders</title>
+    <meta name="description" content="ReplyCart — Turn WhatsApp Chats Into Orders. Manage leads, orders, products and marketing from a single dashboard." />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9PJVYCLH11"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-9PJVYCLH11', {
+        page_path: window.location.pathname,
+        send_page_view: true,
+      });
+    </script>
+
+    <!-- PWA manifest — crossorigin="anonymous" enables Chrome to accept a cross-origin
+         manifest with proper CORS headers. The inline script swaps the href to the
+         Azure backend for store pages so the merchant's name and logo appear in the
+         install dialog. Dashboard/auth pages keep the static /manifest.json. -->
+    <!-- Preconnect: eliminate DNS + TLS latency for first image/API request -->
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://replycartapi-h7h2gdctg4h9g6cp.centralindia-01.azurewebsites.net" crossorigin />
+    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://replycartapi-h7h2gdctg4h9g6cp.centralindia-01.azurewebsites.net" />
+
+    <link rel="manifest" href="/manifest.json" id="pwa-manifest" crossorigin="anonymous" />
+
+    <!-- iOS / Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ReplyCart" />
+    <link rel="apple-touch-icon" href="/icon-512.png" />
+
+    <!-- Android / Windows tile -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="ReplyCart" />
+    <meta name="theme-color" content="#0d9488" />
+    <meta name="msapplication-TileColor" content="#0d9488" />
+    <meta name="msapplication-TileImage" content="/icon-512.png" />
+
+    <!-- Open Graph / Facebook crawler -->
+    <meta property="og:title" content="ReplyCart — Turn WhatsApp Chats Into Orders" />
+    <meta property="og:description" content="ReplyCart helps social sellers manage WhatsApp orders, leads, products and marketing from one dashboard. Trusted by sellers worldwide." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.replycart.app" />
+    <meta property="og:image" content="https://replycart.app/icon-512.png" />
+    <meta property="og:site_name" content="ReplyCart" />
+    <meta property="og:locale" content="en" />
+
+    <!-- Business / contact info for Meta verification -->
+    <meta name="description" content="ReplyCart helps WhatsApp sellers manage orders, leads, products and marketing from one dashboard. The all-in-one social commerce platform." />
+    <meta name="keywords" content="WhatsApp orders, social selling, order management, WhatsApp business, social commerce, online store" />
+    <meta name="robots" content="index, follow" />
+
+    <!--
+      PWA SETUP — one synchronous IIFE, runs during HTML parse:
+
+      1. MANIFEST: For store pages (/:slug) the manifest href is updated
+         synchronously — Chrome queues the manifest fetch lazily, AFTER the
+         parser finishes, so by the time the network request fires the href
+         already points to /api/manifest/:slug which returns the merchant's
+         name, logo and theme colour via a Vercel serverless proxy.
+         All other pages keep the default /manifest.json (ReplyCart branding).
+
+      2. BEFORE-INSTALL-PROMPT: Captured here, in <head>, long before React
+         mounts. Stored on window.__pwaPrompt so any component can use it
+         even if the event already fired before the component mounted.
+    -->
+    <script>
+      (function () {
+        /* ── 1. Swap manifest to store-specific URL for store pages ────────────
+           %VITE_API_URL% is replaced at build time by Vite with the real Azure
+           backend URL (e.g. https://replycartapi.azurewebsites.net/api/v1).
+           The backend's /public/:slug/manifest.json returns the merchant's name,
+           logo and theme colour. crossorigin="anonymous" on the <link> above
+           tells Chrome to make a CORS fetch — the backend already allows the
+           Vercel origin so the response is readable and Chrome can validate it,
+           firing beforeinstallprompt with the correct store branding.
+           NOTE: The Vercel serverless function /api/manifest/:slug is NOT used
+           because Vercel's catch-all rewrite intercepts it before the function
+           can run. This direct Azure approach bypasses that issue entirely.    */
+        var BACKEND = '%VITE_API_URL%';
+        var APP_ROUTES = new Set([
+          'dashboard','orders','leads','customers','catalog','products',
+          'categories','coupons','marketing','ai','analytics','settings',
+          'admin','tools','pricing','login','register','auth',
+          'verify-email','forgot-password','reset-password','subscription',
+          'storefront','api',
+        ]);
+        var parts = window.location.pathname.split('/').filter(Boolean);
+        var slug  = parts[0];
+        // Guard: BACKEND must look like a real URL (not an unreplaced template literal)
+        if (slug && parts.length === 1 && !APP_ROUTES.has(slug)
+            && BACKEND && BACKEND.charAt(0) !== '%') {
+          // Synchronous — runs before Chrome's lazy manifest network request
+          document.getElementById('pwa-manifest').href =
+            BACKEND.replace(/\/$/, '') + '/public/' + slug + '/manifest.json';
+        }
+
+        /* ── 2. Capture beforeinstallprompt as early as possible ── */
+        window.__pwaPrompt = null;
+        window.addEventListener('beforeinstallprompt', function (e) {
+          e.preventDefault();          // suppress browser's mini-infobar
+          window.__pwaPrompt = e;
+          window.dispatchEvent(new Event('pwaPromptReady')); // notify mounted React components
+        });
+        window.addEventListener('appinstalled', function () {
+          window.__pwaPrompt    = null;
+          window.__pwaInstalled = true;
+          window.dispatchEvent(new Event('pwaInstalled'));
+        });
+
+        /* ── 3. Register service worker (network-first, never caches /api/) ── */
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js').catch(function () {});
+          });
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

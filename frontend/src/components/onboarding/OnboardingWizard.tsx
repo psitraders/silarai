@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { businessApi } from '../../api/business.api';
 import { catalogApi } from '../../api/catalog.api';
+import { marketingApi } from '../../api/marketing.api';
+import { analyticsApi } from '../../api/analytics.api';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -31,6 +33,22 @@ const CURRENCIES = [
 ];
 
 const STEP_LABELS = ['Business', 'Storefront', 'Product', 'Go Live'];
+
+const STEP_UNLOCKS: Record<number, { emoji: string; text: string }[]> = {
+  1: [
+    { emoji: '💬', text: 'WhatsApp order channel' },
+    { emoji: '👤', text: 'Business profile visible to customers' },
+  ],
+  2: [
+    { emoji: '🎨', text: 'Your custom-branded store link' },
+    { emoji: '📲', text: 'Shareable WhatsApp storefront' },
+  ],
+  3: [
+    { emoji: '🛍️', text: 'Customers can browse & buy' },
+    { emoji: '📦', text: 'Order management dashboard' },
+    { emoji: '🚀', text: 'Ready to go live!' },
+  ],
+};
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -100,32 +118,46 @@ function TextInput({
 
 function StepProgress({ step }: { step: WizardStep }) {
   if (step === 0 || step === 4) return null;
-  const idx = step - 1; // 0-based index into STEP_LABELS
+  const idx = step - 1;
+  const score = Math.round((idx / STEP_LABELS.length) * 100);
   return (
-    <div className="flex items-center justify-center gap-0 mb-6">
-      {STEP_LABELS.map((label, i) => (
-        <div key={label} className="flex items-center">
-          <div className="flex flex-col items-center">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                i < idx ? 'bg-teal-600 text-white' :
+    <div className="mb-6">
+      {/* Score pill */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Setup Progress</span>
+        <span className="text-xs font-extrabold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full">
+          {score}% complete
+        </span>
+      </div>
+      {/* Progress bar */}
+      <div className="w-full h-1.5 bg-slate-100 rounded-full mb-4 overflow-hidden">
+        <div
+          className="h-1.5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all duration-700"
+          style={{ width: `${score}%` }}
+        />
+      </div>
+      {/* Step dots */}
+      <div className="flex items-center justify-center gap-0">
+        {STEP_LABELS.map((label, i) => (
+          <div key={label} className="flex items-center">
+            <div className="flex flex-col items-center">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                i < idx ? 'bg-teal-600 text-white shadow-sm shadow-teal-200' :
                 i === idx ? 'bg-teal-600 text-white ring-4 ring-teal-100' :
                 'bg-slate-100 text-slate-400'
-              }`}
-            >
-              {i < idx ? <Check className="w-3.5 h-3.5" /> : i + 1}
+              }`}>
+                {i < idx ? <Check className="w-3.5 h-3.5" /> : i + 1}
+              </div>
+              <span className={`text-[10px] mt-1 font-semibold whitespace-nowrap ${i === idx ? 'text-teal-700' : i < idx ? 'text-teal-500' : 'text-slate-400'}`}>
+                {label}
+              </span>
             </div>
-            <span className={`text-[10px] mt-1 font-medium whitespace-nowrap ${i === idx ? 'text-teal-700' : 'text-slate-400'}`}>
-              {label}
-            </span>
+            {i < STEP_LABELS.length - 1 && (
+              <div className={`w-10 sm:w-14 h-0.5 mb-4 mx-1 transition-colors duration-500 ${i < idx ? 'bg-teal-500' : 'bg-slate-200'}`} />
+            )}
           </div>
-          {i < STEP_LABELS.length - 1 && (
-            <div
-              className={`w-12 sm:w-16 h-0.5 mb-4 mx-1 transition-colors ${i < idx ? 'bg-teal-600' : 'bg-slate-200'}`}
-            />
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -145,6 +177,7 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [productSkipped, setProductSkipped] = useState(false);
+  const [sharedViaWhatsApp, setSharedViaWhatsApp] = useState(false);
 
   const [form, setForm] = useState<FormState>({
     name: initialName,
@@ -164,10 +197,31 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
 
   const set = (patch: Partial<FormState>) => setForm(prev => ({ ...prev, ...patch }));
 
+  // Fetch existing business data — needed to preserve country/language on save
+  const { data: businessData } = useQuery({
+    queryKey: ['business'],
+    queryFn: businessApi.getBusiness,
+  });
+
   // Fetch existing storefront settings to pre-populate slug & theme
   const { data: storefrontData } = useQuery({
     queryKey: ['storefront-settings'],
     queryFn: businessApi.getStorefrontSettings,
+  });
+
+  // Live data for next-steps checklist on completion screen
+  const { data: campaignsData = [] } = useQuery({
+    queryKey: ['campaigns'],
+    queryFn: () => marketingApi.getCampaigns(),
+    staleTime: 5 * 60 * 1000,
+    enabled: step === 4,
+  });
+
+  const { data: kpisData } = useQuery({
+    queryKey: ['dashboard-kpis'],
+    queryFn: () => analyticsApi.getKpis(7),
+    staleTime: 5 * 60 * 1000,
+    enabled: step === 4,
   });
 
   useEffect(() => {
@@ -192,39 +246,111 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
   const saveProfile = useMutation({
     mutationFn: () => businessApi.updateBusiness({
       name: form.name,
-      category: '',
+      category: businessData?.category || '',
       description: form.description || undefined,
       whatsAppNumber: form.whatsAppNumber || undefined,
-      instagramHandle: undefined,
-      facebookPageUrl: undefined,
+      instagramHandle: businessData?.instagramHandle,
+      facebookPageUrl: businessData?.facebookPageUrl,
       currency: form.currency,
-      welcomeText: undefined,
-      deliveryInfo: undefined,
+      // country & language are set during registration and must be preserved —
+      // they are required non-nullable fields on the backend UpdateBusinessCommand
+      country: businessData?.country || 'India',
+      language: businessData?.language || 'en',
+      welcomeText: businessData?.welcomeText,
+      deliveryInfo: businessData?.deliveryInfo,
     } as any),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['business'] });
       setError(null);
       setStep(2);
     },
-    onError: () => setError('Failed to save business profile. Please try again.'),
+    onError: (err: any) => {
+      const msg =
+        err?.response?.data?.errors?.[0] ??
+        err?.response?.data?.title ??
+        err?.response?.data?.message ??
+        err?.message ??
+        'Failed to save business profile. Please try again.';
+      setError(msg);
+    },
   });
 
   const saveStorefront = useMutation({
-    mutationFn: () => businessApi.updateStorefrontSettings({
-      themeColor: form.themeColor,
-      slug: form.slug,
-      whatsAppCtaLabel: form.whatsAppCtaLabel,
-      // Preserve existing values; fall back to sensible defaults for new tenants
-      instagramCtaLabel: storefrontData?.instagramCtaLabel ?? 'Follow on Instagram',
-      facebookCtaLabel:  storefrontData?.facebookCtaLabel  ?? 'Like on Facebook',
-      showOutOfStockProducts: storefrontData?.showOutOfStockProducts ?? false,
-      allowPublicInquiries:   storefrontData?.allowPublicInquiries   ?? true,
-    } as any),
+    mutationFn: () => {
+      // Resolve the effective slug: prefer the user-edited form value, fall back
+      // to whatever the server already has, then derive from the business name.
+      const effectiveSlug =
+        form.slug.trim() ||
+        (storefrontData as any)?.slug ||
+        (storefrontData as any)?.Slug ||
+        toSlug(form.name);
+
+      return businessApi.updateStorefrontSettings({
+        slug: effectiveSlug,
+        themeColor: form.themeColor || '#0F766E',
+        // SecondaryColor & AccentColor are required by the backend — preserve existing or use defaults.
+        // Access both camelCase (if backend serialises camelCase) and PascalCase (if not).
+        secondaryColor:
+          (storefrontData as any)?.secondaryColor ??
+          (storefrontData as any)?.SecondaryColor ??
+          '#134E4A',
+        accentColor:
+          (storefrontData as any)?.accentColor ??
+          (storefrontData as any)?.AccentColor ??
+          null,
+        whatsAppCtaLabel: form.whatsAppCtaLabel || 'Order on WhatsApp',
+        instagramCtaLabel:
+          (storefrontData as any)?.instagramCtaLabel ??
+          (storefrontData as any)?.InstagramCtaLabel ??
+          'Message on Instagram',
+        facebookCtaLabel:
+          (storefrontData as any)?.facebookCtaLabel ??
+          (storefrontData as any)?.FacebookCtaLabel ??
+          'Message on Facebook',
+        showOutOfStockProducts:
+          (storefrontData as any)?.showOutOfStockProducts ??
+          (storefrontData as any)?.ShowOutOfStockProducts ??
+          true,
+        allowPublicInquiries:
+          (storefrontData as any)?.allowPublicInquiries ??
+          (storefrontData as any)?.AllowPublicInquiries ??
+          true,
+        announcementText:
+          (storefrontData as any)?.announcementText ??
+          (storefrontData as any)?.AnnouncementText ??
+          null,
+        seoTitle:
+          (storefrontData as any)?.seoTitle ??
+          (storefrontData as any)?.SeoTitle ??
+          null,
+        seoDescription:
+          (storefrontData as any)?.seoDescription ??
+          (storefrontData as any)?.SeoDescription ??
+          null,
+        logoUrl:
+          (storefrontData as any)?.logoUrl ??
+          (storefrontData as any)?.LogoUrl ??
+          null,
+        bannerUrl:
+          (storefrontData as any)?.bannerUrl ??
+          (storefrontData as any)?.BannerUrl ??
+          null,
+      } as any);
+    },
     onSuccess: () => {
       setError(null);
       setStep(3);
     },
-    onError: () => setError('Failed to save storefront settings. Please try again.'),
+    onError: (err: any) => {
+      // Surface the real backend error so it's visible instead of a generic message.
+      const msg =
+        err?.response?.data?.errors?.[0] ??
+        err?.response?.data?.title ??
+        err?.response?.data?.message ??
+        err?.message ??
+        'Failed to save storefront settings. Please try again.';
+      setError(msg);
+    },
   });
 
   const saveProduct = useMutation({
@@ -395,6 +521,17 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
                   <h2 className="text-xl font-bold text-slate-900">Your Business</h2>
                   <p className="text-sm text-slate-500 mt-0.5">Tell customers who you are.</p>
                 </div>
+                {/* Unlock callout */}
+                <div className="bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3">
+                  <p className="text-[11px] font-bold text-teal-700 uppercase tracking-wide mb-2">🔓 Completing this step unlocks</p>
+                  <div className="space-y-1.5">
+                    {STEP_UNLOCKS[1].map(u => (
+                      <p key={u.text} className="text-xs text-teal-800 flex items-center gap-2">
+                        <span>{u.emoji}</span> {u.text}
+                      </p>
+                    ))}
+                  </div>
+                </div>
 
                 <div>
                   <FieldLabel required>Business Name</FieldLabel>
@@ -465,6 +602,17 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">Storefront Design</h2>
                   <p className="text-sm text-slate-500 mt-0.5">Make it yours with colors and a URL.</p>
+                </div>
+                {/* Unlock callout */}
+                <div className="bg-violet-50 border border-violet-100 rounded-2xl px-4 py-3">
+                  <p className="text-[11px] font-bold text-violet-700 uppercase tracking-wide mb-2">🔓 Completing this step unlocks</p>
+                  <div className="space-y-1.5">
+                    {STEP_UNLOCKS[2].map(u => (
+                      <p key={u.text} className="text-xs text-violet-800 flex items-center gap-2">
+                        <span>{u.emoji}</span> {u.text}
+                      </p>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Theme color */}
@@ -562,6 +710,17 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">First Product</h2>
                   <p className="text-sm text-slate-500 mt-0.5">Add something for customers to buy.</p>
+                </div>
+                {/* Unlock callout */}
+                <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3">
+                  <p className="text-[11px] font-bold text-blue-700 uppercase tracking-wide mb-2">🔓 Completing this step unlocks</p>
+                  <div className="space-y-1.5">
+                    {STEP_UNLOCKS[3].map(u => (
+                      <p key={u.text} className="text-xs text-blue-800 flex items-center gap-2">
+                        <span>{u.emoji}</span> {u.text}
+                      </p>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Image upload */}
@@ -662,39 +821,65 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
 
         {/* ── Step 4: Go Live! ────────────────────────────────────────────── */}
         {step === 4 && (
-          <div className="px-8 py-10 text-center">
+          <div className="px-7 py-8">
             {/* Celebration */}
-            <div className="relative w-24 h-24 mx-auto mb-6">
-              <div className="absolute inset-0 rounded-full bg-teal-100 animate-ping opacity-30" />
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-200">
-                <CheckCircle2 className="w-12 h-12 text-white" />
+            <div className="text-center mb-6">
+              <div className="relative w-20 h-20 mx-auto mb-4">
+                <div className="absolute inset-0 rounded-full bg-teal-100 animate-ping opacity-40" />
+                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-teal-200">
+                  <CheckCircle2 className="w-10 h-10 text-white" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-extrabold text-slate-900 mb-1">
+                {productSkipped ? '🎉 Store Created!' : '🚀 You\'re Live!'}
+              </h2>
+              <p className="text-slate-500 text-sm">
+                {productSkipped
+                  ? 'Your store is ready. Add products to start receiving orders.'
+                  : 'Your store and first product are live. Time to share and sell!'}
+              </p>
+            </div>
+
+            {/* Score achieved */}
+            <div className="bg-gradient-to-br from-teal-600 to-cyan-600 rounded-2xl px-5 py-4 mb-4 text-center text-white">
+              <p className="text-xs font-bold text-teal-100 uppercase tracking-wide mb-1">Setup Score</p>
+              <p className="text-4xl font-extrabold">{productSkipped ? '75' : '100'}<span className="text-xl font-semibold text-teal-200">/100</span></p>
+              <p className="text-xs text-teal-100 mt-1">{productSkipped ? 'Add a product to hit 100!' : 'Perfect setup! 🎯'}</p>
+            </div>
+
+            {/* Store URL */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 mb-4">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Your Store URL</p>
+              <p className="text-sm font-mono font-bold text-teal-700 break-all">{storeUrl}</p>
+            </div>
+
+            {/* Next steps checklist */}
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 mb-4">
+              <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-2.5">⚡ Your next steps</p>
+              <div className="space-y-2">
+                {[
+                  { done: !productSkipped, text: 'Add your first product' },
+                  { done: sharedViaWhatsApp || copied, text: 'Share store link on WhatsApp' },
+                  { done: (campaignsData as any[]).some((c: any) => c.status === 'Sent'), text: 'Send your first campaign' },
+                  { done: (kpisData?.ordersThisWeek ?? 0) > 0, text: 'Get your first order 🎉' },
+                ].map(item => (
+                  <div key={item.text} className="flex items-center gap-2.5">
+                    <div className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center ${item.done ? 'bg-teal-500' : 'border-2 border-amber-300'}`}>
+                      {item.done && <Check className="w-2.5 h-2.5 text-white" />}
+                    </div>
+                    <span className={`text-xs font-medium ${item.done ? 'text-slate-400 line-through' : 'text-amber-900'}`}>{item.text}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-slate-900 mb-1">
-              {productSkipped ? 'Store Created! 🎉' : 'You\'re Live! 🚀'}
-            </h2>
-            <p className="text-slate-500 text-sm mb-6">
-              {productSkipped
-                ? 'Your store is ready. Add products to start receiving orders.'
-                : 'Your store and first product are live. Time to share it!'}
-            </p>
-
-            {/* Store URL card */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 mb-5 text-left">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Your Store URL</p>
-              <p className="text-sm font-mono font-semibold text-teal-700 break-all">{storeUrl}</p>
-            </div>
-
             {/* Actions */}
-            <div className="space-y-2.5">
-              <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={handleCopyUrl}
-                  className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
-                    copied
-                      ? 'bg-green-50 border-green-300 text-green-700'
-                      : 'bg-white border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700'
+                  className={`flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold border-2 transition-all ${
+                    copied ? 'bg-green-50 border-green-300 text-green-700' : 'bg-white border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700'
                   }`}
                 >
                   {copied ? <><Check className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy Link</>}
@@ -703,26 +888,24 @@ export function OnboardingWizard({ initialName = '', onDismiss }: OnboardingWiza
                   href={storeUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border-2 border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 transition"
+                  className="flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold border-2 border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 transition"
                 >
                   <ExternalLink className="w-4 h-4" /> Visit Store
                 </a>
               </div>
-
-              {/* WhatsApp share */}
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`🛍️ Check out my new online store — ${form.name}!\n\nShop here: ${storeUrl}`)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition"
+                onClick={() => setSharedViaWhatsApp(true)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition hover:opacity-90"
                 style={{ backgroundColor: form.themeColor }}
               >
                 <MessageCircle className="w-4 h-4" /> Share on WhatsApp
               </a>
-
               <button
                 onClick={handleDone}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-50 transition"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition"
               >
                 Go to Dashboard <ArrowRight className="w-4 h-4" />
               </button>

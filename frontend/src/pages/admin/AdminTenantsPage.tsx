@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronLeft, ChevronRight, Eye, Shield } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Eye, Shield, Bell } from 'lucide-react';
 import apiClient from '../../api/client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -83,6 +83,18 @@ export function AdminTenantsPage() {
         .then(r => r.data),
   });
 
+  // Pending upgrade requests — polled every 60s for in-app notification
+  const { data: pendingData } = useQuery<{
+    count: number;
+    items: { id: string; tenantId: string; tenantName: string; tenantEmail: string; planName: string; isAnnual: boolean; pricePaid: number; createdAt: string }[]
+  }>({
+    queryKey: ['admin-pending-upgrades'],
+    queryFn: () => apiClient.get('/admin/tenants/pending-upgrades').then(r => r.data),
+    refetchInterval: 60_000,
+  });
+  const pendingCount = pendingData?.count ?? 0;
+  const pendingItems = pendingData?.items ?? [];
+
   const toggleStatus = useMutation({
     mutationFn: (id: string) => apiClient.put(`/admin/tenants/${id}/toggle-status`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-tenants'] }),
@@ -114,6 +126,43 @@ export function AdminTenantsPage() {
           </div>
         </div>
       </div>
+
+      {/* Pending upgrade requests banner */}
+      {pendingCount > 0 && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Bell className="w-4 h-4 text-amber-700" />
+            </div>
+            <div>
+              <p className="font-semibold text-amber-900">
+                {pendingCount} pending upgrade request{pendingCount !== 1 ? 's' : ''} awaiting approval
+              </p>
+              <p className="text-xs text-amber-600">Click a tenant to approve or reject from their detail page</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {pendingItems.map(item => (
+              <div
+                key={item.id}
+                onClick={() => navigate(`/admin/tenants/${item.tenantId}`)}
+                className="flex items-center justify-between bg-white rounded-xl border border-amber-100 px-4 py-2.5 cursor-pointer hover:border-amber-300 hover:bg-amber-50/60 transition-colors"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{item.tenantName}</p>
+                  <p className="text-xs text-slate-400">{item.tenantEmail}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full">
+                    {item.planName} · {item.isAnnual ? 'Annual' : 'Monthly'}
+                  </span>
+                  <p className="text-xs text-slate-400 mt-0.5">₹{item.pricePaid.toLocaleString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative max-w-sm">
@@ -181,7 +230,7 @@ export function AdminTenantsPage() {
                       <td className="px-4 py-3 text-right text-slate-600">{t.leadCount}</td>
                       <td className="px-4 py-3 text-right text-slate-600">{t.orderCount}</td>
                       <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
-                        {new Date(t.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        {new Date(t.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
                       <td className="px-4 py-3">
                         <button

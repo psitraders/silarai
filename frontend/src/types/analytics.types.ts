@@ -13,6 +13,9 @@ export interface DashboardKpis {
   orderPipeline: OrderPipeline;
   salesChart: SalesDataPoint[];
   lowStockProducts: LowStockProduct[];
+  repeatCustomerRate: number;
+  totalCustomers: number;
+  repeatCustomers: number;
 }
 
 export interface LowStockProduct {

@@ -313,6 +313,44 @@ export function CampaignDetailPage() {
         ))}
       </div>
 
+      {/* Performance bars (shown for sent campaigns) */}
+      {campaign.status === 'Sent' && campaign.recipientCount > 0 && (
+        <Card>
+          <h2 className="font-semibold text-slate-900 mb-4">Campaign Performance</h2>
+          <div className="space-y-4">
+            {[
+              {
+                label: 'Delivery Rate',
+                value: campaign.sentCount,
+                total: campaign.recipientCount,
+                color: 'bg-teal-500',
+                bg: 'bg-teal-50',
+              },
+              {
+                label: 'Open / Reply Rate',
+                value: campaign.openedCount,
+                total: Math.max(campaign.sentCount, 1),
+                color: 'bg-green-500',
+                bg: 'bg-green-50',
+              },
+            ].map(m => {
+              const pct = Math.round((m.value / m.total) * 100);
+              return (
+                <div key={m.label}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-medium text-slate-700">{m.label}</span>
+                    <span className="text-sm font-bold text-slate-900">{pct}% <span className="text-xs font-normal text-slate-400">({m.value}/{m.total})</span></span>
+                  </div>
+                  <div className={`h-3 rounded-full ${m.bg}`}>
+                    <div className={`h-3 rounded-full ${m.color} transition-all duration-700`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
       {/* Message Preview */}
       <Card>
         <h2 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">

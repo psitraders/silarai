@@ -21,6 +21,9 @@ export const catalogApi = {
 
   deleteProduct: (id: string) => apiClient.delete(`/products/${id}`),
 
+  cloneProduct: (id: string) =>
+    apiClient.post<{ id: string }>(`/products/${id}/clone`).then((r) => r.data),
+
   updateStatus: (id: string, status: string) =>
     apiClient.patch(`/products/${id}/status`, { status }),
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, MessageCircle, Package, CreditCard, XCircle } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Package, CreditCard, XCircle, FileText, QrCode, Link, Copy, CheckCheck } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Card } from '../../components/ui/Card';
 import { Badge, getOrderStatusBadge } from '../../components/ui/Badge';
@@ -13,6 +13,7 @@ import { PageLoader } from '../../components/ui/Spinner';
 import { ordersApi } from '../../api/orders.api';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate, formatDateFull } from '../../utils/formatDate';
+import { useStoreCountry } from '../../hooks/useStoreCountry';
 import { generateWhatsAppLink } from '../../utils/whatsappLink';
 import type { OrderStatus } from '../../types/order.types';
 
@@ -39,11 +40,18 @@ export function OrderDetailPage() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [notifyMessage, setNotifyMessage] = useState('');
+  const [payLinkOpen, setPayLinkOpen] = useState(false);
+  const [payLinkUrl, setPayLinkUrl] = useState('');
+  const [payLinkCopied, setPayLinkCopied] = useState(false);
+  const [payLinkError, setPayLinkError] = useState('');
+
+  const storeCountry = useStoreCountry();
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', id],
     queryFn: () => ordersApi.getOrder(id!),
     enabled: Boolean(id),
+    refetchInterval: 30_000, // live tracking — re-fetch every 30s
   });
 
   const statusMutation = useMutation({
@@ -70,11 +78,30 @@ export function OrderDetailPage() {
     },
   });
 
+  const payLinkMutation = useMutation({
+    mutationFn: () => ordersApi.createPaymentLink(id!),
+    onSuccess: (data) => {
+      setPayLinkUrl(data.url);
+      setPayLinkError('');
+      setPayLinkOpen(true);
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message ?? 'Failed to create payment link. Check Razorpay credentials in Integrations settings.';
+      setPayLinkError(msg);
+      setPayLinkOpen(true);
+    },
+  });
+
   if (isLoading) return <PageLoader />;
   if (!order) return <div className="text-center py-12 text-slate-500">Order not found.</div>;
 
   const isCancelled = order.status === 'Cancelled';
-  const isPaid = order.paymentStatus === 'Paid';
+  // Detect Razorpay-paid orders: either paymentStatus=Paid (after backend fix)
+  // OR notes field contains the Razorpay payment ID (covers pre-fix orders)
+  const razorpayMatch = order.notes?.match(/Payment ID:\s*(pay_\w+)/i);
+  const razorpayPaymentId = razorpayMatch?.[1] ?? null;
+  const isOnlinePaid = !!razorpayPaymentId || order.notes?.toLowerCase().includes('paid online via razorpay');
+  const isPaid = order.paymentStatus === 'Paid' || isOnlinePaid;
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -84,12 +111,25 @@ export function OrderDetailPage() {
         </button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900 font-mono">{order.orderNumber}</h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={getOrderStatusBadge(order.status)}>{order.status}</Badge>
-            <Badge variant={isPaid ? 'success' : 'warning'}>{order.paymentStatus}</Badge>
+            {/* Show paymentStatus pill only when it adds info beyond the order status:
+                - Always show for Razorpay online orders (shows "Paid (Razorpay)" reference)
+                - Hide when order.status is already 'Paid' (payment is implied)
+                - Hide for cancelled orders (irrelevant) */}
+            {(isOnlinePaid || (order.status !== 'Paid' && !isCancelled)) && (
+              <Badge variant={isPaid ? 'success' : 'warning'}>
+                {isOnlinePaid && order.paymentStatus !== 'Paid' ? 'Paid (Razorpay)' : order.paymentStatus}
+              </Badge>
+            )}
+            {razorpayPaymentId && (
+              <span className="text-[10px] font-mono text-slate-400 bg-slate-100 rounded px-2 py-0.5">
+                {razorpayPaymentId}
+              </span>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {!isPaid && !isCancelled && (
             <Button size="sm" onClick={() => setPaymentOpen(true)}>
               <CreditCard className="w-4 h-4 mr-2" /> Record Payment
@@ -101,6 +141,31 @@ export function OrderDetailPage() {
               setNotifyOpen(true);
             }}>
               <MessageCircle className="w-4 h-4 mr-2" /> Notify
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => ordersApi.openInvoice(id!)}
+          >
+            <FileText className="w-4 h-4 mr-2" /> Invoice
+          </Button>
+          {order.customerPhone && order.paymentStatus !== 'Paid' && (
+            <Button size="sm" variant="outline" onClick={() => {
+              const msg = `Hi ${order.customerName ?? ''}! 🛒 Your COD order *${order.orderNumber}* has been confirmed.\n\n*Order Total: ${formatCurrency(order.totalAmount)}*\n\nPlease keep the exact amount ready at delivery. We'll notify you before dispatch. Thank you! 🙏`;
+              setNotifyMessage(msg);
+              setNotifyOpen(true);
+            }}>
+              <QrCode className="w-4 h-4 mr-2" /> COD Confirm
+            </Button>
+          )}
+          {!isPaid && !isCancelled && (
+            <Button size="sm" variant="outline" loading={payLinkMutation.isPending} onClick={() => {
+              setPayLinkUrl('');
+              setPayLinkError('');
+              payLinkMutation.mutate();
+            }}>
+              <Link className="w-4 h-4 mr-2" /> Payment Link
             </Button>
           )}
         </div>
@@ -144,7 +209,7 @@ export function OrderDetailPage() {
                       {h.fromStatus !== h.toStatus && <span className="text-slate-400"> from {h.fromStatus}</span>}
                     </p>
                     {h.note && <p className="text-xs text-slate-500">{h.note}</p>}
-                    <p className="text-xs text-slate-400">{formatDateFull(h.createdAt)}</p>
+                    <p className="text-xs text-slate-400">{formatDateFull(h.createdAt, storeCountry)}</p>
                   </div>
                 </div>
               ))}
@@ -165,7 +230,7 @@ export function OrderDetailPage() {
                   <p className="text-slate-700">{order.notes}</p>
                 </div>
               )}
-              <p className="text-xs text-slate-400 pt-2">Created {formatDate(order.createdAt)}</p>
+              <p className="text-xs text-slate-400 pt-2">Created {formatDate(order.createdAt, storeCountry)}</p>
             </div>
           </Card>
 
@@ -260,6 +325,70 @@ export function OrderDetailPage() {
             <Button type="button" variant="outline" onClick={() => setCancelOpen(false)}>Keep Order</Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Razorpay Payment Link Modal */}
+      <Modal open={payLinkOpen} onClose={() => setPayLinkOpen(false)} title="Razorpay Payment Link">
+        {payLinkError ? (
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+              {payLinkError}
+            </div>
+            <Button variant="outline" onClick={() => setPayLinkOpen(false)} className="w-full">Close</Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-slate-500">
+              Share this link with <span className="font-semibold text-slate-800">{order.customerName}</span> to collect payment of{' '}
+              <span className="font-semibold text-slate-800">{formatCurrency(order.totalAmount)}</span>.
+            </p>
+
+            {/* Link display */}
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+              <a
+                href={payLinkUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 text-sm text-teal-600 font-medium truncate hover:underline"
+              >
+                {payLinkUrl}
+              </a>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(payLinkUrl);
+                  setPayLinkCopied(true);
+                  setTimeout(() => setPayLinkCopied(false), 2000);
+                }}
+                className="flex-shrink-0 p-1.5 rounded-lg hover:bg-slate-200 transition"
+                title="Copy link"
+              >
+                {payLinkCopied
+                  ? <CheckCheck className="w-4 h-4 text-green-600" />
+                  : <Copy className="w-4 h-4 text-slate-500" />}
+              </button>
+            </div>
+
+            <div className="flex gap-3">
+              {order.customerPhone && (
+                <a
+                  href={generateWhatsAppLink(
+                    order.customerPhone,
+                    `Hi ${order.customerName ?? ''}! 💳 Here's your payment link for order *${order.orderNumber}* (${formatCurrency(order.totalAmount)}):\n\n${payLinkUrl}\n\nPay securely via UPI, card, or net banking. Thank you! 🙏`
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1"
+                  onClick={() => setPayLinkOpen(false)}
+                >
+                  <Button className="w-full justify-center">
+                    <MessageCircle className="w-4 h-4 mr-2" /> Send on WhatsApp
+                  </Button>
+                </a>
+              )}
+              <Button variant="outline" onClick={() => setPayLinkOpen(false)}>Close</Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
