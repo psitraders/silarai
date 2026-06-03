@@ -29,3 +29,5 @@ Thumbs.db
 *.p12
 secrets/
 All_Project_Special_Keys.txt
+
+frontend/.env
