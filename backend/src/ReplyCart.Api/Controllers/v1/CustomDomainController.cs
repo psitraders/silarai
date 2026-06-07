@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
@@ -13,9 +13,9 @@ namespace ReplyCart.Api.Controllers.v1;
 public class CustomDomainController(
     AppDbContext db,
     ITenantContext tenantContext,
-    ICloudflareService cloudflare) : ControllerBase
+    IHttpClientFactory httpClientFactory) : ControllerBase
 {
-    private const string CnameTarget = "cname.silarai.app";
+    private const string CnameTarget = "cname.silarai.com";
 
     // ── GET ───────────────────────────────────────────────────────────────────
 
@@ -25,13 +25,13 @@ public class CustomDomainController(
         var tenant = await db.Tenants.FindAsync([tenantContext.CurrentTenantId], ct);
         if (tenant == null) return NotFound();
 
-        // Auto-refresh pending SaaS hostname status
-        if (tenant.CustomDomainStatus == "pending" && tenant.CloudflareHostnameId != null)
+        // Auto-verify by checking DNS if status is pending
+        if (tenant.CustomDomainStatus == "pending" && !string.IsNullOrEmpty(tenant.CustomDomain))
         {
             try
             {
-                var cf = await cloudflare.GetHostnameStatusAsync(tenant.CloudflareHostnameId, ct);
-                if (cf != null && cf.Status == "active" && cf.SslStatus == "active")
+                var verified = await VerifyDnsAsync(tenant.CustomDomain, ct);
+                if (verified)
                 {
                     tenant.CustomDomainStatus     = "active";
                     tenant.CustomDomainVerifiedAt = DateTime.UtcNow;
@@ -56,16 +56,6 @@ public class CustomDomainController(
         });
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private async Task<bool> HasCustomDomainAccess(CancellationToken ct)
-    {
-        return await db.TenantSubscriptions
-            .AnyAsync(s => s.TenantId == tenantContext.CurrentTenantId
-                        && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Trial)
-                        && (s.Plan.Slug == "pro" || s.Plan.Slug == "professional"), ct);
-    }
-
     // ── PUT ───────────────────────────────────────────────────────────────────
 
     [HttpPut]
@@ -76,11 +66,9 @@ public class CustomDomainController(
 
         var raw = request.Domain?.Trim() ?? "";
 
-        // Strip protocol prefix if user pasted a full URL
-        if (raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            raw = raw[8..];
-        else if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-            raw = raw[7..];
+        // Strip protocol prefix
+        if (raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) raw = raw[8..];
+        else if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase)) raw = raw[7..];
 
         // Strip path, query string, trailing slashes
         var slashIdx = raw.IndexOf('/');
@@ -91,7 +79,6 @@ public class CustomDomainController(
         if (string.IsNullOrWhiteSpace(domain))
             return BadRequest(new { error = "Domain is required." });
 
-        // Validate: only letters, digits, dots and hyphens; must have at least one dot
         if (!System.Text.RegularExpressions.Regex.IsMatch(domain, @"^[a-z0-9]([a-z0-9\-\.]*[a-z0-9])?$")
             || !domain.Contains('.')
             || domain.Length < 4)
@@ -105,46 +92,24 @@ public class CustomDomainController(
         var tenant = await db.Tenants.FindAsync([tenantContext.CurrentTenantId], ct);
         if (tenant == null) return NotFound();
 
-        // Clean up old Cloudflare resources if domain changed
-        if (tenant.CustomDomain != null && tenant.CustomDomain != domain)
+        // Save domain — no Cloudflare API needed
+        tenant.CustomDomain            = domain;
+        tenant.CustomDomainStatus      = "pending";
+        tenant.CustomDomainVerifiedAt  = null;
+        tenant.CloudflareHostnameId    = null;
+        tenant.CloudflareWorkerRouteId = null;
+        tenant.CloudflareZoneId        = null;
+
+        await db.SaveChangesAsync(ct);
+
+        bool isApex = !domain.StartsWith("www.");
+        return Ok(new
         {
-            if (!string.IsNullOrEmpty(tenant.CloudflareHostnameId))
-                try { await cloudflare.DeleteCustomHostnameAsync(tenant.CloudflareHostnameId, ct); } catch { }
-
-            if (!string.IsNullOrEmpty(tenant.CloudflareWorkerRouteId))
-                try { await cloudflare.DeleteWorkerRouteAsync(tenant.CloudflareWorkerRouteId, ct); } catch { }
-
-            tenant.CloudflareHostnameId    = null;
-            tenant.CloudflareWorkerRouteId = null;
-            tenant.CloudflareZoneId        = null;
-        }
-
-        try
-        {
-            var result  = await cloudflare.CreateCustomHostnameAsync(domain, ct);
-            var routeId = await cloudflare.AddWorkerRouteAsync(domain, ct);
-
-            tenant.CustomDomain            = domain;
-            tenant.CustomDomainStatus      = "pending";
-            tenant.CloudflareHostnameId    = result.Id;
-            tenant.CloudflareWorkerRouteId = routeId;
-            tenant.CustomDomainVerifiedAt  = null;
-
-            await db.SaveChangesAsync(ct);
-
-            bool isApex = !domain.StartsWith("www.");
-            return Ok(new
-            {
-                domain,
-                setupType   = isApex ? "apex" : "www",
-                status      = "pending",
-                cnameTarget = CnameTarget,
-            });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = $"Failed to register with Cloudflare: {ex.Message}" });
-        }
+            domain,
+            setupType   = isApex ? "apex" : "www",
+            status      = "pending",
+            cnameTarget = CnameTarget,
+        });
     }
 
     // ── DELETE ────────────────────────────────────────────────────────────────
@@ -154,12 +119,6 @@ public class CustomDomainController(
     {
         var tenant = await db.Tenants.FindAsync([tenantContext.CurrentTenantId], ct);
         if (tenant == null) return NotFound();
-
-        if (!string.IsNullOrEmpty(tenant.CloudflareHostnameId))
-            try { await cloudflare.DeleteCustomHostnameAsync(tenant.CloudflareHostnameId, ct); } catch { }
-
-        if (!string.IsNullOrEmpty(tenant.CloudflareWorkerRouteId))
-            try { await cloudflare.DeleteWorkerRouteAsync(tenant.CloudflareWorkerRouteId, ct); } catch { }
 
         tenant.CustomDomain              = null;
         tenant.CustomDomainStatus        = null;
@@ -178,14 +137,12 @@ public class CustomDomainController(
     public async Task<IActionResult> RefreshStatus(CancellationToken ct)
     {
         var tenant = await db.Tenants.FindAsync([tenantContext.CurrentTenantId], ct);
-        if (tenant == null || string.IsNullOrEmpty(tenant.CloudflareHostnameId))
+        if (tenant == null || string.IsNullOrEmpty(tenant.CustomDomain))
             return BadRequest(new { error = "No custom domain registered." });
 
-        var cf = await cloudflare.GetHostnameStatusAsync(tenant.CloudflareHostnameId, ct);
-        if (cf == null)
-            return Ok(new { status = "pending", message = "Could not reach Cloudflare." });
+        var verified = await VerifyDnsAsync(tenant.CustomDomain, ct);
 
-        if (cf.Status == "active" && cf.SslStatus == "active")
+        if (verified)
         {
             tenant.CustomDomainStatus     = "active";
             tenant.CustomDomainVerifiedAt = DateTime.UtcNow;
@@ -194,13 +151,40 @@ public class CustomDomainController(
 
         return Ok(new
         {
-            status    = cf.Status,
-            sslStatus = cf.SslStatus,
-            isActive  = cf.Status == "active" && cf.SslStatus == "active",
+            status   = verified ? "active" : "pending",
+            isActive = verified,
+            message  = verified
+                ? "Domain is verified and active!"
+                : "DNS not yet propagated. Make sure your CNAME record points to " + CnameTarget,
         });
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private async Task<bool> HasCustomDomainAccess(CancellationToken ct)
+    {
+        return await db.TenantSubscriptions
+            .AnyAsync(s => s.TenantId == tenantContext.CurrentTenantId
+                        && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Trial)
+                        && (s.Plan.Slug == "pro" || s.Plan.Slug == "professional"), ct);
+    }
+
+    private async Task<bool> VerifyDnsAsync(string domain, CancellationToken ct)
+    {
+        try
+        {
+            // Use Cloudflare's DNS over HTTPS to check CNAME
+            var client = httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("Accept", "application/dns-json");
+            var url = $"https://cloudflare-dns.com/dns-query?name={domain}&type=CNAME";
+            var response = await client.GetStringAsync(url, ct);
+            return response.Contains(CnameTarget, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
 public record SaveCustomDomainRequest(string? Domain);
-
-
