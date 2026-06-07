@@ -81,6 +81,7 @@ public static class DependencyInjection
         services.AddHttpClient("PayPal");
         services.AddHttpClient("WhatsAppCatalog");
         services.AddHttpClient("Cloudflare");
+        services.AddHttpClient("Resend");
 
         // ── Custom Domain / Cloudflare for SaaS ──────────────────────────────────
         services.AddScoped<ReplyCart.Application.Common.Interfaces.ICloudflareService,

@@ -1,8 +1,8 @@
-﻿using MailKit.Net.Smtp;
-using MailKit.Security;
+﻿using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MimeKit;
 using ReplyCart.Application.Common.Interfaces;
 
 namespace ReplyCart.Infrastructure.Services;
@@ -12,12 +12,12 @@ namespace ReplyCart.Infrastructure.Services;
 /// Configure in Azure App Service â†’ Configuration:
 ///   Smtp__Host, Smtp__Port, Smtp__Username, Smtp__Password, Smtp__EnableSsl
 /// </summary>
-public class EmailService(IConfiguration config, ILogger<EmailService> logger) : IEmailService
+public class EmailService(IConfiguration config, ILogger<EmailService> logger, IHttpClientFactory httpClientFactory) : IEmailService
 {
-    private readonly string _appUrl        = config["AppUrl"]        ?? "https://www.silarai.app";
-    private readonly string _dashboardUrl  = (config["FrontendUrl"]  ?? "https://silarai.app").TrimEnd('/');
-    private readonly string _fromEmail     = config["Smtp:FromEmail"] ?? "support@silarai.app";
-    private readonly string _fromName      = "ReplyCart";
+    private readonly string _appUrl       = config["AppUrl"]           ?? "https://www.silarai.com";
+    private readonly string _dashboardUrl = (config["FrontendUrl"]     ?? "https://silarai.com").TrimEnd('/');
+    private readonly string _fromEmail    = config["Resend:FromEmail"] ?? "support@silarai.com";
+    private readonly string _fromName     = "Silarai";
 
     // â”€â”€ Email verification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -119,49 +119,53 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
 
     private async Task SendAsync(string toEmail, string toName, string subject, string html, CancellationToken ct)
     {
-        var host     = config["Smtp:Host"];
-        var portStr  = config["Smtp:Port"];
-        var username = config["Smtp:Username"];
-        var password = config["Smtp:Password"];
+        var apiKey = config[“Resend:ApiKey”];
 
-        if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(apiKey))
         {
-            // Dev fallback â€” log the email content so developers can see it
             logger.LogWarning(
-                "[EMAIL - NOT SENT] To: {To} | Subject: {Subject} | SMTP not configured. " +
-                "Set Smtp:Host, Smtp:Port, Smtp:Username, Smtp:Password in config.",
+                “[EMAIL - NOT SENT] To: {To} | Subject: {Subject} | Resend API key not configured. “ +
+                “Set Resend__ApiKey in Azure App Service environment variables.”,
                 toEmail, subject);
             return;
         }
 
-        var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(_fromName, _fromEmail));
-        message.To.Add(new MailboxAddress(toName, toEmail));
-        message.Subject = subject;
-        message.Body = new BodyBuilder { HtmlBody = html }.ToMessageBody();
-
-        var port    = int.TryParse(portStr, out var p) ? p : 465;
-        // Port 465 â†’ implicit SSL (SslOnConnect); port 587 â†’ STARTTLS; anything else â†’ auto
-        var secOpts = port == 465
-            ? SecureSocketOptions.SslOnConnect
-            : port == 587
-                ? SecureSocketOptions.StartTls
-                : SecureSocketOptions.Auto;
-
-        logger.LogInformation("[EMAIL] Connecting to {Host}:{Port} mode={Mode}", host, port, secOpts);
-
         try
         {
-            using var client = new SmtpClient();
-            await client.ConnectAsync(host, port, secOpts, ct);
-            await client.AuthenticateAsync(username, password, ct);
-            await client.SendAsync(message, ct);
-            await client.DisconnectAsync(true, ct);
-            logger.LogInformation("[EMAIL SENT] To: {To} | Subject: {Subject}", toEmail, subject);
+            var client = httpClientFactory.CreateClient(“Resend”);
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue(“Bearer”, apiKey);
+
+            var payload = new
+            {
+                from    = $”{_fromName} <{_fromEmail}>”,
+                to      = new[] { toEmail },
+                subject = subject,
+                html    = html,
+            };
+
+            var json    = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, “application/json”);
+
+            logger.LogInformation(“[EMAIL] Sending via Resend API to {To}”, toEmail);
+
+            var response = await client.PostAsync(“https://api.resend.com/emails”, content, ct);
+            var body     = await response.Content.ReadAsStringAsync(ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                logger.LogInformation(“[EMAIL SENT] To: {To} | Subject: {Subject}”, toEmail, subject);
+            }
+            else
+            {
+                logger.LogError(“[EMAIL ERROR] Resend API {Status} | To: {To} | Body: {Body}”,
+                    (int)response.StatusCode, toEmail, body);
+                throw new Exception($”Resend API error {(int)response.StatusCode}: {body}”);
+            }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "[EMAIL ERROR] Host={Host}:{Port} | To: {To} | {Msg}", host, port, toEmail, ex.Message);
+            logger.LogError(ex, “[EMAIL ERROR] To: {To} | {Msg}”, toEmail, ex.Message);
             throw;
         }
     }
