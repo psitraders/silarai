@@ -119,53 +119,51 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger, I
 
     private async Task SendAsync(string toEmail, string toName, string subject, string html, CancellationToken ct)
     {
-        var apiKey = config[“Resend:ApiKey”];
+        var apiKey = config["Resend:ApiKey"];
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
+            // Dev fallback â€” log the email content so developers can see it
             logger.LogWarning(
-                “[EMAIL - NOT SENT] To: {To} | Subject: {Subject} | Resend API key not configured. “ +
-                “Set Resend__ApiKey in Azure App Service environment variables.”,
+                "[EMAIL - NOT SENT] To: {To} | Subject: {Subject} | Resend API key not configured.",
                 toEmail, subject);
             return;
         }
 
         try
         {
-            var client = httpClientFactory.CreateClient(“Resend”);
+            var client = httpClientFactory.CreateClient("Resend");
             client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue(“Bearer”, apiKey);
+                new AuthenticationHeaderValue("Bearer", apiKey);
 
             var payload = new
             {
-                from    = $”{_fromName} <{_fromEmail}>”,
+                from    = _fromName + " <" + _fromEmail + ">",
                 to      = new[] { toEmail },
                 subject = subject,
                 html    = html,
             };
 
             var json    = JsonSerializer.Serialize(payload);
-            var content = new StringContent(json, Encoding.UTF8, “application/json”);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            logger.LogInformation(“[EMAIL] Sending via Resend API to {To}”, toEmail);
+            logger.LogInformation("[EMAIL] Sending via Resend API to {To}", toEmail);
 
-            var response = await client.PostAsync(“https://api.resend.com/emails”, content, ct);
+            var response = await client.PostAsync("https://api.resend.com/emails", content, ct);
             var body     = await response.Content.ReadAsStringAsync(ct);
 
             if (response.IsSuccessStatusCode)
-            {
-                logger.LogInformation(“[EMAIL SENT] To: {To} | Subject: {Subject}”, toEmail, subject);
-            }
+                logger.LogInformation("[EMAIL SENT] To: {To} | Subject: {Subject}", toEmail, subject);
             else
             {
-                logger.LogError(“[EMAIL ERROR] Resend API {Status} | To: {To} | Body: {Body}”,
+                logger.LogError("[EMAIL ERROR] Resend {Status} | To: {To} | {Body}",
                     (int)response.StatusCode, toEmail, body);
-                throw new Exception($”Resend API error {(int)response.StatusCode}: {body}”);
+                throw new Exception("Resend error " + (int)response.StatusCode + ": " + body);
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, “[EMAIL ERROR] To: {To} | {Msg}”, toEmail, ex.Message);
+            logger.LogError(ex, "[EMAIL ERROR] To: {To} | {Msg}", toEmail, ex.Message);
             throw;
         }
     }
