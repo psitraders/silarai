@@ -44,7 +44,7 @@ export default {
       const hostname = url.hostname;
       try {
         let slug = null;
-        if (hostname === "www.replycart.app" || hostname === "replycart.app" || hostname === "cname.replycart.app") {
+        if (hostname === "www.silarai.com" || hostname === "silarai.com" || hostname === "cname.silarai.com") {
           const m = path.match(/^\/store\/([^/?#]+)/);
           if (m) slug = m[1];
         } else {
