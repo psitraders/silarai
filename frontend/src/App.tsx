@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
+﻿import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect, Suspense } from 'react';
 import { useAuthStore } from './store/auth.store';
@@ -6,7 +6,7 @@ import { useThemeStore, applyTheme, THEMES } from './store/theme.store';
 import { PageLoader } from './components/ui/Spinner';
 import axios from 'axios';
 
-// -- Always-eager: public storefront (no auth required, first-paint critical) --
+// ── Always-eager: public storefront (no auth required, first-paint critical) ──
 import { PublicStorefrontPage } from './pages/storefront/PublicStorefrontPage';
 import { OrderConfirmationPage } from './pages/storefront/OrderConfirmationPage';
 import { StorefrontCustomPage } from './pages/storefront/StorefrontCustomPage';
@@ -16,19 +16,19 @@ import { CartProvider } from './context/CartContext';
 import { trackPageView } from './lib/analytics';
 import { ScrollToTop } from './components/ScrollToTop';
 
-// -- Lazy: layout shell (only needed when authenticated) -----------------------
+// ── Lazy: layout shell (only needed when authenticated) ───────────────────────
 const AppShell = React.lazy(() =>
   import('./components/layout/AppShell').then(m => ({ default: m.AppShell }))
 );
 
-// -- Lazy: auth pages ----------------------------------------------------------
+// ── Lazy: auth pages ──────────────────────────────────────────────────────────
 const LoginPage           = React.lazy(() => import('./pages/auth/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage        = React.lazy(() => import('./pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const ForgotPasswordPage  = React.lazy(() => import('./pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage   = React.lazy(() => import('./pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const VerifyEmailPage     = React.lazy(() => import('./pages/auth/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 
-// -- Lazy: landing / legal / public marketing ----------------------------------
+// ── Lazy: landing / legal / public marketing ──────────────────────────────────
 const LandingPage   = React.lazy(() => import('./pages/landing/LandingPage'));
 const PricingPage   = React.lazy(() => import('./pages/subscription/PricingPage').then(m => ({ default: m.PricingPage })));
 const AboutPage     = React.lazy(() => import('./pages/landing/AboutPage').then(m => ({ default: m.AboutPage })));
@@ -38,7 +38,7 @@ const PrivacyPage   = React.lazy(() => import('./pages/legal/PrivacyPage').then(
 const TermsPage     = React.lazy(() => import('./pages/legal/TermsPage').then(m => ({ default: m.TermsPage })));
 const RefundPage    = React.lazy(() => import('./pages/legal/RefundPage').then(m => ({ default: m.RefundPage })));
 
-// -- Lazy: dashboard / merchant pages -----------------------------------------
+// ── Lazy: dashboard / merchant pages ─────────────────────────────────────────
 const DashboardPage          = React.lazy(() => import('./pages/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const ProductsPage           = React.lazy(() => import('./pages/catalog/ProductsPage').then(m => ({ default: m.ProductsPage })));
 const ProductFormPage        = React.lazy(() => import('./pages/catalog/ProductFormPage').then(m => ({ default: m.ProductFormPage })));
@@ -61,7 +61,7 @@ const IntegrationsPage       = React.lazy(() => import('./pages/settings/Integra
 const AccountSecurityPage    = React.lazy(() => import('./pages/settings/AccountSecurityPage').then(m => ({ default: m.AccountSecurityPage })));
 const SubscriptionPage       = React.lazy(() => import('./pages/subscription/SubscriptionPage').then(m => ({ default: m.SubscriptionPage })));
 
-// -- Lazy: AI tools ------------------------------------------------------------
+// ── Lazy: AI tools ────────────────────────────────────────────────────────────
 const AiSocialPostPage         = React.lazy(() => import('./pages/ai/AiSocialPostPage').then(m => ({ default: m.AiSocialPostPage })));
 const AiProductDescriptionPage = React.lazy(() => import('./pages/ai/AiProductDescriptionPage').then(m => ({ default: m.AiProductDescriptionPage })));
 const AiReelScriptPage         = React.lazy(() => import('./pages/ai/AiReelScriptPage').then(m => ({ default: m.AiReelScriptPage })));
@@ -70,7 +70,7 @@ const AiConversationsPage      = React.lazy(() => import('./pages/ai/AiConversat
 const AiCampaignsPage          = React.lazy(() => import('./pages/ai/AiCampaignsPage').then(m => ({ default: m.AiCampaignsPage })));
 const ChatbotSimulatorPage     = React.lazy(() => import('./pages/ai/ChatbotSimulatorPage').then(m => ({ default: m.ChatbotSimulatorPage })));
 
-// -- Lazy: marketing -----------------------------------------------------------
+// ── Lazy: marketing ───────────────────────────────────────────────────────────
 const WaTemplatesPage       = React.lazy(() => import('./pages/marketing/WaTemplatesPage').then(m => ({ default: m.WaTemplatesPage })));
 const MarketingHubPage      = React.lazy(() => import('./pages/marketing/MarketingHubPage').then(m => ({ default: m.MarketingHubPage })));
 const CampaignListPage      = React.lazy(() => import('./pages/marketing/CampaignListPage').then(m => ({ default: m.CampaignListPage })));
@@ -79,16 +79,16 @@ const CampaignDetailPage    = React.lazy(() => import('./pages/marketing/Campaig
 const AbandonedCartsPage    = React.lazy(() => import('./pages/marketing/AbandonedCartsPage').then(m => ({ default: m.AbandonedCartsPage })));
 const FestivalCalendarPage  = React.lazy(() => import('./pages/marketing/FestivalCalendarPage').then(m => ({ default: m.FestivalCalendarPage })));
 
-// -- Lazy: customers / catalog extras -----------------------------------------
+// ── Lazy: customers / catalog extras ─────────────────────────────────────────
 const BirthdayRemindersPage = React.lazy(() => import('./pages/customers/BirthdayRemindersPage').then(m => ({ default: m.BirthdayRemindersPage })));
 const CouponsPage           = React.lazy(() => import('./pages/catalog/CouponsPage').then(m => ({ default: m.CouponsPage })));
 const ReviewsPage           = React.lazy(() => import('./pages/catalog/ReviewsPage').then(m => ({ default: m.ReviewsPage })));
 const ImportProductsPage    = React.lazy(() => import('./pages/catalog/ImportProductsPage').then(m => ({ default: m.ImportProductsPage })));
 
-// -- Lazy: tools ---------------------------------------------------------------
+// ── Lazy: tools ───────────────────────────────────────────────────────────────
 const QrGeneratorPage = React.lazy(() => import('./pages/tools/QrGeneratorPage').then(m => ({ default: m.QrGeneratorPage })));
 
-// -- Lazy: admin / B2B ---------------------------------------------------------
+// ── Lazy: admin / B2B ─────────────────────────────────────────────────────────
 const B2BDashboardPage          = React.lazy(() => import('./pages/b2b/B2BDashboardPage').then(m => ({ default: m.B2BDashboardPage })));
 const AdminTenantsPage          = React.lazy(() => import('./pages/admin/AdminTenantsPage').then(m => ({ default: m.AdminTenantsPage })));
 const AdminTenantDetailPage     = React.lazy(() => import('./pages/admin/AdminTenantDetailPage').then(m => ({ default: m.AdminTenantDetailPage })));
@@ -98,8 +98,8 @@ const PlatformLeadsPage            = React.lazy(() => import('./pages/admin/Plat
 const AdminChatbotClientsPage      = React.lazy(() => import('./pages/admin/AdminChatbotClientsPage').then(m => ({ default: m.AdminChatbotClientsPage })));
 const AdminChatbotClientDetailPage = React.lazy(() => import('./pages/admin/AdminChatbotClientDetailPage').then(m => ({ default: m.AdminChatbotClientDetailPage })));
 
-// -- Custom domain detection ---------------------------------------------------
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
+// ── Custom domain detection ───────────────────────────────────────────────────
+const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 const isCustomDomain = (() => {
   const h = window.location.hostname;
   return h !== 'localhost' && h !== '127.0.0.1' && !h.includes('silarai') && !h.includes('replycart') && !h.includes('azurestaticapps');
@@ -137,7 +137,7 @@ function CustomDomainStorefront() {
         <Route path="/p/:pageSlug" element={<StorefrontCustomPage overrideSlug={slug} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {/* Powered-by badge � shown on all custom domain pages */}
+      {/* Powered-by badge — shown on all custom domain pages */}
       <div className="w-full py-3 text-center text-xs text-slate-400 bg-white border-t border-slate-100">
         Powered by{' '}
         <a
@@ -235,7 +235,7 @@ export default function App() {
       <BrowserRouter>
         <ScrollToTop />
         <RouteTracker />
-        {/* Single top-level Suspense � PageLoader shown while any lazy chunk loads */}
+        {/* Single top-level Suspense — PageLoader shown while any lazy chunk loads */}
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Root: landing page for guests, dashboard for authenticated */}

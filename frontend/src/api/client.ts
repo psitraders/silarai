@@ -1,6 +1,6 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
+﻿import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -24,7 +24,7 @@ const processQueue = (error: unknown, token: string | null) => {
  *
  * Without clearing 'Silarai-auth', zustand rehydrates isAuthenticated=true
  * on the next page load and GuestGuard immediately bounces the user back to
- * /dashboard � causing the login ? dashboard redirect loop seen after every
+ * /dashboard — causing the login ↔ dashboard redirect loop seen after every
  * backend restart (when the DB refresh tokens are invalidated).
  */
 function forceLogout() {
@@ -62,7 +62,7 @@ apiClient.interceptors.response.use(
 
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
-        // No refresh token at all � clear everything and go to login
+        // No refresh token at all — clear everything and go to login
         forceLogout();
         return Promise.reject(error);
       }
@@ -76,7 +76,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         // Refresh token rejected (e.g. backend restarted, token rotated, expired)
-        // Must clear zustand persist or isAuthenticated stays true ? redirect loop
+        // Must clear zustand persist or isAuthenticated stays true → redirect loop
         processQueue(refreshError, null);
         forceLogout();
         return Promise.reject(refreshError);

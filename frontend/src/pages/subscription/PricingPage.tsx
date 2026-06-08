@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -9,30 +9,30 @@ import {
 import { PageLoader } from '../../components/ui/Spinner';
 import { Navbar } from '../../components/landing/Navbar';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
-// -- Currency config � rates from INR (updated periodically) ------------------
+// ── Currency config — rates from INR (updated periodically) ──────────────────
 const CURRENCIES: Record<string, { symbol: string; rate: number; label: string; flag: string }> = {
-  INR: { symbol: '?',   rate: 1,       label: 'INR � Indian Rupee',      flag: '????' },
-  USD: { symbol: '$',   rate: 0.012,   label: 'USD � US Dollar',          flag: '????' },
-  EUR: { symbol: '�',   rate: 0.011,   label: 'EUR � Euro',               flag: '????' },
-  GBP: { symbol: '�',   rate: 0.0095,  label: 'GBP � British Pound',      flag: '????' },
-  AED: { symbol: 'AED', rate: 0.044,   label: 'AED � UAE Dirham',         flag: '????' },
-  SAR: { symbol: 'SR',  rate: 0.045,   label: 'SAR � Saudi Riyal',        flag: '????' },
-  SGD: { symbol: 'S$',  rate: 0.016,   label: 'SGD � Singapore Dollar',   flag: '????' },
-  AUD: { symbol: 'A$',  rate: 0.018,   label: 'AUD � Australian Dollar',  flag: '????' },
-  CAD: { symbol: 'C$',  rate: 0.016,   label: 'CAD � Canadian Dollar',    flag: '????' },
-  MYR: { symbol: 'RM',  rate: 0.054,   label: 'MYR � Malaysian Ringgit',  flag: '????' },
-  NZD: { symbol: 'NZ$', rate: 0.020,   label: 'NZD � New Zealand Dollar', flag: '????' },
+  INR: { symbol: '₹',   rate: 1,       label: 'INR — Indian Rupee',      flag: '🇮🇳' },
+  USD: { symbol: '$',   rate: 0.012,   label: 'USD — US Dollar',          flag: '🇺🇸' },
+  EUR: { symbol: '€',   rate: 0.011,   label: 'EUR — Euro',               flag: '🇪🇺' },
+  GBP: { symbol: '£',   rate: 0.0095,  label: 'GBP — British Pound',      flag: '🇬🇧' },
+  AED: { symbol: 'AED', rate: 0.044,   label: 'AED — UAE Dirham',         flag: '🇦🇪' },
+  SAR: { symbol: 'SR',  rate: 0.045,   label: 'SAR — Saudi Riyal',        flag: '🇸🇦' },
+  SGD: { symbol: 'S$',  rate: 0.016,   label: 'SGD — Singapore Dollar',   flag: '🇸🇬' },
+  AUD: { symbol: 'A$',  rate: 0.018,   label: 'AUD — Australian Dollar',  flag: '🇦🇺' },
+  CAD: { symbol: 'C$',  rate: 0.016,   label: 'CAD — Canadian Dollar',    flag: '🇨🇦' },
+  MYR: { symbol: 'RM',  rate: 0.054,   label: 'MYR — Malaysian Ringgit',  flag: '🇲🇾' },
+  NZD: { symbol: 'NZ$', rate: 0.020,   label: 'NZD — New Zealand Dollar', flag: '🇳🇿' },
 };
 
 function convertPrice(inr: number, code: string): string {
   const cur = CURRENCIES[code] ?? CURRENCIES.INR;
   const val = Math.round(inr * cur.rate);
-  if (code === 'INR') return `?${val.toLocaleString('en-IN')}`;
-  // Nice rounding: sub-10 ? nearest 1, else nearest 5
+  if (code === 'INR') return `₹${val.toLocaleString('en-IN')}`;
+  // Nice rounding: sub-10 → nearest 1, else nearest 5
   const rounded = val < 10 ? val : Math.round(val / 5) * 5;
-  return `� ${cur.symbol}${rounded.toLocaleString()}`;
+  return `≈ ${cur.symbol}${rounded.toLocaleString()}`;
 }
 
 interface Plan {
@@ -117,7 +117,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
 };
 
 function fmt(n: number) {
-  if (n >= 2147483647) return '8';
+  if (n >= 2147483647) return '∞';
   if (n >= 1000) return `${(n / 1000).toFixed(0)}K`;
   return String(n);
 }
@@ -289,7 +289,7 @@ export function PricingPage() {
                       </div>
                       {annual && saving > 0 && (
                         <p className="text-xs text-green-600 font-medium mt-1">
-                          You save {saving}% � {convertPrice(plan.annualPrice, currency)} billed annually
+                          You save {saving}% · {convertPrice(plan.annualPrice, currency)} billed annually
                         </p>
                       )}
                       {!annual && plan.annualPrice > 0 && (
@@ -328,7 +328,7 @@ export function PricingPage() {
                   </div>
                   <div>
                     <p className="text-base font-bold text-slate-900">
-                      {plan.maxAiSuggestionsPerMonth === 0 ? '�' : fmt(plan.maxAiSuggestionsPerMonth)}
+                      {plan.maxAiSuggestionsPerMonth === 0 ? '—' : fmt(plan.maxAiSuggestionsPerMonth)}
                     </p>
                     <p className="text-[10px] text-slate-500">AI/mo</p>
                   </div>
@@ -368,7 +368,7 @@ export function PricingPage() {
                   { label: 'Products', icon: Package, values: plans.map(p => fmt(p.maxProducts)) },
                   { label: 'Staff users', icon: Users, values: plans.map(p => fmt(p.maxStaffUsers)) },
                   { label: 'Leads/month', icon: MessageCircle, values: plans.map(p => fmt(p.maxMonthlyLeads)) },
-                  { label: 'AI suggestions/month', icon: Bot, values: plans.map(p => p.maxAiSuggestionsPerMonth === 0 ? '�' : fmt(p.maxAiSuggestionsPerMonth)) },
+                  { label: 'AI suggestions/month', icon: Bot, values: plans.map(p => p.maxAiSuggestionsPerMonth === 0 ? '—' : fmt(p.maxAiSuggestionsPerMonth)) },
                   { label: 'Advanced analytics', icon: BarChart2, values: plans.map(p => p.allowsAdvancedAnalytics) },
                   { label: 'Custom branding', icon: Palette, values: plans.map(p => p.allowsCustomBranding) },
                   { label: 'AI reply suggestions', icon: Zap, values: plans.map(p => p.allowsAiSuggestions) },
@@ -384,7 +384,7 @@ export function PricingPage() {
                         {typeof v === 'boolean' ? (
                           v
                             ? <Check className="w-4 h-4 text-teal-600 mx-auto" />
-                            : <span className="text-slate-300 font-bold">�</span>
+                            : <span className="text-slate-300 font-bold">—</span>
                         ) : (
                           <span className="font-semibold text-slate-800">{v}</span>
                         )}
@@ -408,7 +408,7 @@ export function PricingPage() {
               },
               {
                 q: 'Is there a free trial?',
-                a: 'Yes � all paid plans include a 30-day free trial with full access. No credit card required to start.',
+                a: 'Yes — all paid plans include a 30-day free trial with full access. No credit card required to start.',
               },
               {
                 q: 'How do I pay?',
@@ -431,7 +431,7 @@ export function PricingPage() {
         <div className="mt-16 text-center">
           <div className="bg-gradient-to-br from-teal-600 to-teal-700 rounded-3xl p-10 text-white">
             <h2 className="text-2xl font-bold mb-2">Ready to grow your business?</h2>
-            <p className="text-teal-100 mb-6">Start with the free plan today � no credit card needed.</p>
+            <p className="text-teal-100 mb-6">Start with the free plan today — no credit card needed.</p>
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
                 onClick={() => navigate('/subscription')}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Check, Zap, Crown, Star, ArrowRight, ShieldCheck, Calendar,
@@ -10,7 +10,7 @@ import axios from 'axios';
 import { PageLoader } from '../../components/ui/Spinner';
 import { Button } from '../../components/ui/Button';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 interface Plan {
   id: string;
@@ -62,7 +62,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
 };
 
 function fmt(n: number) {
-  if (n >= 2147483647) return '8';
+  if (n >= 2147483647) return '∞';
   if (n >= 1000) return `${(n / 1000).toFixed(0)}K`;
   return String(n);
 }
@@ -121,7 +121,7 @@ export function SubscriptionPage() {
           <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold text-amber-900 text-sm">
-              {pendingRequest.planName} plan � awaiting admin approval
+              {pendingRequest.planName} plan — awaiting admin approval
             </p>
             <p className="text-amber-700 text-sm mt-0.5">
               Your upgrade request is being reviewed. We'll activate it shortly and notify you.
@@ -143,7 +143,7 @@ export function SubscriptionPage() {
                 sub?.isExpired ? 'bg-red-100 text-red-700' :
                 'bg-slate-100 text-slate-600'
               }`}>
-                {sub?.status === 'Trial' ? '?? Trial' : sub?.status ?? 'Free'}
+                {sub?.status === 'Trial' ? '🎁 Trial' : sub?.status ?? 'Free'}
               </span>
             </div>
             {sub?.endDate && (
@@ -159,7 +159,7 @@ export function SubscriptionPage() {
           {sub?.isExpired && (
             <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
               <AlertCircle className="w-4 h-4 text-red-500" />
-              <span className="text-sm text-red-600 font-medium">Plan expired � upgrade to continue</span>
+              <span className="text-sm text-red-600 font-medium">Plan expired — upgrade to continue</span>
             </div>
           )}
         </div>
@@ -270,12 +270,12 @@ export function SubscriptionPage() {
                   ) : (
                     <>
                       <p className="text-2xl font-bold text-slate-900">
-                        ?{price.toLocaleString(undefined)}
+                        ₹{price.toLocaleString(undefined)}
                         <span className="text-sm text-slate-400 font-normal">/mo</span>
                       </p>
                       {annual && (
                         <p className="text-xs text-green-600 font-medium">
-                          ?{plan.annualPrice.toLocaleString(undefined)}/year
+                          ₹{plan.annualPrice.toLocaleString(undefined)}/year
                         </p>
                       )}
                     </>
@@ -305,7 +305,7 @@ export function SubscriptionPage() {
                   ) : isFree ? (
                     'Switch to Free'
                   ) : (
-                    <>{plan.name === 'Pro' ? '?' : '??'} Request {plan.name} <ArrowRight className="w-3.5 h-3.5 ml-1" /></>
+                    <>{plan.name === 'Pro' ? '⚡' : '👑'} Request {plan.name} <ArrowRight className="w-3.5 h-3.5 ml-1" /></>
                   )}
                 </Button>
               </div>

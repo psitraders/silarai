@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 interface OrderItem {
   productId: string;
@@ -58,7 +58,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
   const storeName = store?.name ?? '';
   const storeHref = isCustomDomain ? '/' : `/${slug}`;
 
-  // noindex � order pages are private, must not appear in search results
+  // noindex — order pages are private, must not appear in search results
   useEffect(() => {
     const meta = document.createElement('meta');
     meta.name = 'robots';
@@ -69,7 +69,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
 
   // Set browser tab title to store name
   useEffect(() => {
-    if (storeName) document.title = `Order Confirmed � ${storeName}`;
+    if (storeName) document.title = `Order Confirmed — ${storeName}`;
     return () => { document.title = 'Silarai'; };
   }, [storeName]);
 
@@ -89,7 +89,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
         <h2 className="text-xl font-bold text-slate-700">Order not found</h2>
         <p className="text-sm text-slate-500">This order link may have expired or is incorrect.</p>
         <a href={storeHref} className="text-sm font-semibold" style={{ color: tc }}>
-          ? Back to Store
+          ← Back to Store
         </a>
       </div>
     );
@@ -129,7 +129,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
           <CheckCircle2 className="w-11 h-11 text-white" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight">
-          {isCod ? '?? Order Placed!' : '? Payment Successful!'}
+          {isCod ? '🎉 Order Placed!' : '✅ Payment Successful!'}
         </h1>
         <p className="text-white/80 mt-1.5 text-sm max-w-xs mx-auto">
           {isCod
@@ -167,7 +167,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                 isCod ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'
               }`}>
-                {isCod ? '?? Cash on Delivery' : '? Paid'}
+                {isCod ? '💵 Cash on Delivery' : '✅ Paid'}
               </span>
             </div>
             <div className="flex items-center justify-between px-5 py-3 text-sm">
@@ -192,7 +192,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
               <div key={idx} className="flex items-start gap-3 px-5 py-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
                   style={{ backgroundColor: tc }}>
-                  {item.quantity}�
+                  {item.quantity}×
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900 leading-tight">{item.productTitle}</p>
@@ -247,12 +247,12 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
         {/* Notes */}
         {order.notes && (
           <div className="bg-amber-50 border border-amber-100 rounded-2xl px-5 py-4">
-            <p className="text-xs font-semibold text-amber-700 mb-1">?? Order Notes</p>
+            <p className="text-xs font-semibold text-amber-700 mb-1">📝 Order Notes</p>
             <p className="text-sm text-amber-800">{order.notes}</p>
           </div>
         )}
 
-        {/* What's next � COD timeline */}
+        {/* What's next — COD timeline */}
         {isCod && (
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-50">
@@ -296,7 +296,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
           {store?.whatsAppNumber && (
             <a
               href={`https://wa.me/${store.whatsAppNumber.replace(/\D/g, '')}?text=${encodeURIComponent(
-                `Hi ${storeName}! I just placed order #${order.orderNumber}. Looking forward to it! ??`
+                `Hi ${storeName}! I just placed order #${order.orderNumber}. Looking forward to it! 😊`
               )}`}
               target="_blank"
               rel="noreferrer"
@@ -312,7 +312,7 @@ export function OrderConfirmationPage({ overrideSlug }: { overrideSlug?: string 
             href={storeHref}
             className="w-full py-2.5 text-center text-sm text-slate-400 hover:text-slate-600 block transition-colors"
           >
-            ? Continue Shopping
+            ← Continue Shopping
           </a>
         </div>
       </div>

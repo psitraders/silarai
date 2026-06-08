@@ -1,10 +1,10 @@
-import { useParams } from 'react-router-dom';
+﻿import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { optimizeImage } from '../../utils/imageUrl';
 import { generateWhatsAppLink } from '../../utils/whatsappLink';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -93,7 +93,7 @@ export function StorefrontCustomPage({ overrideSlug }: { overrideSlug?: string }
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-slate-500">
         <FileText className="w-12 h-12 text-slate-300" />
         <p className="text-lg font-semibold">Page not found</p>
-        <a href={storeBase} className="text-sm hover:underline" style={{ color: tc }}>? Back to store</a>
+        <a href={storeBase} className="text-sm hover:underline" style={{ color: tc }}>← Back to store</a>
       </div>
     );
   }
@@ -101,19 +101,19 @@ export function StorefrontCustomPage({ overrideSlug }: { overrideSlug?: string }
   return (
     <div className="min-h-screen bg-white flex flex-col">
 
-      {/* -- Announcement bar -- */}
+      {/* ── Announcement bar ── */}
       {store?.announcementText && (
         <div className="bg-slate-900 text-white text-xs py-2 overflow-hidden relative">
           <div className="whitespace-nowrap inline-block" style={{ animation: 'marqueeScroll 22s linear infinite' }}>
             {Array.from({ length: 4 }).map((_, i) => (
-              <span key={i} className="mx-12">? {store.announcementText}</span>
+              <span key={i} className="mx-12">✦ {store.announcementText}</span>
             ))}
           </div>
           <style>{`@keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
         </div>
       )}
 
-      {/* -- Sticky header -- */}
+      {/* ── Sticky header ── */}
       <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
           {/* Logo */}
@@ -159,12 +159,12 @@ export function StorefrontCustomPage({ overrideSlug }: { overrideSlug?: string }
             className="md:hidden ml-auto text-sm font-medium flex items-center gap-1"
             style={{ color: tc }}
           >
-            ? Store
+            ← Store
           </a>
         </div>
       </header>
 
-      {/* -- Page content -- */}
+      {/* ── Page content ── */}
       <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">{page.title}</h1>
         {page.updatedAt && (
@@ -179,16 +179,16 @@ export function StorefrontCustomPage({ overrideSlug }: { overrideSlug?: string }
         />
       </main>
 
-      {/* -- Footer -- */}
+      {/* ── Footer ── */}
       <footer className="bg-slate-900 text-white mt-auto">
         {/* Trust strip */}
         <div className="border-b border-slate-800 py-6 px-4">
           <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-6">
             {[
-              { icon: '??', text: 'Fast Delivery' },
-              { icon: '??', text: 'Secure Payments' },
-              { icon: '??', text: 'WhatsApp Support' },
-              { icon: '??', text: 'Easy Returns' },
+              { icon: '🚚', text: 'Fast Delivery' },
+              { icon: '🔒', text: 'Secure Payments' },
+              { icon: '💬', text: 'WhatsApp Support' },
+              { icon: '↩️', text: 'Easy Returns' },
             ].map(({ icon, text }) => (
               <div key={text} className="flex items-center gap-2 text-sm text-slate-300">
                 <span>{icon}</span> {text}
@@ -216,7 +216,7 @@ export function StorefrontCustomPage({ overrideSlug }: { overrideSlug?: string }
           <div>
             <h4 className="font-semibold mb-3 text-slate-300">Quick Links</h4>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><a href={storeBase} className="hover:text-white transition-colors">? Back to Store</a></li>
+              <li><a href={storeBase} className="hover:text-white transition-colors">← Back to Store</a></li>
               <li><a href={`${storeBase}#products`} className="hover:text-white transition-colors">All Products</a></li>
               {footerPages.map(p => (
                 <li key={p.id}>
@@ -284,7 +284,7 @@ export function StorefrontCustomPage({ overrideSlug }: { overrideSlug?: string }
         </div>
 
         <div className="border-t border-slate-800 px-4 py-4 text-center text-xs text-slate-500">
-          � {new Date().getFullYear()} {store?.name}.
+          © {new Date().getFullYear()} {store?.name}.
           {!store?.allowsCustomBranding && (
             <> Powered by <span className="text-slate-400 font-medium">Silarai</span></>
           )}
