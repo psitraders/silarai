@@ -26,7 +26,7 @@ public class PublicDomainController(AppDbContext db) : ControllerBase
 
         var tenant = await db.Tenants
             .Where(t => (t.CustomDomain == domain || t.CustomDomain == domainWww || t.CustomDomain == domainNoWww)
-                        && t.CustomDomainStatus == "active" && t.IsActive)
+                        && t.CustomDomainStatus != null && t.IsActive)
             .Select(t => new { t.Slug, t.Name })
             .FirstOrDefaultAsync(ct);
 
