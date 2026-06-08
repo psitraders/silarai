@@ -1,5 +1,5 @@
 const API_BASE   = "https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1";
-const SWA_ORIGIN = "https://lemon-sea-09c8e5a00.azurestaticapps.net"; // ← update with your actual SWA URL
+const SWA_ORIGIN = "https://lemon-sea-09c8e5a00.7.azurestaticapps.net";
 const BOT_RE     = /facebookexternalhit|Facebot|WhatsApp|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|Googlebot|bingbot|DuckDuckBot/i;
 
 /** Paths served directly from the backend (not the SPA) */
@@ -65,7 +65,7 @@ export default {
       try {
         const hostname = url.hostname;
         let slug = null;
-        if (hostname === "www.replycart.app" || hostname === "replycart.app" || hostname === "cname.replycart.app") {
+        if (hostname === "www.silarai.com" || hostname === "silarai.com" || hostname === "cname.silarai.com") {
           const m = url.pathname.match(/^\/store\/([^/?#]+)/);
           if (m) slug = m[1];
         } else {
@@ -86,11 +86,21 @@ export default {
 
     // ── 3. Everything else: proxy to Azure SWA ────────────────────────────────
     const targetUrl = SWA_ORIGIN + path + url.search;
-    return fetch(targetUrl, {
+    const swaResp = await fetch(targetUrl, {
       method:   request.method,
       headers:  request.headers,
       body:     ["GET", "HEAD"].includes(request.method) ? null : request.body,
       redirect: "follow",
+      cf: { cacheEverything: false, cacheTtl: 0 },
     });
+
+    // Strip Cloudflare edge caching for HTML so stale bundles are never served
+    const ct = swaResp.headers.get("Content-Type") || "";
+    if (ct.includes("text/html")) {
+      const newHeaders = new Headers(swaResp.headers);
+      newHeaders.set("Cache-Control", "no-store, no-cache, must-revalidate");
+      return new Response(swaResp.body, { status: swaResp.status, headers: newHeaders });
+    }
+    return swaResp;
   }
 };
