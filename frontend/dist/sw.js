@@ -1,8 +1,8 @@
-// ReplyCart Service Worker — v1
+// Silarai Service Worker — v2
 // Minimal SW: registers the app as installable; no aggressive caching
 // (the app fetches fresh data from the API on every load).
 
-const CACHE_NAME = 'replycart-shell-v1';
+const CACHE_NAME = 'silarai-shell-v2';
 
 // App-shell assets to pre-cache so the app opens instantly offline
 const SHELL_ASSETS = [
