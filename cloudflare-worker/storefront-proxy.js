@@ -1,5 +1,5 @@
 const API_BASE   = "https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1";
-const SWA_ORIGIN = "https://lemon-sea-09c8e5a00.7.azurestaticapps.net";
+const SWA_ORIGIN = "https://www.silarai.com";
 const BOT_RE     = /facebookexternalhit|Facebot|WhatsApp|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|Googlebot|bingbot|DuckDuckBot/i;
 
 /** Paths served directly from the backend (not the SPA) */
@@ -94,13 +94,9 @@ export default {
       cf: { cacheEverything: false, cacheTtl: 0 },
     });
 
-    // Strip Cloudflare edge caching for HTML so stale bundles are never served
-    const ct = swaResp.headers.get("Content-Type") || "";
-    if (ct.includes("text/html")) {
-      const newHeaders = new Headers(swaResp.headers);
-      newHeaders.set("Cache-Control", "no-store, no-cache, must-revalidate");
-      return new Response(swaResp.body, { status: swaResp.status, headers: newHeaders });
-    }
-    return swaResp;
+    // Strip all Cloudflare edge caching — stale bundles break custom domain stores
+    const newHeaders = new Headers(swaResp.headers);
+    newHeaders.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    return new Response(swaResp.body, { status: swaResp.status, headers: newHeaders });
   }
 };
