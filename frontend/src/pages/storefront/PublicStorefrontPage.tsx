@@ -1,4 +1,4 @@
-﻿import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { StorefrontAuthProvider, useStorefrontAuth } from '../../context/StorefrontAuthContext';
 
-// Lazy-load heavy overlay panels — not needed for first paint
+// Lazy-load heavy overlay panels � not needed for first paint
 const CustomerAuthModal = React.lazy(() =>
   import('../../components/storefront/CustomerAuthModal').then(m => ({ default: m.CustomerAuthModal }))
 );
@@ -19,7 +19,7 @@ const MyAccountPanel = React.lazy(() =>
   import('../../components/storefront/MyAccountPanel').then(m => ({ default: m.MyAccountPanel }))
 );
 
-/** Instagram brand icon — lucide-react v1.x doesn't include it */
+/** Instagram brand icon � lucide-react v1.x doesn't include it */
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -42,16 +42,16 @@ import axios from 'axios';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { generateWhatsAppLink, generateProductInquiryMessage } from '../../utils/whatsappLink';
 import { optimizeImage } from '../../utils/imageUrl';
-// PageLoader removed — replaced by inline branded loading screen
+// PageLoader removed � replaced by inline branded loading screen
 import { paymentApi } from '../../api/payment.api';
 import { useCart } from '../../context/CartContext';
 const CartDrawer = React.lazy(() =>
   import('../../components/storefront/CartDrawer').then(m => ({ default: m.CartDrawer }))
 );
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
 
-// Safe GA4 event helper — no-ops if gtag hasn't loaded yet
+// Safe GA4 event helper � no-ops if gtag hasn't loaded yet
 function gtagEvent(eventName: string, params?: Record<string, unknown>) {
   try {
     if (typeof (window as any).gtag === 'function') {
@@ -60,20 +60,20 @@ function gtagEvent(eventName: string, params?: Record<string, unknown>) {
   } catch { /* ignore */ }
 }
 
-// ── Markdown cleaner — strips AI formatting before displaying in chat ──────────
+// -- Markdown cleaner � strips AI formatting before displaying in chat ----------
 function cleanReply(text: string): string {
   return text
-    .replace(/\*\*(.*?)\*\*/g, '$1')          // **bold** → plain
-    .replace(/\*(.*?)\*/g, '$1')               // *italic* → plain
-    .replace(/^#{1,6}\s+/gm, '')               // # Heading → plain
-    .replace(/^[-*+]\s+/gm, '• ')              // markdown bullets → •
-    .replace(/`([^`]+)`/g, '$1')               // `code` → plain
-    // Insert line break before numbered list items so "1. A 2. B" → "1. A\n2. B"
+    .replace(/\*\*(.*?)\*\*/g, '$1')          // **bold** ? plain
+    .replace(/\*(.*?)\*/g, '$1')               // *italic* ? plain
+    .replace(/^#{1,6}\s+/gm, '')               // # Heading ? plain
+    .replace(/^[-*+]\s+/gm, '� ')              // markdown bullets ? �
+    .replace(/`([^`]+)`/g, '$1')               // `code` ? plain
+    // Insert line break before numbered list items so "1. A 2. B" ? "1. A\n2. B"
     .replace(/\s{1,3}(\d+\.\s+)/g, '\n$1')
     .trim();
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// -- Types ---------------------------------------------------------------------
 
 interface StoreData {
   name: string;
@@ -134,7 +134,7 @@ interface ChatMessage {
     totalAmount: number;
     slug: string;
   };
-  /** Set when the customer chose online payment — frontend must redirect */
+  /** Set when the customer chose online payment � frontend must redirect */
   onlineCart?: {
     items: { productId: string; title: string; variantInfo?: string; qty: number; unitPrice: number }[];
     customerName?: string;
@@ -151,23 +151,23 @@ interface ChatMessage {
   };
 }
 
-// ── Chatbot logic ─────────────────────────────────────────────────────────────
-// (keyword bot replaced by AI RAG endpoint — see Chatbot component below)
+// -- Chatbot logic -------------------------------------------------------------
+// (keyword bot replaced by AI RAG endpoint � see Chatbot component below)
 
-// ── Social proof helpers ──────────────────────────────────────────────────────
+// -- Social proof helpers ------------------------------------------------------
 
 function getProductBadge(product: Product): { label: string; bg: string } | null {
   const seed = product.id.charCodeAt(product.id.length - 1) % 5;
-  if (product.isFeatured && product.discountedPrice) return { label: '🔥 Hot Deal', bg: 'bg-rose-500' };
-  if (product.isFeatured && seed < 2) return { label: '⭐ Popular', bg: 'bg-amber-500' };
-  if (product.isFeatured) return { label: '🏆 Best Seller', bg: 'bg-violet-500' };
-  if (product.discountedPrice) return { label: '🏷️ On Sale', bg: 'bg-red-500' };
-  if (seed === 0) return { label: '🆕 New', bg: 'bg-blue-500' };
-  if (seed === 1) return { label: '👀 Trending', bg: 'bg-teal-600' };
+  if (product.isFeatured && product.discountedPrice) return { label: '?? Hot Deal', bg: 'bg-rose-500' };
+  if (product.isFeatured && seed < 2) return { label: '? Popular', bg: 'bg-amber-500' };
+  if (product.isFeatured) return { label: '?? Best Seller', bg: 'bg-violet-500' };
+  if (product.discountedPrice) return { label: '??? On Sale', bg: 'bg-red-500' };
+  if (seed === 0) return { label: '?? New', bg: 'bg-blue-500' };
+  if (seed === 1) return { label: '?? Trending', bg: 'bg-teal-600' };
   return null;
 }
 
-// ── Product Card ──────────────────────────────────────────────────────────────
+// -- Product Card --------------------------------------------------------------
 
 function ProductCard({
   product, themeColor, store, onSelect, onAddToCart,
@@ -208,7 +208,7 @@ function ProductCard({
       <div className="relative aspect-[4/5] bg-slate-50 overflow-hidden flex-shrink-0">
         {product.primaryImage ? (
           <>
-            {/* Primary image — fades out on hover only when a second image exists */}
+            {/* Primary image � fades out on hover only when a second image exists */}
             <img
               src={optimizeImage(product.primaryImage, 400)}
               alt={product.title}
@@ -222,11 +222,11 @@ function ProductCard({
               width={400}
               height={500}
             />
-            {/* Secondary image — shown on hover if it exists */}
+            {/* Secondary image � shown on hover if it exists */}
             {product.allImages && product.allImages.length > 1 && (
               <img
                 src={optimizeImage(product.allImages[1], 400)}
-                alt={`${product.title} — alternate view`}
+                alt={`${product.title} � alternate view`}
                 className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out"
                 loading="lazy"
                 decoding="async"
@@ -253,7 +253,7 @@ function ProductCard({
           )}
           {!outOfStock && product.isFeatured && (
             <span className="text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm" style={{ backgroundColor: themeColor }}>
-              ⭐ Featured
+              ? Featured
             </span>
           )}
           {!outOfStock && discount > 0 && (
@@ -271,7 +271,7 @@ function ProductCard({
         >
           <Heart className={`w-3.5 h-3.5 transition-colors ${liked ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
         </button>
-        {/* Mobile wishlist — always visible */}
+        {/* Mobile wishlist � always visible */}
         <button
           onClick={e => { e.stopPropagation(); setLiked(l => !l); }}
           className="sm:hidden absolute top-2 right-2 z-10 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-md"
@@ -279,7 +279,7 @@ function ProductCard({
           <Heart className={`w-3.5 h-3.5 ${liked ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
         </button>
 
-        {/* Desktop quick-add — slides up from bottom on hover */}
+        {/* Desktop quick-add � slides up from bottom on hover */}
         {!outOfStock && (
           <div className="absolute inset-x-0 bottom-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out hidden sm:block">
             <button
@@ -288,7 +288,7 @@ function ProductCard({
                 addedFlash ? 'bg-green-500 text-white' : 'bg-white text-slate-800 hover:bg-slate-50'
               }`}
             >
-              {addedFlash ? '✓ Added to Cart' : '🛒 Add to Cart'}
+              {addedFlash ? '? Added to Cart' : '?? Add to Cart'}
             </button>
           </div>
         )}
@@ -326,7 +326,7 @@ function ProductCard({
                 addedFlash ? 'bg-green-500 text-white' : 'bg-slate-100 text-slate-800 active:bg-slate-200'
               }`}
             >
-              {addedFlash ? '✓ Added!' : '+ Add'}
+              {addedFlash ? '? Added!' : '+ Add'}
             </button>
           </div>
         ) : (
@@ -339,9 +339,9 @@ function ProductCard({
   );
 }
 
-// ── Product Detail Modal ──────────────────────────────────────────────────────
+// -- Product Detail Modal ------------------------------------------------------
 
-// ── Load Razorpay script lazily ───────────────────────────────────────────────
+// -- Load Razorpay script lazily -----------------------------------------------
 
 function loadRazorpayScript(): Promise<boolean> {
   return new Promise(resolve => {
@@ -384,11 +384,11 @@ function ProductModal({
   // selected variant: map of variantName -> variantValue
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const currency = store.currency ?? 'INR';
-  // isCustomDomain = true  → floraved.com  → route is /order-confirmation/:id
-  // isCustomDomain = false → Silarai.app → route is /:slug/order-confirmation/:id
+  // isCustomDomain = true  ? floraved.com  ? route is /order-confirmation/:id
+  // isCustomDomain = false ? Silarai.app ? route is /:slug/order-confirmation/:id
   const confirmBase = isCustomDomain ? `/order-confirmation` : `/${slug}/order-confirmation`;
 
-  // Always use React Router navigate — pure SPA navigation, no HTTP request.
+  // Always use React Router navigate � pure SPA navigation, no HTTP request.
   // window.location.href (full reload) was fragile: required Azure SWA to serve
   // the path correctly, which broke on every new deployment. navigate() is
   // immune to server-side routing because the app is already loaded in memory.
@@ -551,7 +551,7 @@ function ProductModal({
     }
   };
 
-  /** Step 1 — send OTP to email */
+  /** Step 1 � send OTP to email */
   const handleSendOtp = async () => {
     if (!name.trim())  { setPayError('Please enter your name.');         return; }
     if (!phone.trim()) { setPayError('Please enter your phone number.'); return; }
@@ -572,7 +572,7 @@ function ProductModal({
     }
   };
 
-  /** Step 2 — place order with OTP */
+  /** Step 2 � place order with OTP */
   const handleCodCheckout = async () => {
     if (!name.trim()) { setPayError('Please enter your name.'); return; }
     if (!phone.trim()) { setPayError('Please enter your phone number.'); return; }
@@ -642,7 +642,7 @@ function ProductModal({
             }))
           : undefined,
       });
-    } catch { /* fall through — show success either way */ }
+    } catch { /* fall through � show success either way */ }
     setSent(true);
   };
 
@@ -655,7 +655,7 @@ function ProductModal({
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white w-full sm:max-w-5xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[95vh] flex flex-col sm:flex-row">
-        {/* ── Image gallery ── */}
+        {/* -- Image gallery -- */}
         <div className="sm:w-[46%] flex-shrink-0 flex flex-col bg-slate-50">
 
           {/* Main image */}
@@ -673,7 +673,7 @@ function ProductModal({
               touchStartX.current = null;
             }}
           >
-            {/* Crossfade layers — one per image, only active one is visible */}
+            {/* Crossfade layers � one per image, only active one is visible */}
             {images.length > 0 ? images.map((img, i) => (
               <img
                 key={img + i}
@@ -704,7 +704,7 @@ function ProductModal({
               </span>
             )}
 
-            {/* Nav arrows — large, glass-morphism */}
+            {/* Nav arrows � large, glass-morphism */}
             {images.length > 1 && (
               <>
                 <button
@@ -785,7 +785,7 @@ function ProductModal({
                 {groupName}
                 {selectedVariants[groupName] && (
                   <span className="ml-2 font-normal text-slate-500 normal-case tracking-normal">
-                    — {selectedVariants[groupName]}
+                    � {selectedVariants[groupName]}
                     {(variantGroups[groupName].find(v => v.value === selectedVariants[groupName])?.priceAdjustment ?? 0) !== 0 &&
                       ` (${(variantGroups[groupName].find(v => v.value === selectedVariants[groupName])!.priceAdjustment > 0 ? '+' : '')}${formatCurrency(variantGroups[groupName].find(v => v.value === selectedVariants[groupName])!.priceAdjustment, currency)})`
                     }
@@ -827,7 +827,7 @@ function ProductModal({
               {/* Variant selection hint */}
               {hasVariants && !allVariantsSelected && (
                 <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                  <span className="text-amber-500 text-sm">👆</span>
+                  <span className="text-amber-500 text-sm">??</span>
                   <span className="text-sm text-amber-700 font-medium">
                     Please select a {missingVariant} to continue
                   </span>
@@ -845,7 +845,7 @@ function ProductModal({
                   className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-semibold text-sm transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: themeColor }}
                 >
-                  💳 Buy Now — {formatCurrency(price, currency)}{variantInfo ? ` · ${variantInfo}` : ''}
+                  ?? Buy Now � {formatCurrency(price, currency)}{variantInfo ? ` � ${variantInfo}` : ''}
                 </button>
               )}
 
@@ -890,7 +890,7 @@ function ProductModal({
                     }`}
                     style={payMethod === 'razorpay' ? { backgroundColor: themeColor, borderColor: themeColor } : undefined}
                   >
-                    💳 Online Payment
+                    ?? Online Payment
                   </button>
                 )}
                 <button
@@ -907,11 +907,11 @@ function ProductModal({
 
               {payError && <p className="text-xs text-red-500 bg-red-50 rounded-xl px-3 py-2">{payError}</p>}
 
-              {/* ── OTP awaiting step ─────────────────────────────────────── */}
+              {/* -- OTP awaiting step --------------------------------------- */}
               {payMethod === 'cod' && otpStep === 'awaiting' ? (
                 <>
                   <div className="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3 text-xs text-amber-800">
-                    📧 A 6-digit code was sent to <strong>{email}</strong>. Enter it below to confirm your order.
+                    ?? A 6-digit code was sent to <strong>{email}</strong>. Enter it below to confirm your order.
                   </div>
                   <input
                     placeholder="Enter 6-digit code"
@@ -929,13 +929,13 @@ function ProductModal({
                     className="w-full py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
                     style={{ backgroundColor: themeColor }}
                   >
-                    {paying ? 'Placing order...' : `✅ Verify & Place Order · ${formatCurrency(price, currency)} COD`}
+                    {paying ? 'Placing order...' : `? Verify & Place Order � ${formatCurrency(price, currency)} COD`}
                   </button>
                   <button
                     onClick={() => { setOtpStep('idle'); setOtpCode(''); setOtpError(null); }}
                     className="w-full text-xs text-slate-400 hover:text-slate-600 py-1"
                   >
-                    ← Change email or resend code
+                    ? Change email or resend code
                   </button>
                 </>
               ) : (
@@ -964,7 +964,7 @@ function ProductModal({
                       : paying
                         ? 'Opening payment...'
                         : payMethod === 'cod'
-                          ? `Continue · Send Verification Code`
+                          ? `Continue � Send Verification Code`
                           : `Pay ${formatCurrency(price, currency)} securely`}
                   </button>
                   {payMethod === 'cod' && (
@@ -999,11 +999,11 @@ function ProductModal({
           )}
           {sent && (
             <div className="border-t border-slate-100 pt-4 text-center">
-              <p className="text-green-600 text-sm font-medium">✅ Inquiry sent! We'll reach out soon.</p>
+              <p className="text-green-600 text-sm font-medium">? Inquiry sent! We'll reach out soon.</p>
             </div>
           )}
 
-          {/* ── Reviews Section ── */}
+          {/* -- Reviews Section -- */}
           <div className="border-t border-slate-100 pt-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
@@ -1013,7 +1013,7 @@ function ProductModal({
                     {[1, 2, 3, 4, 5].map(s => (
                       <Star key={s} className={`w-3.5 h-3.5 ${s <= Math.round(avgRating) ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} />
                     ))}
-                    <span className="text-xs text-slate-500 ml-1">{avgRating.toFixed(1)} · {publicReviews.length} review{publicReviews.length !== 1 ? 's' : ''}</span>
+                    <span className="text-xs text-slate-500 ml-1">{avgRating.toFixed(1)} � {publicReviews.length} review{publicReviews.length !== 1 ? 's' : ''}</span>
                   </div>
                 )}
               </div>
@@ -1117,7 +1117,7 @@ function ProductModal({
 
             {reviewSubmitted && (
               <p className="text-xs text-green-600 font-medium bg-green-50 rounded-xl px-3 py-2">
-                ✅ Thank you! Your review is pending approval and will appear shortly.
+                ? Thank you! Your review is pending approval and will appear shortly.
               </p>
             )}
           </div>
@@ -1127,7 +1127,7 @@ function ProductModal({
   );
 }
 
-// ── Product carousel inside chat (arrow-button navigation, no scrollbar) ───────
+// -- Product carousel inside chat (arrow-button navigation, no scrollbar) -------
 
 function ProductCarousel({
   children, count,
@@ -1166,7 +1166,7 @@ function ProductCarousel({
         <ChevronLeft className="w-4 h-4 text-slate-600" />
       </button>
 
-      {/* Track — scrollbar fully hidden; arrows are the only nav */}
+      {/* Track � scrollbar fully hidden; arrows are the only nav */}
       <div
         ref={scrollRef}
         className="w-full overflow-x-auto scrollbar-hide px-1"
@@ -1200,7 +1200,7 @@ function ProductCarousel({
   );
 }
 
-// ── Product card inside chat ──────────────────────────────────────────────────
+// -- Product card inside chat --------------------------------------------------
 
 function ProductChatCard({
   product, themeColor, store, onSend, onViewProduct, onAddToCart,
@@ -1239,7 +1239,7 @@ function ProductChatCard({
         }
         {product.isFeatured && !outOfStock && (
           <span className="absolute top-1.5 left-1.5 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-            ⭐ Featured
+            ? Featured
           </span>
         )}
         {outOfStock && (
@@ -1288,7 +1288,7 @@ function ProductChatCard({
                   : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
               }`}
             >
-              {addedFlash ? '✓ Added!' : '🛒 Add to Cart'}
+              {addedFlash ? '? Added!' : '?? Add to Cart'}
             </button>
             {/* Buy Now */}
             <button
@@ -1305,7 +1305,7 @@ function ProductChatCard({
   );
 }
 
-// ── Chatbot ───────────────────────────────────────────────────────────────────
+// -- Chatbot -------------------------------------------------------------------
 
 function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
   store: StoreData;
@@ -1321,8 +1321,8 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'bot',
-      text: `👋 Hi! I'm the AI shopping assistant for ${store.name}. I can help you browse products, check prices, or place an order right here in the chat! What are you looking for? 🛍️`,
-      quickReplies: ['🔥 Featured products', '💰 Any deals?', '🚚 Delivery info', '🛒 How to order'],
+      text: `?? Hi! I'm the AI shopping assistant for ${store.name}. I can help you browse products, check prices, or place an order right here in the chat! What are you looking for? ???`,
+      quickReplies: ['?? Featured products', '?? Any deals?', '?? Delivery info', '?? How to order'],
     },
   ]);
   const [input, setInput] = useState('');
@@ -1375,13 +1375,13 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
 
       let quickReplies: string[] | undefined;
       if (data.leadCreated && !hasOrder && !hasOnline && !hasPending)
-        quickReplies = ['🛒 Place an order', '🔥 Browse products', '💬 Open WhatsApp'];
+        quickReplies = ['?? Place an order', '?? Browse products', '?? Open WhatsApp'];
       else if (hasOrder)
-        quickReplies = ['🛍️ Shop more products', '💬 Open WhatsApp'];
+        quickReplies = ['??? Shop more products', '?? Open WhatsApp'];
 
       setMessages(m => [...m, {
         role: 'bot',
-        text: cleanReply(data.reply ?? 'Sorry, something went wrong. Please try WhatsApp! 📱'),
+        text: cleanReply(data.reply ?? 'Sorry, something went wrong. Please try WhatsApp! ??'),
         products:         data.mentionedProducts?.length ? data.mentionedProducts : undefined,
         orderDetails:     hasOrder   ? { ...data.orderPlaced, slug: data.slug ?? slug } : undefined,
         onlineCart:       hasOnline  ? data.onlinePaymentCart                           : undefined,
@@ -1391,8 +1391,8 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
     } catch {
       setMessages(m => [...m, {
         role: 'bot',
-        text: `I'm having trouble connecting right now 😅 — reach us directly on WhatsApp at ${store.whatsAppNumber ?? 'our WhatsApp'}!`,
-        quickReplies: ['💬 Open WhatsApp'],
+        text: `I'm having trouble connecting right now ?? � reach us directly on WhatsApp at ${store.whatsAppNumber ?? 'our WhatsApp'}!`,
+        quickReplies: ['?? Open WhatsApp'],
       }]);
     } finally {
       setIsTyping(false);
@@ -1480,7 +1480,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
 
   return (
     <>
-      {/* ── Floating button ────────────────────────────────────────────────── */}
+      {/* -- Floating button -------------------------------------------------- */}
       <button
         onClick={() => setOpen(o => !o)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 active:scale-95"
@@ -1500,7 +1500,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
         )}
       </button>
 
-      {/* ── Chat panel ─────────────────────────────────────────────────────── */}
+      {/* -- Chat panel ------------------------------------------------------- */}
       {open && (
         <div
           className="fixed bottom-24 right-3 left-3 sm:left-auto sm:right-6 sm:w-[420px] z-40 bg-white rounded-3xl overflow-hidden flex flex-col"
@@ -1536,7 +1536,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
               <p className="font-bold text-sm leading-tight truncate">{store.name}</p>
               <p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                AI Shopping Assistant · Usually instant
+                AI Shopping Assistant � Usually instant
               </p>
             </div>
 
@@ -1592,7 +1592,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
                     {msg.text}
                   </div>
 
-                  {/* Product carousel — only shown when no order has been placed */}
+                  {/* Product carousel � only shown when no order has been placed */}
                   {msg.products && msg.products.length > 0 && !msg.orderDetails && !msg.onlineCart && (
                     <ProductCarousel count={msg.products.length}>
                       {msg.products.map((p: any) => (
@@ -1624,7 +1624,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
                           <CheckCircle className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-emerald-800">Order Confirmed! 🎉</p>
+                          <p className="text-xs font-bold text-emerald-800">Order Confirmed! ??</p>
                           <p className="text-[11px] text-emerald-600 font-medium">#{msg.orderDetails.orderNumber}</p>
                         </div>
                         <div className="text-right">
@@ -1649,17 +1649,17 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
                     </div>
                   )}
 
-                  {/* Chat COD — email OTP verification card */}
+                  {/* Chat COD � email OTP verification card */}
                   {msg.pendingCodOrder && !msg.orderDetails && (
                     <div className="w-full bg-amber-50 border border-amber-200 rounded-2xl p-3.5 space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <span className="text-base">📧</span>
+                          <span className="text-base">??</span>
                         </div>
                         <div>
                           <p className="text-xs font-bold text-amber-900">Verify your email to confirm order</p>
                           <p className="text-[10px] text-amber-700">
-                            Total: <strong>{formatCurrency(msg.pendingCodOrder.totalAmount, store.currency ?? 'INR')}</strong> · COD
+                            Total: <strong>{formatCurrency(msg.pendingCodOrder.totalAmount, store.currency ?? 'INR')}</strong> � COD
                           </p>
                         </div>
                       </div>
@@ -1683,13 +1683,13 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
                             className="w-full py-2.5 rounded-xl text-white text-xs font-bold disabled:opacity-50"
                             style={{ backgroundColor: themeColor }}
                           >
-                            {chatOtpStep === 'sending' && chatOtpMsgIdx === idx ? 'Sending code...' : 'Send Verification Code →'}
+                            {chatOtpStep === 'sending' && chatOtpMsgIdx === idx ? 'Sending code...' : 'Send Verification Code ?'}
                           </button>
                         </>
                       ) : (
                         <>
                           <div className="bg-white border border-amber-200 rounded-xl px-3 py-2 text-[11px] text-amber-800">
-                            Code sent to <strong>{chatOtpEmail}</strong> · expires in 10 min
+                            Code sent to <strong>{chatOtpEmail}</strong> � expires in 10 min
                           </div>
                           <input
                             type="text"
@@ -1710,13 +1710,13 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
                             className="w-full py-2.5 rounded-xl text-white text-xs font-bold disabled:opacity-50"
                             style={{ backgroundColor: themeColor }}
                           >
-                            {chatOtpStep === 'placing' ? 'Placing order...' : '✅ Verify & Place Order'}
+                            {chatOtpStep === 'placing' ? 'Placing order...' : '? Verify & Place Order'}
                           </button>
                           <button
                             onClick={() => { setChatOtpStep('idle'); setChatOtpCode(''); setChatOtpError(null); }}
                             className="w-full text-[11px] text-amber-600 hover:text-amber-800 py-0.5"
                           >
-                            ← Change email / resend code
+                            ? Change email / resend code
                           </button>
                         </>
                       )}
@@ -1731,9 +1731,9 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
                           <Zap className="w-5 h-5 text-violet-600" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-violet-800">Ready to Pay Online 💳</p>
+                          <p className="text-xs font-bold text-violet-800">Ready to Pay Online ??</p>
                           <p className="text-[11px] text-violet-600">
-                            {msg.onlineCart.items.length} item{msg.onlineCart.items.length !== 1 ? 's' : ''} ·{' '}
+                            {msg.onlineCart.items.length} item{msg.onlineCart.items.length !== 1 ? 's' : ''} �{' '}
                             {formatCurrency(msg.onlineCart.items.reduce((s, i) => s + i.qty * i.unitPrice, 0), store.currency ?? 'INR')}
                           </p>
                         </div>
@@ -1743,7 +1743,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
                         className="w-full py-2 rounded-xl text-xs font-bold text-white transition-opacity hover:opacity-90"
                         style={{ backgroundColor: themeColor }}
                       >
-                        Complete Payment →
+                        Complete Payment ?
                       </button>
                     </div>
                   )}
@@ -1845,7 +1845,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// -- Main Page -----------------------------------------------------------------
 
 export function PublicStorefrontPage({ overrideSlug }: { overrideSlug?: string } = {}) {
   const { slug: paramSlug } = useParams<{ slug: string }>();
@@ -1886,14 +1886,14 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const [cartOpen, setCartOpen] = useState(false);
   const [heroTagIdx, setHeroTagIdx] = useState(0);
 
-  // ── Branded loading screen ─────────────────────────────────────────────────
+  // -- Branded loading screen -------------------------------------------------
   // Show a 2-second minimum branded splash while store data loads.
   // loaderDone flips to true after the timer; we hide the splash only once
   // BOTH the data has arrived AND the 2s minimum has elapsed.
   const [loaderDone,    setLoaderDone]    = useState(false);
   const [loaderVisible, setLoaderVisible] = useState(true); // fade-out trigger
 
-  // PWA install banner removed — was overlapping social CTAs in bottom-right corner
+  // PWA install banner removed � was overlapping social CTAs in bottom-right corner
 
   // Rotate hero collection tag every 3s
   useEffect(() => {
@@ -1914,7 +1914,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       categoryName: product.categoryName,
       stockQuantity: product.stockQuantity,
     });
-    // GA4 event — currency read at call-time so store doesn't need to be in deps
+    // GA4 event � currency read at call-time so store doesn't need to be in deps
     gtagEvent('add_to_cart', {
       currency: 'INR',
       value: product.discountedPrice ?? product.basePrice,
@@ -1957,7 +1957,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   useEffect(() => {
     if (!store?.name) return;
 
-    const title    = (store as any).seoTitle       || `${store.name} — Shop Online`;
+    const title    = (store as any).seoTitle       || `${store.name} � Shop Online`;
     const desc     = (store as any).seoDescription || store.description || `Shop at ${store.name} on WhatsApp.`;
     const img      = (store as any).seoImage       || (store as any).bannerUrl || (store as any).logoUrl || '';
     const keywords = (store as any).seoKeywords    || '';
@@ -1989,7 +1989,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     setMeta('meta[name="twitter:description"]', 'name=twitter:description', desc);
     if (img) setMeta('meta[name="twitter:image"]', 'name=twitter:image',    img);
 
-    // Canonical URL — prevents duplicate content across query param variations
+    // Canonical URL � prevents duplicate content across query param variations
     let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement('link');
@@ -2017,12 +2017,12 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       document.head.querySelectorAll('[data-storefront="1"]').forEach(el => el.remove());
       // Restore static OG tags
       setMeta('meta[name="description"]',        'name=description',        'Silarai helps social sellers manage WhatsApp orders.');
-      setMeta('meta[property="og:title"]',       'property=og:title',       'Silarai — Turn WhatsApp Chats Into Orders');
+      setMeta('meta[property="og:title"]',       'property=og:title',       'Silarai � Turn WhatsApp Chats Into Orders');
       setMeta('meta[property="og:description"]', 'property=og:description', 'Silarai helps social sellers manage WhatsApp orders.');
     };
   }, [store?.name, (store as any)?.seoTitle, (store as any)?.seoKeywords]);
 
-  // ── JSON-LD: Organization / OnlineStore schema ────────────────────────────
+  // -- JSON-LD: Organization / OnlineStore schema ----------------------------
   useEffect(() => {
     if (!store?.name) return;
     const org: Record<string, unknown> = {
@@ -2055,7 +2055,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     return () => document.getElementById('ld-json-org')?.remove();
   }, [store?.name, store?.description, store?.logoUrl]);
 
-  // ── JSON-LD: Product schema + per-product meta (when modal is open) ───────
+  // -- JSON-LD: Product schema + per-product meta (when modal is open) -------
   useEffect(() => {
     if (!selectedProduct || !store) return;
     const currency   = store.currency ?? 'INR';
@@ -2075,7 +2075,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       el.setAttribute('content', value);
     };
 
-    const productTitle = `${selectedProduct.title} — ${store.name}`;
+    const productTitle = `${selectedProduct.title} � ${store.name}`;
     const productDesc  = selectedProduct.description
       || `Buy ${selectedProduct.title} at ${store.name}. ${currency} ${price}.`;
     const productImg   = selectedProduct.primaryImage || store.logoUrl || '';
@@ -2113,7 +2113,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     else if (selectedProduct.primaryImage) productSchema.image       = selectedProduct.primaryImage;
     if (selectedProduct.categoryName)      productSchema.category    = selectedProduct.categoryName;
 
-    // Star ratings in Google search results — only when reviews exist
+    // Star ratings in Google search results � only when reviews exist
     if (productReviews && productReviews.totalCount > 0 && productReviews.averageRating > 0) {
       productSchema.aggregateRating = {
         '@type':      'AggregateRating',
@@ -2134,7 +2134,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       document.getElementById('ld-json-product')?.remove();
       // Restore store-level meta
       if (store) {
-        const storeTitle = (store as any).seoTitle || `${store.name} — Shop Online`;
+        const storeTitle = (store as any).seoTitle || `${store.name} � Shop Online`;
         document.title = storeTitle;
         const ogTitle = document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]');
         if (ogTitle) ogTitle.setAttribute('content', storeTitle);
@@ -2144,7 +2144,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     };
   }, [selectedProduct?.id, productReviews]);
 
-  // ── Update browser URL when product modal opens/closes (for shareability) ──
+  // -- Update browser URL when product modal opens/closes (for shareability) --
   useEffect(() => {
     if (!slug) return;
     if (selectedProduct) {
@@ -2170,7 +2170,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
 
     // Build a favicon URL: prefer dedicated faviconUrl, fall back to logoUrl,
     // then fall back to the backend-generated SVG monogram endpoint.
-    // IMPORTANT: data: URIs are ignored by Google Search — always use a real HTTP URL.
+    // IMPORTANT: data: URIs are ignored by Google Search � always use a real HTTP URL.
     const faviconUrl: string =
       store.faviconUrl ||
       store.logoUrl ||
@@ -2296,7 +2296,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const totalCount: number = productsData?.totalCount ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-  // ── Auto-open product modal when URL contains /products/:slugOrId ──
+  // -- Auto-open product modal when URL contains /products/:slugOrId --
   useEffect(() => {
     if (!paramProductId || !slug) return;
     // Match by slug first, then fall back to id (for old UUID links)
@@ -2305,13 +2305,13 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     );
     if (cached) { setSelectedProduct(cached); return; }
     if (allProducts.length > 0) return; // products loaded but this one not found
-    // Products not loaded yet — fetch the single product directly (backend accepts slug or UUID)
+    // Products not loaded yet � fetch the single product directly (backend accepts slug or UUID)
     axios.get(`${BASE_URL}/public/${slug}/products/${paramProductId}`)
       .then(r => setSelectedProduct(r.data))
       .catch(() => {});
   }, [paramProductId, slug, allProducts.length]);
 
-  // ── Fetch review aggregate when a product modal opens (for JSON-LD stars) ──
+  // -- Fetch review aggregate when a product modal opens (for JSON-LD stars) --
   useEffect(() => {
     if (!selectedProduct || !slug) { setProductReviews(null); return; }
     axios.get(`${BASE_URL}/public/${slug}/products/${selectedProduct.id}/reviews`)
@@ -2322,7 +2322,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       .catch(() => setProductReviews(null));
   }, [selectedProduct?.id, slug]);
 
-  // ── Auto-select category from URL /category/:categorySlug ─────────────────
+  // -- Auto-select category from URL /category/:categorySlug -----------------
   useEffect(() => {
     if (!paramCategorySlug || !categories?.length) return;
     const cat = (categories as Array<{ id: string; name: string }>).find(
@@ -2331,7 +2331,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     if (cat) setSelectedCategory(cat.id);
   }, [paramCategorySlug, categories]);
 
-  // ── Update URL when category filter changes ───────────────────────────────
+  // -- Update URL when category filter changes -------------------------------
   useEffect(() => {
     if (!slug || selectedProduct) return; // product URL takes priority
     if (selectedCategory) {
@@ -2354,10 +2354,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     try {
       const res = await axios.get(`${BASE_URL}/public/${slug}/products/${productId}`);
       setSelectedProduct(res.data);
-    } catch { /* ignore — product card just won't open */ }
+    } catch { /* ignore � product card just won't open */ }
   }, [allProducts, slug]);
 
-  // ── Branded loading screen ────────────────────────────────────────────────
+  // -- Branded loading screen ------------------------------------------------
   // Shown for a minimum of 2 seconds (or until store data arrives, whichever
   // is longer) when the tenant has loaderEnabled = true (the default).
   if (loaderVisible && (showBrandedLoader || storeLoading)) {
@@ -2453,9 +2453,9 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
 
   const tc = store.themeColor    ?? '#0f766e';  // primary
   const sc = store.secondaryColor ?? '#134E4A'; // secondary
-  // const ac = store.accentColor ?? tc;         // accent — reserved for future use
+  // const ac = store.accentColor ?? tc;         // accent � reserved for future use
 
-  const HEADER_H = 68; // px — height of sticky top nav
+  const HEADER_H = 68; // px � height of sticky top nav
   const scrollToEl = (el: HTMLElement | null, extra = 0) => {
     if (!el) return;
     const y = el.getBoundingClientRect().top + window.scrollY - HEADER_H - extra;
@@ -2477,7 +2477,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* ── Announcement Bar — only shown when the business has set announcement text ── */}
+      {/* -- Announcement Bar � only shown when the business has set announcement text -- */}
       {store.announcementText && (
         <div className="bg-slate-900 text-white text-xs py-2 overflow-hidden relative">
           <div
@@ -2485,13 +2485,13 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             style={{ animation: 'marqueeScroll 22s linear infinite' }}
           >
             {Array.from({ length: 4 }).map((_, i) => (
-              <span key={i} className="mx-12">✦ {store.announcementText}</span>
+              <span key={i} className="mx-12">? {store.announcementText}</span>
             ))}
           </div>
         </div>
       )}
 
-      {/* ── Sticky Header ── */}
+      {/* -- Sticky Header -- */}
       <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
           {/* Logo */}
@@ -2645,7 +2645,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         )}
       </header>
 
-      {/* ── Hero ── */}
+      {/* -- Hero -- */}
       {store.bannerUrl ? (
         <div className="relative h-64 md:h-96 overflow-hidden">
           <img
@@ -2665,7 +2665,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 onClick={scrollToProducts}
                 className="mt-4 px-6 py-2.5 rounded-2xl text-white font-semibold text-sm border border-white/40 hover:bg-white/20 transition-colors backdrop-blur-sm"
               >
-                Shop Now →
+                Shop Now ?
               </button>
             </div>
           </div>
@@ -2680,16 +2680,16 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
               className="relative min-h-[480px] md:min-h-[580px] flex items-center justify-center overflow-hidden"
               style={{ background: `linear-gradient(150deg, ${sc} 0%, ${tc} 55%, #000 100%)` }}
             >
-              {/* Precision grid overlay — futuristic tech feel */}
+              {/* Precision grid overlay � futuristic tech feel */}
               <div className="absolute inset-0 opacity-[0.07]" style={{
                 backgroundImage: `linear-gradient(${tc}88 1px, transparent 1px), linear-gradient(90deg, ${tc}88 1px, transparent 1px)`,
                 backgroundSize: '48px 48px',
               }} />
 
-              {/* Glowing orb — top right */}
+              {/* Glowing orb � top right */}
               <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full opacity-20"
                 style={{ background: `radial-gradient(circle, ${tc}, transparent 70%)` }} />
-              {/* Glowing orb — bottom left */}
+              {/* Glowing orb � bottom left */}
               <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full opacity-15"
                 style={{ background: `radial-gradient(circle, ${tc}cc, transparent 70%)` }} />
 
@@ -2709,7 +2709,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                   <Sparkles className="w-3 h-3" /> {currentTag}
                 </div>
 
-                {/* Store name — bold, gradient highlight on last word */}
+                {/* Store name � bold, gradient highlight on last word */}
                 <h1 className="text-5xl md:text-7xl font-black mb-4 tracking-tight leading-none">
                   {store.name}
                 </h1>
@@ -2775,7 +2775,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         })()
       }
 
-      {/* ── Trust ribbon ── */}
+      {/* -- Trust ribbon -- */}
       <div className="bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-center gap-5 md:gap-8 flex-wrap">
           {([
@@ -2795,7 +2795,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         </div>
       </div>
 
-      {/* ── Category Icon Rail ── */}
+      {/* -- Category Icon Rail -- */}
       {categories.length > 0 && (
         <div ref={categoriesRef} className="pt-8 pb-4" style={{ background: `linear-gradient(180deg, #f8fafb 0%, #fff 100%)` }}>
           <div className="max-w-6xl mx-auto px-4">
@@ -2816,7 +2816,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
               )}
             </div>
 
-            {/* Icon row — right fade hints at horizontal scroll */}
+            {/* Icon row � right fade hints at horizontal scroll */}
             <div className="relative">
               <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
 
@@ -2872,7 +2872,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         </div>
       )}
 
-      {/* ── Featured Products — Trending Now ── */}
+      {/* -- Featured Products � Trending Now -- */}
       {allProducts.filter(p => p.isFeatured).length > 0 && !selectedCategory && !debouncedSearch && (
         <div className="mt-2 py-10" style={{ background: `linear-gradient(160deg, ${tc}08 0%, ${sc}12 100%)` }}>
           <div className="max-w-6xl mx-auto px-4">
@@ -2975,10 +2975,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         </div>
       )}
 
-      {/* Scroll anchor — "All Products" nav link and category clicks land here */}
+      {/* Scroll anchor � "All Products" nav link and category clicks land here */}
       <div ref={productsRef} aria-hidden />
 
-      {/* ── Sticky Category Tab Bar ── stays locked below header while user browses ── */}
+      {/* -- Sticky Category Tab Bar -- stays locked below header while user browses -- */}
       {categories.length > 1 && (
         <div
           className="sticky z-20 bg-white/97 backdrop-blur-md border-b border-slate-200/70"
@@ -3012,10 +3012,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         </div>
       )}
 
-      {/* ── Products section ── */}
+      {/* -- Products section -- */}
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-5">
 
-        {/* ── Toolbar ─── */}
+        {/* -- Toolbar --- */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
@@ -3035,8 +3035,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-8 py-2 text-sm text-slate-700 font-medium focus:outline-none cursor-pointer"
               >
                 <option value="">Featured</option>
-                <option value="price_asc">Price ↑</option>
-                <option value="price_desc">Price ↓</option>
+                <option value="price_asc">Price ?</option>
+                <option value="price_desc">Price ?</option>
                 <option value="newest">Newest</option>
               </select>
               <ArrowUpDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
@@ -3051,7 +3051,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 : { backgroundColor: '#fff', color: '#475569', borderColor: '#e2e8f0' }}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              {activeFiltersCount > 0 ? `Filter · ${activeFiltersCount}` : 'Filter'}
+              {activeFiltersCount > 0 ? `Filter � ${activeFiltersCount}` : 'Filter'}
             </button>
           </div>
         </div>
@@ -3103,8 +3103,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 <div className="flex flex-wrap gap-2">
                   {[
                     { label: 'Default', value: '' },
-                    { label: 'Price: Low → High', value: 'price_asc' },
-                    { label: 'Price: High → Low', value: 'price_desc' },
+                    { label: 'Price: Low ? High', value: 'price_asc' },
+                    { label: 'Price: High ? Low', value: 'price_desc' },
                     { label: 'Newest', value: 'newest' },
                   ].map(opt => (
                     <button
@@ -3252,7 +3252,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         )}
       </div>
 
-      {/* ── WhatsApp CTA Banner ── */}
+      {/* -- WhatsApp CTA Banner -- */}
       {store.whatsAppNumber && (
         <div className="max-w-6xl mx-auto px-4 py-10">
           <div
@@ -3278,7 +3278,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                   Need help choosing?
                 </h3>
                 <p className="text-white/80 text-base max-w-md leading-relaxed">
-                  Chat directly with {store.name} on WhatsApp — get personalized recommendations, check availability & place your order instantly.
+                  Chat directly with {store.name} on WhatsApp � get personalized recommendations, check availability & place your order instantly.
                 </p>
                 {/* Mini social proof */}
                 <div className="flex items-center gap-4 mt-5 flex-wrap justify-center md:justify-start">
@@ -3306,14 +3306,14 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                   <MessageCircle className="w-5 h-5" />
                   Chat on WhatsApp
                 </a>
-                <p className="text-xs text-white/60 text-center">Free • No signup required</p>
+                <p className="text-xs text-white/60 text-center">Free � No signup required</p>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Footer ── */}
+      {/* -- Footer -- */}
       <footer ref={footerRef} className="bg-slate-900 text-white mt-20">
         {/* Trust footer strip */}
         <div className="border-b border-slate-800 py-6 px-4">
@@ -3411,11 +3411,11 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           </div>
         </div>
         <div className="border-t border-slate-800 px-4 py-4 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} {store.name}.{!store.allowsCustomBranding && <> Powered by <span className="text-slate-400 font-medium">Silarai</span></>}
+          � {new Date().getFullYear()} {store.name}.{!store.allowsCustomBranding && <> Powered by <span className="text-slate-400 font-medium">Silarai</span></>}
         </div>
       </footer>
 
-      {/* ── Scroll to top ── */}
+      {/* -- Scroll to top -- */}
       <button
         onClick={scrollToTop}
         className="fixed bottom-24 right-4 z-20 w-10 h-10 bg-white border border-slate-200 rounded-full shadow-lg flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-all md:bottom-6"
@@ -3424,11 +3424,11 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         <ChevronLeft className="w-4 h-4 rotate-90" />
       </button>
 
-      {/* Sticky mobile bottom bar — WhatsApp + Cart */}
+      {/* Sticky mobile bottom bar � WhatsApp + Cart */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 md:hidden z-20"
         style={{ padding: '10px 16px', paddingBottom: 'calc(10px + env(safe-area-inset-bottom))' }}>
         <div className="flex gap-2">
-          {/* Cart button — only show when cart has items */}
+          {/* Cart button � only show when cart has items */}
           {totalItems > 0 && (
             <button
               onClick={() => setCartOpen(true)}
@@ -3480,7 +3480,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         />
       )}
 
-      {/* Cart Drawer — lazy: not visible on first paint */}
+      {/* Cart Drawer � lazy: not visible on first paint */}
       <React.Suspense fallback={null}>
         <CartDrawer
           open={cartOpen}
@@ -3499,9 +3499,9 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         />
       </React.Suspense>
 
-      {/* PWA install banner removed — was overlapping social CTAs */}
+      {/* PWA install banner removed � was overlapping social CTAs */}
 
-      {/* Customer Auth Modal — lazy loaded */}
+      {/* Customer Auth Modal � lazy loaded */}
       {showAuthModal && slug && (
         <React.Suspense fallback={null}>
           <CustomerAuthModal
@@ -3512,7 +3512,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         </React.Suspense>
       )}
 
-      {/* My Account Panel — lazy loaded */}
+      {/* My Account Panel � lazy loaded */}
       {showAccountPanel && slug && store && (
         <React.Suspense fallback={null}>
           <MyAccountPanel
@@ -3529,7 +3529,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         </React.Suspense>
       )}
 
-      {/* ── Return Policy Modal ── */}
+      {/* -- Return Policy Modal -- */}
       {showReturnPolicy && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           {/* Backdrop */}
@@ -3553,7 +3553,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 <X className="w-4 h-4 text-slate-600" />
               </button>
             </div>
-            {/* Body — scrollable */}
+            {/* Body � scrollable */}
             <div className="overflow-y-auto px-5 py-5 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
               {(store as any).returnPolicy || `Return & Refund Policy
 
@@ -3561,17 +3561,17 @@ We want you to be completely satisfied with your purchase. Please read our retur
 
 RETURNS
 We accept returns within 7 days of delivery. Items must be:
-• Unused and in original condition
-• In original packaging
-• Accompanied by proof of purchase
+� Unused and in original condition
+� In original packaging
+� Accompanied by proof of purchase
 
 NON-RETURNABLE ITEMS
-• Opened personal care or beauty products
-• Items on sale or marked as final sale
-• Gift cards
+� Opened personal care or beauty products
+� Items on sale or marked as final sale
+� Gift cards
 
 REFUND PROCESS
-Once we receive and inspect your return, we will notify you via WhatsApp. If approved, your refund will be processed within 5–7 business days to your original payment method.
+Once we receive and inspect your return, we will notify you via WhatsApp. If approved, your refund will be processed within 5�7 business days to your original payment method.
 
 HOW TO RETURN
 Contact us on WhatsApp with your order number and reason for return. We will guide you through the process.
@@ -3582,7 +3582,7 @@ If you received a damaged or incorrect item, please contact us within 48 hours o
 EXCHANGE
 We offer exchanges for the same product in a different variant (size/colour) subject to availability. Contact us on WhatsApp to arrange.
 
-For any questions, reach out to us on WhatsApp — we're happy to help!`}
+For any questions, reach out to us on WhatsApp � we're happy to help!`}
             </div>
             {/* Footer */}
             {store.whatsAppNumber && (
