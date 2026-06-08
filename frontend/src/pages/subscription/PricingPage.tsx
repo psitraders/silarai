@@ -9,7 +9,7 @@ import {
 import { PageLoader } from '../../components/ui/Spinner';
 import { Navbar } from '../../components/landing/Navbar';
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
 
 // ── Currency config — rates from INR (updated periodically) ──────────────────
 const CURRENCIES: Record<string, { symbol: string; rate: number; label: string; flag: string }> = {

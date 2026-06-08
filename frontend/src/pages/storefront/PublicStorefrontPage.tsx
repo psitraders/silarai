@@ -49,7 +49,7 @@ const CartDrawer = React.lazy(() =>
   import('../../components/storefront/CartDrawer').then(m => ({ default: m.CartDrawer }))
 );
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
 
 // Safe GA4 event helper — no-ops if gtag hasn't loaded yet
 function gtagEvent(eventName: string, params?: Record<string, unknown>) {

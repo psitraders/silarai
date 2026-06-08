@@ -10,7 +10,7 @@ import axios from 'axios';
 import { PageLoader } from '../../components/ui/Spinner';
 import { Button } from '../../components/ui/Button';
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
 
 interface Plan {
   id: string;
