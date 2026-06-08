@@ -102,7 +102,7 @@ const AdminChatbotClientDetailPage = React.lazy(() => import('./pages/admin/Admi
 const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 const isCustomDomain = (() => {
   const h = window.location.hostname;
-  return h !== 'localhost' && h !== '127.0.0.1' && !h.includes('silarai') && !h.includes('azurestaticapps');
+  return h !== 'localhost' && h !== '127.0.0.1' && !h.includes('silarai') && !h.includes('replycart') && !h.includes('azurestaticapps');
 })();
 
 function CustomDomainStorefront() {

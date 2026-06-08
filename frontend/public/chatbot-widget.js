@@ -3,7 +3,7 @@
 
   var cfg      = window.RCChatbotConfig || {};
   var API_KEY  = cfg.apiKey || '';
-  var API_BASE = (cfg.apiBase || 'https://replycartapi-h7h2gdctg4h9g6cp.centralindia-01.azurewebsites.net').replace(/\/$/, '');
+  var API_BASE = (cfg.apiBase || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net').replace(/\/$/, '');
   var PRIMARY  = cfg.primaryColor || '#0d9488';
   var POSITION = cfg.position || 'right';
 
