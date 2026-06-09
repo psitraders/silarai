@@ -31,7 +31,8 @@ function forceLogout() {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   // Clear the entire zustand persist snapshot so isAuthenticated resets to false
-  localStorage.removeItem('Silarai-auth');
+  // IMPORTANT: key must match the `name` option in auth.store.ts persist config
+  localStorage.removeItem('silarai-auth');
   // Use replace so the broken page isn't in browser history
   window.location.replace('/login');
 }

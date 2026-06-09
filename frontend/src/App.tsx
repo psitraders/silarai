@@ -179,7 +179,8 @@ function RouteTracker() {
 }
 
 function SmartRoot() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
+  if (!_hasHydrated) return <PageLoader />;
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : (
     <Suspense fallback={<PageLoader />}>
       <LandingPage />
@@ -188,13 +189,19 @@ function SmartRoot() {
 }
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
+  // Wait for Zustand to rehydrate from localStorage before making auth decisions.
+  // Without this guard, isAuthenticated reads as `false` on the first render tick
+  // (before persist rehydration completes), causing a spurious redirect to /login
+  // that then loops back to /dashboard once hydration finishes.
+  if (!_hasHydrated) return <PageLoader />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
 function GuestGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
+  if (!_hasHydrated) return <PageLoader />;
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }

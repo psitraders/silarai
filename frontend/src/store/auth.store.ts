@@ -8,6 +8,10 @@ interface AuthState {
   refreshToken: string | null;
   user: { userId: string; name: string; email: string; tenantId: string; roles: string[] } | null;
   isAuthenticated: boolean;
+  /** True once Zustand has finished rehydrating from localStorage. Guards against
+   *  redirect loops caused by reading isAuthenticated before hydration completes. */
+  _hasHydrated: boolean;
+  setHasHydrated: (v: boolean) => void;
   setTokens: (result: LoginResult) => void;
   updateUser: (partial: Partial<{ name: string; phone: string; avatarUrl: string }>) => void;
   logout: () => void;
@@ -21,6 +25,8 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       isAuthenticated: false,
+      _hasHydrated: false,
+      setHasHydrated: (v) => set({ _hasHydrated: v }),
 
       setTokens: (result: LoginResult) => {
         localStorage.setItem('accessToken', result.accessToken);
@@ -49,11 +55,18 @@ export const useAuthStore = create<AuthState>()(
         if (rt) authApi.logout(rt).catch(() => {}); // fire-and-forget
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('silarai-auth'); // clear persisted snapshot
         set({ accessToken: null, refreshToken: null, user: null, isAuthenticated: false });
       },
 
       hasRole: (role: string) => get().user?.roles.includes(role) ?? false,
     }),
-    { name: 'silarai-auth' }
+    {
+      name: 'silarai-auth',
+      // Called when rehydration finishes — flip the flag so guards can render
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+    }
   )
 );
