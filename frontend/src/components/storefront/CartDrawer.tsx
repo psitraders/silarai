@@ -103,11 +103,36 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
     }, 300);
   };
 
+  /** Fire-and-forget: save cart to abandoned-carts table so seller can follow up */
+  const saveAbandonedCart = (customerName: string, customerPhone: string, customerEmail?: string) => {
+    if (!customerPhone.trim() || items.length === 0) return;
+    fetch(`${BASE_URL}/public/${slug}/inquiry`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName:  customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        customerEmail: customerEmail?.trim() || null,
+        channel:       1, // WhatsApp
+        productId:     null,
+        message:       'Started checkout but did not complete order.',
+        cartItems: items.map(i => ({
+          productTitle: i.productTitle,
+          unitPrice:    i.unitPrice,
+          quantity:     i.quantity,
+          variantInfo:  i.variantInfo ?? null,
+        })),
+      }),
+    }).catch(() => {}); // never throw — this is best-effort
+  };
+
   /** Step 1 — send OTP to email */
   const handleSendOtp = async () => {
     if (!name.trim())  { setPayError('Please enter your name.');          return; }
     if (!phone.trim()) { setPayError('Please enter your phone number.');  return; }
     if (!email.trim()) { setPayError('Please enter your email address.'); return; }
+    // Track as abandoned cart now — customer has provided details but hasn't placed order yet
+    saveAbandonedCart(name, phone, email);
     setPayError(null); setOtpError(null); setOtpStep('sending');
     try {
       const res = await fetch(`${BASE_URL}/public/${slug}/cod-otp/send`, {
@@ -175,6 +200,8 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
   const handleRazorpayPay = async () => {
     if (!name.trim()) { setPayError('Please enter your name.'); return; }
     if (!phone.trim()) { setPayError('Please enter your phone number.'); return; }
+    // Track as abandoned cart — customer opened Razorpay but may not complete payment
+    saveAbandonedCart(name, phone, email || undefined);
     setPayError(null);
     setPaying(true);
     try {
