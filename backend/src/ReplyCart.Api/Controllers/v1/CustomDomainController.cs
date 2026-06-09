@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Enums;
 using ReplyCart.Infrastructure.Persistence;
@@ -13,6 +14,8 @@ namespace ReplyCart.Api.Controllers.v1;
 public class CustomDomainController(
     AppDbContext db,
     ITenantContext tenantContext,
+    ICloudflareService cloudflare,
+    ILogger<CustomDomainController> logger,
     IHttpClientFactory httpClientFactory) : ControllerBase
 {
     private const string CnameTarget = "cname.silarai.com";
@@ -92,12 +95,47 @@ public class CustomDomainController(
         var tenant = await db.Tenants.FindAsync([tenantContext.CurrentTenantId], ct);
         if (tenant == null) return NotFound();
 
-        // Save domain — no Cloudflare API needed
+        // Clean up old Cloudflare records if domain is changing
+        if (!string.IsNullOrEmpty(tenant.CloudflareHostnameId) && tenant.CustomDomain != domain)
+        {
+            try { await cloudflare.DeleteCustomHostnameAsync(tenant.CloudflareHostnameId, ct); } catch (Exception ex) { logger.LogWarning(ex, "Failed to delete old Cloudflare hostname {Id}", tenant.CloudflareHostnameId); }
+        }
+        if (!string.IsNullOrEmpty(tenant.CloudflareWorkerRouteId) && tenant.CustomDomain != domain)
+        {
+            try { await cloudflare.DeleteWorkerRouteAsync(tenant.CloudflareWorkerRouteId, ct); } catch (Exception ex) { logger.LogWarning(ex, "Failed to delete old Worker route {Id}", tenant.CloudflareWorkerRouteId); }
+        }
+
+        // Register Custom Hostname + Worker route in Cloudflare automatically
+        string? cfHostnameId = null;
+        string? cfRouteId = null;
+        try
+        {
+            var cfResult = await cloudflare.CreateCustomHostnameAsync(domain, ct);
+            cfHostnameId = cfResult.Id;
+            logger.LogInformation("Cloudflare Custom Hostname created for {Domain}: {Id}", domain, cfHostnameId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to create Cloudflare Custom Hostname for {Domain}", domain);
+            // Non-fatal: domain is saved, merchant can retry
+        }
+
+        try
+        {
+            cfRouteId = await cloudflare.AddWorkerRouteAsync(domain, ct);
+            logger.LogInformation("Cloudflare Worker route added for {Domain}: {Id}", domain, cfRouteId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to add Cloudflare Worker route for {Domain}", domain);
+            // Non-fatal
+        }
+
         tenant.CustomDomain            = domain;
         tenant.CustomDomainStatus      = "pending";
         tenant.CustomDomainVerifiedAt  = null;
-        tenant.CloudflareHostnameId    = null;
-        tenant.CloudflareWorkerRouteId = null;
+        tenant.CloudflareHostnameId    = cfHostnameId ?? tenant.CloudflareHostnameId;
+        tenant.CloudflareWorkerRouteId = cfRouteId    ?? tenant.CloudflareWorkerRouteId;
         tenant.CloudflareZoneId        = null;
 
         await db.SaveChangesAsync(ct);
@@ -119,6 +157,18 @@ public class CustomDomainController(
     {
         var tenant = await db.Tenants.FindAsync([tenantContext.CurrentTenantId], ct);
         if (tenant == null) return NotFound();
+
+        // Clean up Cloudflare automatically
+        if (!string.IsNullOrEmpty(tenant.CloudflareHostnameId))
+        {
+            try { await cloudflare.DeleteCustomHostnameAsync(tenant.CloudflareHostnameId, ct); }
+            catch (Exception ex) { logger.LogWarning(ex, "Failed to delete Cloudflare hostname {Id}", tenant.CloudflareHostnameId); }
+        }
+        if (!string.IsNullOrEmpty(tenant.CloudflareWorkerRouteId))
+        {
+            try { await cloudflare.DeleteWorkerRouteAsync(tenant.CloudflareWorkerRouteId, ct); }
+            catch (Exception ex) { logger.LogWarning(ex, "Failed to delete Worker route {Id}", tenant.CloudflareWorkerRouteId); }
+        }
 
         tenant.CustomDomain              = null;
         tenant.CustomDomainStatus        = null;
