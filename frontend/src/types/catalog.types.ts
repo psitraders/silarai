@@ -58,6 +58,15 @@ export interface SaveVariantDto {
   isAvailable: boolean;
 }
 
+export interface SubCategory {
+  id: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -65,6 +74,9 @@ export interface Category {
   imageUrl?: string;
   sortOrder: number;
   isActive: boolean;
+  isFeatured?: boolean;
+  parentCategoryId?: string | null;
+  subCategories?: SubCategory[];
 }
 
 export interface PagedList<T> {

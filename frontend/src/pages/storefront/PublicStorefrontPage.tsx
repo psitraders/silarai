@@ -2522,21 +2522,64 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
-            {['Home', 'Categories', 'All Products', 'About Us'].map(item => (
+          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+            {/* Static nav items */}
+            {(['Home', 'Categories', 'All Products', 'About Us'] as const).map(item => (
               <button
                 key={item}
                 onClick={() => handleNavClick(item)}
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
               >
                 {item}
               </button>
             ))}
+
+            {/* Featured categories with subcategory dropdowns */}
+            {categories.filter(c => c.isFeatured).map(cat => (
+              <div key={cat.id} className="relative group">
+                <button
+                  onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                  style={{ color: selectedCategory === cat.id ? tc : undefined }}
+                >
+                  {cat.name}
+                  {(cat.subCategories?.length ?? 0) > 0 && (
+                    <ChevronRight className="w-3 h-3 rotate-90 opacity-50" />
+                  )}
+                </button>
+
+                {/* Dropdown — only if subcategories exist */}
+                {(cat.subCategories?.length ?? 0) > 0 && (
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
+                    <button
+                      onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
+                      className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 font-medium"
+                    >
+                      All {cat.name}
+                    </button>
+                    <div className="border-t border-slate-50 mt-1 pt-1">
+                      {cat.subCategories!.map(sub => (
+                        <button
+                          key={sub.id}
+                          onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(sub.id); setPage(1); scrollToProducts(); }}
+                          className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                          style={{ color: selectedSubCategory === sub.id ? tc : undefined }}
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Custom pages */}
             {navPages.map(p => (
               <a
                 key={p.id}
                 href={`${pageBase}/${p.slug}`}
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
               >
                 {p.title}
               </a>
@@ -2632,7 +2675,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-slate-100 bg-white px-4 py-3 space-y-1">
-            {['Home', 'Categories', 'All Products', 'About Us'].map(item => (
+            {(['Home', 'Categories', 'All Products', 'About Us'] as const).map(item => (
               <button
                 key={item}
                 onClick={() => { handleNavClick(item); setMobileMenuOpen(false); }}
@@ -2641,6 +2684,33 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 {item}
               </button>
             ))}
+
+            {/* Featured categories in mobile menu */}
+            {categories.filter(c => c.isFeatured).map(cat => (
+              <div key={cat.id}>
+                <button
+                  onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); setMobileMenuOpen(false); }}
+                  className="block w-full text-left text-sm py-2 px-3 rounded-xl font-semibold hover:bg-slate-50"
+                  style={{ color: tc }}
+                >
+                  {cat.name}
+                </button>
+                {(cat.subCategories?.length ?? 0) > 0 && (
+                  <div className="ml-4 border-l-2 border-slate-100 pl-2 space-y-0.5">
+                    {cat.subCategories!.map(sub => (
+                      <button
+                        key={sub.id}
+                        onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(sub.id); setPage(1); scrollToProducts(); setMobileMenuOpen(false); }}
+                        className="block w-full text-left text-sm py-1.5 px-3 rounded-xl text-slate-600 hover:bg-slate-50"
+                      >
+                        {sub.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
             {navPages.map(p => (
               <a
                 key={p.id}

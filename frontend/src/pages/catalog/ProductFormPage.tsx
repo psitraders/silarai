@@ -316,9 +316,16 @@ export function ProductFormPage() {
 
   if (isEdit && loadingProduct) return <PageLoader />;
 
+  // Build flat options: parent categories + their subcategories indented with ↳
   const categoryOptions = [
     { value: '', label: 'No category' },
-    ...categories.map(c => ({ value: c.id, label: c.name })),
+    ...categories.flatMap(c => [
+      { value: c.id, label: c.name },
+      ...(c.subCategories ?? []).map(sub => ({
+        value: sub.id,
+        label: `  ↳ ${sub.name}`,
+      })),
+    ]),
   ];
 
   return (
