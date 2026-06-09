@@ -70,6 +70,19 @@ public interface IAiProvider
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Generates full HTML body content for a custom storefront page (About Us, FAQ, etc.)
+    /// Returns clean semantic HTML with inline styles — ready to save as page content.
+    /// </summary>
+    Task<string> GeneratePageContentAsync(
+        string pageType,
+        string? userPrompt,
+        string storeName,
+        string? storeDescription,
+        string? storeCategory,
+        string themeColor = "#0F766E",
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Generates social-media captions + hashtags + CTA for an auto-campaign
     /// triggered when a product is published.
     /// </summary>

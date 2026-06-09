@@ -5,6 +5,7 @@ using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Storefront;
 using ReplyCart.Infrastructure.Persistence;
 using System.Text.RegularExpressions;
+using ReplyCart.Domain.Business;
 
 namespace ReplyCart.Api.Controllers.v1;
 
@@ -16,7 +17,8 @@ namespace ReplyCart.Api.Controllers.v1;
 [Authorize]
 public class PagesController(
     AppDbContext db,
-    ITenantContext tenantContext) : ControllerBase
+    ITenantContext tenantContext,
+    IAiProvider aiProvider) : ControllerBase
 {
     private Guid TenantId => tenantContext.CurrentTenantId;
 
@@ -111,6 +113,32 @@ public class PagesController(
         return NoContent();
     }
 
+    // ── AI Generate ───────────────────────────────────────────────────────────
+    [HttpPost("generate")]
+    public async Task<IActionResult> Generate([FromBody] GeneratePageRequest req, CancellationToken ct)
+    {
+        // Fetch tenant's store info for context
+        var business = await db.Businesses
+            .FirstOrDefaultAsync(b => b.TenantId == TenantId, ct);
+        var settings = await db.StorefrontSettings
+            .FirstOrDefaultAsync(s => s.TenantId == TenantId, ct);
+
+        var storeName  = business?.Name        ?? "Our Store";
+        var storeDesc  = business?.Description;
+        var themeColor = settings?.ThemeColor  ?? "#0F766E";
+
+        var html = await aiProvider.GeneratePageContentAsync(
+            pageType:         req.PageType,
+            userPrompt:       req.UserPrompt,
+            storeName:        storeName,
+            storeDescription: storeDesc,
+            storeCategory:    req.StoreCategory,
+            themeColor:       themeColor,
+            cancellationToken: ct);
+
+        return Ok(new { html });
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
     private static string GenerateSlug(string input)
     {
@@ -142,6 +170,12 @@ public record UpsertPageRequest(
     bool?   ShowInNav,
     bool?   ShowInFooter,
     int?    SortOrder
+);
+
+public record GeneratePageRequest(
+    string  PageType,
+    string? UserPrompt,
+    string? StoreCategory
 );
 
 

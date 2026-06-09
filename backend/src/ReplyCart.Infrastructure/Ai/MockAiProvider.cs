@@ -162,6 +162,31 @@ public class MockAiProvider : IAiProvider
         return Task.FromResult(new ConversationReply(reply, state));
     }
 
+    public Task<string> GeneratePageContentAsync(
+        string pageType,
+        string? userPrompt,
+        string storeName,
+        string? storeDescription,
+        string? storeCategory,
+        string themeColor = "#0F766E",
+        CancellationToken cancellationToken = default)
+    {
+        var html = $@"<section style=""max-width:700px;margin:0 auto;padding:40px 20px;font-family:sans-serif;"">
+  <h1 style=""font-size:2rem;font-weight:800;color:{themeColor};margin-bottom:12px;"">About {storeName}</h1>
+  <p style=""font-size:1.1rem;color:#374151;line-height:1.7;margin-bottom:24px;"">{storeDescription ?? $"Welcome to {storeName}! We are passionate about bringing you the best products."}</p>
+  <h2 style=""font-size:1.3rem;font-weight:700;color:#111827;margin-bottom:8px;"">Our Story</h2>
+  <p style=""color:#4B5563;line-height:1.7;margin-bottom:20px;"">Founded with a passion for quality and a commitment to customer satisfaction, {storeName} has been serving happy customers across India. We believe in offering genuine products at fair prices.</p>
+  <h2 style=""font-size:1.3rem;font-weight:700;color:#111827;margin-bottom:8px;"">Why Choose Us?</h2>
+  <ul style=""color:#4B5563;line-height:1.9;padding-left:20px;"">
+    <li>✅ Genuine products, carefully sourced</li>
+    <li>✅ Fast shipping across India</li>
+    <li>✅ Friendly customer support on WhatsApp</li>
+    <li>✅ Secure &amp; easy ordering</li>
+  </ul>
+</section>";
+        return Task.FromResult(html);
+    }
+
     public Task<AutoCampaignContent> GenerateAutoCampaignContentAsync(
         string productName,
         string? productDescription,

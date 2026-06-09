@@ -367,6 +367,63 @@ public class OpenAiProvider : IAiProvider
     }
 
     /// <inheritdoc />
+    public async Task<string> GeneratePageContentAsync(
+        string pageType,
+        string? userPrompt,
+        string storeName,
+        string? storeDescription,
+        string? storeCategory,
+        string themeColor = "#0F766E",
+        CancellationToken cancellationToken = default)
+    {
+        var systemPrompt =
+            "You are an expert web designer who writes clean, semantic HTML pages for small Indian e-commerce businesses. " +
+            "Generate a complete HTML body section (no <html>/<head>/<body> tags) for a storefront page. " +
+            "Use only inline styles. Keep the design professional, modern and mobile-friendly. " +
+            $"The brand color is {themeColor}. Use it for headings, buttons and accents. " +
+            "Max width 700px, centred with auto margins. Use system fonts. " +
+            "Return ONLY the HTML — no markdown, no code fences, no explanation.";
+
+        var userMsg =
+            $"Page type: {pageType}\n" +
+            $"Store name: {storeName}\n" +
+            (storeDescription != null ? $"Store description: {storeDescription}\n" : "") +
+            (storeCategory    != null ? $"Business category: {storeCategory}\n"    : "") +
+            (userPrompt       != null ? $"Extra instructions: {userPrompt}\n"      : "") +
+            "\nGenerate the HTML content for this page now.";
+
+        var payload = new
+        {
+            model       = _model,
+            messages    = new[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user",   content = userMsg }
+            },
+            max_tokens  = 1500,
+            temperature = 0.7
+        };
+
+        var json     = JsonSerializer.Serialize(payload);
+        var body     = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("v1/chat/completions", body, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var err = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new InvalidOperationException($"OpenAI page-generate error {(int)response.StatusCode}: {err}");
+        }
+
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var doc    = JsonDocument.Parse(responseBody);
+        return doc.RootElement
+            .GetProperty("choices")[0]
+            .GetProperty("message")
+            .GetProperty("content")
+            .GetString() ?? "";
+    }
+
+    /// <inheritdoc />
     public async Task<AutoCampaignContent> GenerateAutoCampaignContentAsync(
         string productName,
         string? productDescription,
