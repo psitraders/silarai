@@ -97,6 +97,14 @@ export default {
     // Strip all Cloudflare edge caching — stale bundles break custom domain stores
     const newHeaders = new Headers(swaResp.headers);
     newHeaders.set("Cache-Control", "no-store, no-cache, must-revalidate");
+
+    // Ensure HTML responses always declare UTF-8 so the browser never
+    // misreads multi-byte characters (e.g. em-dash) as Latin-1 before JS loads
+    const ct = newHeaders.get("Content-Type") || "";
+    if (ct.includes("text/html") && !ct.includes("charset")) {
+      newHeaders.set("Content-Type", "text/html; charset=utf-8");
+    }
+
     return new Response(swaResp.body, { status: swaResp.status, headers: newHeaders });
   }
 };
