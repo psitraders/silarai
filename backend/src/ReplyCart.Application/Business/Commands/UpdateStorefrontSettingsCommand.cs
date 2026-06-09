@@ -18,7 +18,8 @@ public record UpdateStorefrontSettingsCommand(
     string? GA4PropertyId = null,
     string? GA4ServiceAccountJson = null,
     string? FaviconUrl = null,
-    bool LoaderEnabled = true
+    bool LoaderEnabled = true,
+    bool SubCategoriesEnabled = false
 ) : IRequest;
 
 public class UpdateStorefrontSettingsCommandHandler(IAppDbContext db, ITenantContext tenantContext)
@@ -67,8 +68,9 @@ public class UpdateStorefrontSettingsCommandHandler(IAppDbContext db, ITenantCon
         if (request.GA4ServiceAccountJson is not null)
             settings.GA4ServiceAccountJson = string.IsNullOrWhiteSpace(request.GA4ServiceAccountJson) ? null : request.GA4ServiceAccountJson.Trim();
 
-        settings.FaviconUrl    = string.IsNullOrWhiteSpace(request.FaviconUrl) ? null : request.FaviconUrl.Trim();
-        settings.LoaderEnabled = request.LoaderEnabled;
+        settings.FaviconUrl            = string.IsNullOrWhiteSpace(request.FaviconUrl) ? null : request.FaviconUrl.Trim();
+        settings.LoaderEnabled         = request.LoaderEnabled;
+        settings.SubCategoriesEnabled  = request.SubCategoriesEnabled;
 
         // Persist logo & banner on the Business entity
         if (business is not null)

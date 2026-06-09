@@ -404,6 +404,15 @@ export function StorefrontSettingsPage() {
               <input type="checkbox" {...register('allowPublicInquiries')} className="rounded" />
               <span className="text-sm text-slate-700">Allow public inquiries (no login required)</span>
             </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" {...register('subCategoriesEnabled')} className="rounded" />
+              <div>
+                <span className="text-sm text-slate-700 font-medium">Enable subcategories</span>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Allow categories to have subcategories. Mark categories as <strong>Featured</strong> to show them in the storefront top navigation with subcategory dropdowns.
+                </p>
+              </div>
+            </label>
           </div>
         </Card>
 

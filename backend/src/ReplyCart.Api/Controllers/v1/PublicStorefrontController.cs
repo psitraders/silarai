@@ -251,13 +251,34 @@ public class PublicStorefrontController(
         if (!tenantContext.IsResolved)
             return NotFound();
 
-        var categories = await db.Categories
-            .Where(c => !c.IsDeleted)
+        // Load all active categories flat
+        var all = await db.Categories
+            .Where(c => !c.IsDeleted && c.IsActive)
             .OrderBy(c => c.SortOrder)
-            .Select(c => new { c.Id, c.Name, c.Description, c.ImageUrl })
+            .ThenBy(c => c.Name)
+            .Select(c => new PublicCategoryFlat(
+                c.Id, c.Name, c.Description, c.ImageUrl,
+                c.IsFeatured, c.ParentCategoryId))
             .ToListAsync(ct);
 
-        return Ok(categories);
+        // Build subcategory map
+        var subMap = all
+            .Where(c => c.ParentCategoryId != null)
+            .GroupBy(c => c.ParentCategoryId!.Value)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(c => new PublicSubCategoryDto(c.Id, c.Name, c.Description, c.ImageUrl)).ToList()
+            );
+
+        // Return root categories, each with their subcategories and featured flag
+        var result = all
+            .Where(c => c.ParentCategoryId == null)
+            .Select(c => new PublicCategoryDto(
+                c.Id, c.Name, c.Description, c.ImageUrl, c.IsFeatured,
+                subMap.TryGetValue(c.Id, out var subs) ? subs : []))
+            .ToList();
+
+        return Ok(result);
     }
 
     [HttpGet("products")]
@@ -1827,6 +1848,11 @@ public class PublicStorefrontController(
     private async Task<Domain.Tenancy.Tenant?> ResolveTenant(string slug, CancellationToken ct) =>
         await db.Tenants.FirstOrDefaultAsync(t => t.Slug == slug, ct);
 }
+
+// ── Category DTOs for public storefront ──────────────────────────────────────
+internal record PublicCategoryFlat(Guid Id, string Name, string? Description, string? ImageUrl, bool IsFeatured, Guid? ParentCategoryId);
+public record PublicSubCategoryDto(Guid Id, string Name, string? Description, string? ImageUrl);
+public record PublicCategoryDto(Guid Id, string Name, string? Description, string? ImageUrl, bool IsFeatured, List<PublicSubCategoryDto> SubCategories);
 
 public record StorefrontChatRequest(string? SessionId, string Message);
 

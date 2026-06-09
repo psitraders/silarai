@@ -97,11 +97,20 @@ interface StoreData {
   allowPublicInquiries?: boolean;  // allow inquiry button on public store
 }
 
+interface SubCategory {
+  id: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+}
+
 interface Category {
   id: string;
   name: string;
   description?: string;
   imageUrl?: string;
+  isFeatured?: boolean;
+  subCategories?: SubCategory[];
 }
 
 interface Product {
@@ -1870,6 +1879,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [sort, setSort] = useState('');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [page, setPage] = useState(1);
@@ -2278,11 +2288,11 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const pageBase    = isCustomDomain ? `/p` : `/${slug}/p`;
 
   const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['public-products', slug, debouncedSearch, selectedCategory, sort, inStockOnly, page],
+    queryKey: ['public-products', slug, debouncedSearch, selectedCategory, selectedSubCategory, sort, inStockOnly, page],
     queryFn: () => axios.get(`${BASE_URL}/public/${slug}/products`, {
       params: {
         search: debouncedSearch || undefined,
-        categoryId: selectedCategory || undefined,
+        categoryId: selectedSubCategory || selectedCategory || undefined,
         sort: sort || undefined,
         inStockOnly: inStockOnly || undefined,
         page,
@@ -2807,7 +2817,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 <div className="mt-1 h-0.5 w-10 rounded-full" style={{ background: `linear-gradient(90deg, ${tc}, ${sc})` }} />
               </div>
               {selectedCategory && (
-                <button onClick={() => { setSelectedCategory(null); setPage(1); }}
+                <button onClick={() => { setSelectedCategory(null); setSelectedSubCategory(null); setPage(1); }}
                   className="text-xs font-bold flex items-center gap-1 px-3 py-1.5 rounded-full transition-all"
                   style={{ color: tc, background: tc + '12', border: `1px solid ${tc}33` }}
                 >
@@ -2823,7 +2833,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
               <div className="flex gap-4 overflow-x-auto pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
                 {/* All */}
                 <button
-                  onClick={() => { setSelectedCategory(null); setPage(1); }}
+                  onClick={() => { setSelectedCategory(null); setSelectedSubCategory(null); setPage(1); }}
                   className="flex-shrink-0 flex flex-col items-center gap-2.5 group"
                 >
                   <div
@@ -2840,7 +2850,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 {categories.map(cat => (
                   <button
                     key={cat.id}
-                    onClick={() => { setSelectedCategory(cat.id); setPage(1); scrollToProducts(); }}
+                    onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
                     className="flex-shrink-0 flex flex-col items-center gap-2.5 group"
                   >
                     <div
@@ -2985,9 +2995,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           style={{ top: `${HEADER_H}px`, boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}
         >
           <div className="max-w-6xl mx-auto px-4">
+            {/* Parent category tabs */}
             <div className="flex overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <button
-                onClick={() => { setSelectedCategory(null); setPage(1); }}
+                onClick={() => { setSelectedCategory(null); setSelectedSubCategory(null); setPage(1); }}
                 className="flex-shrink-0 px-5 py-3.5 text-sm font-bold transition-all duration-200 border-b-2 whitespace-nowrap"
                 style={!selectedCategory
                   ? { borderBottomColor: tc, color: tc }
@@ -2998,7 +3009,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
               {categories.map(cat => (
                 <button
                   key={cat.id}
-                  onClick={() => { setSelectedCategory(cat.id); setPage(1); scrollToProducts(); }}
+                  onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
                   className="flex-shrink-0 px-5 py-3.5 text-sm font-bold transition-all duration-200 border-b-2 whitespace-nowrap"
                   style={selectedCategory === cat.id
                     ? { borderBottomColor: tc, color: tc }
@@ -3008,6 +3019,40 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 </button>
               ))}
             </div>
+            {/* Subcategory pill row — shows when selected category has subcategories */}
+            {(() => {
+              const activeCat = categories.find(c => c.id === selectedCategory);
+              const subs = activeCat?.subCategories ?? [];
+              if (!subs.length) return null;
+              return (
+                <div
+                  className="flex gap-2 overflow-x-auto pb-2.5 pt-1"
+                  style={{ scrollbarWidth: 'none' }}
+                >
+                  <button
+                    onClick={() => { setSelectedSubCategory(null); setPage(1); }}
+                    className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all"
+                    style={!selectedSubCategory
+                      ? { background: tc, color: '#fff', borderColor: tc }
+                      : { background: 'transparent', color: '#64748b', borderColor: '#e2e8f0' }}
+                  >
+                    All {activeCat?.name}
+                  </button>
+                  {subs.map(sub => (
+                    <button
+                      key={sub.id}
+                      onClick={() => { setSelectedSubCategory(sub.id); setPage(1); scrollToProducts(); }}
+                      className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all whitespace-nowrap"
+                      style={selectedSubCategory === sub.id
+                        ? { background: tc, color: '#fff', borderColor: tc }
+                        : { background: 'transparent', color: '#64748b', borderColor: '#e2e8f0' }}
+                    >
+                      {sub.name}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -3019,7 +3064,14 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-              {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name ?? 'Products'
+              {selectedSubCategory
+                ? (() => {
+                    const cat = categories.find(c => c.id === selectedCategory);
+                    const sub = cat?.subCategories?.find(s => s.id === selectedSubCategory);
+                    return sub?.name ?? 'Products';
+                  })()
+                : selectedCategory
+                ? categories.find(c => c.id === selectedCategory)?.name ?? 'Products'
                 : debouncedSearch ? `"${debouncedSearch}"`
                 : 'All Products'}
             </h2>
@@ -3143,7 +3195,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             {(selectedCategory || sort || inStockOnly) && (
               <div className="pt-1 border-t border-slate-100">
                 <button
-                  onClick={() => { setSelectedCategory(null); setSort(''); setInStockOnly(false); setPage(1); }}
+                  onClick={() => { setSelectedCategory(null); setSelectedSubCategory(null); setSort(''); setInStockOnly(false); setPage(1); }}
                   className="text-sm text-red-500 hover:text-red-600 font-medium flex items-center gap-1"
                 >
                   <X className="w-3.5 h-3.5" /> Clear all filters

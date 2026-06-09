@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,14 +21,20 @@ public class CategoriesController(IMediator mediator) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest req, CancellationToken ct)
     {
-        var id = await mediator.Send(new CreateCategoryCommand(req.Name, req.Description, req.ImageUrl), ct);
+        var id = await mediator.Send(
+            new CreateCategoryCommand(req.Name, req.Description, req.ImageUrl,
+                                      req.ParentCategoryId, req.IsFeatured ?? false), ct);
         return CreatedAtAction(nameof(GetAll), new { }, new { id });
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCategoryRequest req, CancellationToken ct)
     {
-        await mediator.Send(new UpdateCategoryCommand(id, req.Name, req.Description, req.ImageUrl, req.IsActive, req.SortOrder), ct);
+        await mediator.Send(new UpdateCategoryCommand(
+            id, req.Name, req.Description, req.ImageUrl,
+            req.IsActive, req.SortOrder,
+            req.IsFeatured ?? false,
+            req.ParentCategoryId), ct);
         return NoContent();
     }
 
@@ -78,7 +84,20 @@ public class CategoriesController(IMediator mediator) : ControllerBase
     }
 }
 
-public record CreateCategoryRequest(string Name, string? Description, string? ImageUrl);
-public record UpdateCategoryRequest(string Name, string? Description, string? ImageUrl, bool IsActive, int SortOrder);
+public record CreateCategoryRequest(
+    string  Name,
+    string? Description,
+    string? ImageUrl,
+    Guid?   ParentCategoryId = null,
+    bool?   IsFeatured       = null
+);
 
-
+public record UpdateCategoryRequest(
+    string  Name,
+    string? Description,
+    string? ImageUrl,
+    bool    IsActive,
+    int     SortOrder,
+    bool?   IsFeatured       = null,
+    Guid?   ParentCategoryId = null
+);

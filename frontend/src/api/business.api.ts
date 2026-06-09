@@ -32,6 +32,7 @@ export interface StorefrontSettingsDto {
   facebookCtaLabel: string;
   showOutOfStockProducts: boolean;
   allowPublicInquiries: boolean;
+  subCategoriesEnabled?: boolean;
   announcementText?: string;
   logoUrl?: string;
   bannerUrl?: string;

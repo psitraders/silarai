@@ -18,7 +18,8 @@ public record StorefrontSettingsDto(
     bool HasGA4ServiceAccount = false,  // true if service account JSON is saved
     bool HasGA4OAuthToken = false,      // true if OAuth refresh token is saved
     string? FaviconUrl = null,          // custom browser-tab icon (falls back to LogoUrl)
-    bool LoaderEnabled = true           // show branded 2-second loading screen
+    bool LoaderEnabled = true,          // show branded 2-second loading screen
+    bool SubCategoriesEnabled = false   // opt-in subcategory & featured-nav feature
 );
 
 public record GetStorefrontSettingsQuery : IRequest<StorefrontSettingsDto?>;
@@ -69,8 +70,9 @@ public class GetStorefrontSettingsQueryHandler(IAppDbContext db, ITenantContext 
             s?.GA4PropertyId,
             !string.IsNullOrWhiteSpace(s?.GA4ServiceAccountJson),
             !string.IsNullOrWhiteSpace(s?.GA4RefreshToken),
-            FaviconUrl:    s?.FaviconUrl,
-            LoaderEnabled: s?.LoaderEnabled ?? true
+            FaviconUrl:             s?.FaviconUrl,
+            LoaderEnabled:          s?.LoaderEnabled ?? true,
+            SubCategoriesEnabled:   s?.SubCategoriesEnabled ?? false
         );
     }
 }

@@ -23,6 +23,14 @@ public class StorefrontSettings : TenantEntity
     public string FacebookCtaLabel { get; set; } = "Message on Facebook";
     public bool ShowOutOfStockProducts { get; set; } = true;
     public bool AllowPublicInquiries { get; set; } = true;
+
+    /// <summary>
+    /// When true, tenants can create subcategories under root categories.
+    /// Featured categories (with subcategory dropdowns) are shown in the
+    /// storefront top navigation when this is enabled.
+    /// Defaults to false — opt-in per tenant.
+    /// </summary>
+    public bool SubCategoriesEnabled { get; set; }
     public string? CustomCss { get; set; }
 
     /// <summary>
