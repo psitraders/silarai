@@ -22,8 +22,10 @@ jobs:
         with:
           submodules: true
           lfs: false
+
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
+
       - name: Get Id Token
         uses: actions/github-script@v6
         id: idtoken
@@ -33,20 +35,26 @@ jobs:
                return await coredemo.getIDToken()
            result-encoding: string
 
+      # Build the Vite app ourselves so Oryx never sees node_modules
+      - name: Build frontend
+        working-directory: ./frontend
+        env:
+          VITE_API_URL: "https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1"
+          VITE_APP_URL: "https://www.silarai.com"
+        run: npm ci && npm run build
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LEMON_SEA_09C8E5A00 }}
           action: "upload"
-          app_location: "./frontend"
+          # Point directly at the pre-built dist — skip Oryx entirely
+          app_location: "./frontend/dist"
           api_location: ""
-          output_location: "dist"
-          app_build_command: "npm install && npm run build"
+          output_location: ""
+          skip_app_build: true
           github_id_token: ${{ steps.idtoken.outputs.result }}
-        env:
-          VITE_API_URL: "https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1"
-          VITE_APP_URL: "https://www.silarai.com"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

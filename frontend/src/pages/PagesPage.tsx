@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText, Plus, Trash2, Pencil, Globe, Navigation,
@@ -438,9 +438,13 @@ function PageEditor({ page, onClose }: { page: StorefrontPage | null; onClose: (
   };
 
   const saveMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       // form.content is always up to date (synced from blocks or edited directly in html tab)
-      return isEdit ? pagesApi.update(page!.id, form) : pagesApi.create(form);
+      if (isEdit) {
+        await pagesApi.update(page!.id, form);
+      } else {
+        await pagesApi.create(form);
+      }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['pages'] }); onClose(); },
   });
