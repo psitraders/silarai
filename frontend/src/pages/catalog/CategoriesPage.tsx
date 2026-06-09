@@ -92,7 +92,7 @@ export function CategoriesPage() {
     queryFn: categoriesApi.getAll,
   });
 
-  const { register, handleSubmit, reset, watch, setValue } = useForm<FormValues>({
+  const { register, handleSubmit, reset } = useForm<FormValues>({
     defaultValues: { isActive: true, sortOrder: 0, isFeatured: false },
   });
 
