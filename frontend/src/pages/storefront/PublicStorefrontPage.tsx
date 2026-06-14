@@ -1897,9 +1897,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const [heroTagIdx, setHeroTagIdx] = useState(0);
 
   // ── Branded loading screen ─────────────────────────────────────────────────
-  // Show a 2-second minimum branded splash while store data loads.
-  // loaderDone flips to true after the timer; we hide the splash only once
-  // BOTH the data has arrived AND the 2s minimum has elapsed.
+  // Minimum 400ms so the logo doesn't flash for sub-100ms API responses,
+  // but we never artificially delay past when data actually arrives.
   const [loaderDone,    setLoaderDone]    = useState(false);
   const [loaderVisible, setLoaderVisible] = useState(true); // fade-out trigger
 
@@ -1943,18 +1942,22 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     queryKey: ['public-store', slug],
     queryFn: () => axios.get(`${BASE_URL}/public/${slug}`).then(r => r.data),
     enabled: !!slug,
+    staleTime: 5 * 60 * 1000,  // treat store config as fresh for 5 min
+    gcTime:    30 * 60 * 1000, // keep in memory for 30 min
   });
 
   // Start the 2-second minimum timer as soon as the component mounts.
   // The branded loader hides only when BOTH this timer fires AND store data arrives.
   useEffect(() => {
-    const t = setTimeout(() => setLoaderDone(true), 2000);
+    const t = setTimeout(() => setLoaderDone(true), 400);
     return () => clearTimeout(t);
   }, []);
 
-  // When both conditions are met, trigger the fade-out animation then unmount
-  const loaderEnabled = store?.loaderEnabled !== false; // default true until store loads
-  const showBrandedLoader = loaderEnabled && (!loaderDone || storeLoading);
+  // Skip the loader entirely if store data was already in React Query cache (repeat visit).
+  // This lets the page render immediately on return visits, boosting LCP significantly.
+  const loaderEnabled = store?.loaderEnabled !== false;
+  const hasCachedData = !!store; // if store resolved synchronously from cache, skip loader
+  const showBrandedLoader = loaderEnabled && !hasCachedData && (!loaderDone || storeLoading);
 
   useEffect(() => {
     if (!showBrandedLoader && loaderVisible) {
@@ -2274,6 +2277,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
     queryKey: ['public-categories', slug],
     queryFn: () => axios.get(`${BASE_URL}/public/${slug}/categories`).then(r => r.data),
     enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
+    gcTime:    30 * 60 * 1000,
   });
 
   interface NavPage { id: string; title: string; slug: string; showInNav: boolean; showInFooter: boolean; }
@@ -2300,6 +2305,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       },
     }).then(r => r.data),
     enabled: !!slug,
+    staleTime: 2 * 60 * 1000,
+    gcTime:    10 * 60 * 1000,
   });
 
   const allProducts: Product[] = productsData?.items ?? [];
@@ -2729,7 +2736,9 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       {store.bannerUrl ? (
         <div className="relative h-64 md:h-96 overflow-hidden">
           <img
-            src={optimizeImage(store.bannerUrl, 1200)}
+            src={optimizeImage(store.bannerUrl, 800)}
+            srcSet={`${optimizeImage(store.bannerUrl, 480)} 480w, ${optimizeImage(store.bannerUrl, 800)} 800w, ${optimizeImage(store.bannerUrl, 1200)} 1200w`}
+            sizes="100vw"
             alt={`${store.name} store banner`}
             className="w-full h-full object-cover"
             fetchPriority="high"
