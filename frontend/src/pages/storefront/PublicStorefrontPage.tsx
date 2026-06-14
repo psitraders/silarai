@@ -1955,8 +1955,9 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
 
   // Skip the loader entirely if store data was already in React Query cache (repeat visit).
   // This lets the page render immediately on return visits, boosting LCP significantly.
-  const loaderEnabled = store?.loaderEnabled !== false;
-  const hasCachedData = !!store; // if store resolved synchronously from cache, skip loader
+  const storeSnapshot = store as StoreData | undefined; // prevent TS narrowing to never below
+  const loaderEnabled = storeSnapshot?.loaderEnabled !== false;
+  const hasCachedData = !!storeSnapshot;
   const showBrandedLoader = loaderEnabled && !hasCachedData && (!loaderDone || storeLoading);
 
   useEffect(() => {
@@ -2378,10 +2379,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   // Shown for a minimum of 2 seconds (or until store data arrives, whichever
   // is longer) when the tenant has loaderEnabled = true (the default).
   if (loaderVisible && (showBrandedLoader || storeLoading)) {
-    const tc  = store?.themeColor ?? '#0F766E';
-    const sc  = store?.secondaryColor ?? '#134E4A';
-    const logo = store?.faviconUrl ?? store?.logoUrl;
-    const name = store?.name ?? '';
+    const tc  = storeSnapshot?.themeColor ?? '#0F766E';
+    const sc  = storeSnapshot?.secondaryColor ?? '#134E4A';
+    const logo = storeSnapshot?.faviconUrl ?? storeSnapshot?.logoUrl;
+    const name = storeSnapshot?.name ?? '';
     const initials = name.slice(0, 2).toUpperCase() || 'RC';
     const fading = !showBrandedLoader && !storeLoading;
     return (
