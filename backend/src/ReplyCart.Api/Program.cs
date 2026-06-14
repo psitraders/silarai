@@ -1,6 +1,8 @@
-﻿using System.Text;
+﻿using System.IO.Compression;
+using System.Text;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +18,20 @@ var wwwroot = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
 Directory.CreateDirectory(Path.Combine(wwwroot, "uploads", "products"));
 Directory.CreateDirectory(Path.Combine(wwwroot, "uploads", "store"));
 builder.Environment.WebRootPath = wwwroot;
+
+// Brotli + gzip compression for all JSON/text API responses
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.EnableForHttps = true;
+    opts.Providers.Add<BrotliCompressionProvider>();
+    opts.Providers.Add<GzipCompressionProvider>();
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        ["application/json", "application/manifest+json"]);
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(opts =>
+    opts.Level = CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(opts =>
+    opts.Level = CompressionLevel.Fastest);
 
 // Infrastructure (EF Core, services, storage, AI)
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -147,6 +163,7 @@ catch (Exception ex)
     app.Logger.LogError(ex, "Startup DB migration/seed failed — app will still start.");
 }
 
+app.UseResponseCompression();
 app.UseStaticFiles();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 

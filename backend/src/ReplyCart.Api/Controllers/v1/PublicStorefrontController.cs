@@ -138,6 +138,8 @@ public class PublicStorefrontController(
                               : business.Description);
         var seoImage       = bannerUrl ?? logoUrl; // best available image for OG card
 
+        // Cache store config at CDN/browser for 5 min; serve stale for 60s while revalidating
+        Response.Headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=60";
         return Ok(new
         {
             business.Name,
@@ -278,6 +280,7 @@ public class PublicStorefrontController(
                 subMap.TryGetValue(c.Id, out var subs) ? subs : []))
             .ToList();
 
+        Response.Headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=60";
         return Ok(result);
     }
 
@@ -345,6 +348,7 @@ public class PublicStorefrontController(
             })
             .ToListAsync(ct);
 
+        Response.Headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=60";
         return Ok(new { items = products, totalCount, page, pageSize });
     }
 
