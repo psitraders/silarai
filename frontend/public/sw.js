@@ -4,7 +4,7 @@
 //   API calls / cross-origin     → network-only, never cached
 //   Everything else              → network-first, stale fallback
 
-const CACHE_NAME = 'silarai-shell-v3';
+const CACHE_NAME = 'silarai-shell-v4';
 
 const SHELL_ASSETS = [
   '/',
@@ -63,7 +63,8 @@ self.addEventListener('fetch', (event) => {
     fetch(request)
       .then((response) => {
         if (response.ok) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+          const clone = response.clone(); // clone BEFORE returning — body can only be read once
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
       })
