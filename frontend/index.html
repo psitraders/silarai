@@ -9,15 +9,20 @@
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9PJVYCLH11"></script>
+    <!-- Google Analytics 4 — load after paint so it never blocks LCP -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-9PJVYCLH11', {
-        page_path: window.location.pathname,
-        send_page_view: true,
+    </script>
+    <script>
+      // Defer GA initialisation until after first paint
+      window.addEventListener('load', function() {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-9PJVYCLH11';
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', 'G-9PJVYCLH11', { page_path: window.location.pathname, send_page_view: true });
       });
     </script>
 

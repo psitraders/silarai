@@ -1243,7 +1243,7 @@ function ProductChatCard({
         onClick={() => onViewProduct && onViewProduct(product.id)}
       >
         {product.primaryImage
-          ? <img src={product.primaryImage} alt={product.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy" />
+          ? <img src={optimizeImage(product.primaryImage, 400)} alt={product.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy" decoding="async" width={400} height={400} />
           : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="w-8 h-8 text-slate-300" /></div>
         }
         {product.isFeatured && !outOfStock && (

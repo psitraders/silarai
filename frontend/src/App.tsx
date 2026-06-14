@@ -6,10 +6,16 @@ import { useThemeStore, applyTheme, THEMES } from './store/theme.store';
 import { PageLoader } from './components/ui/Spinner';
 import axios from 'axios';
 
-// ── Always-eager: public storefront (no auth required, first-paint critical) ──
-import { PublicStorefrontPage } from './pages/storefront/PublicStorefrontPage';
-import { OrderConfirmationPage } from './pages/storefront/OrderConfirmationPage';
-import { StorefrontCustomPage } from './pages/storefront/StorefrontCustomPage';
+// ── Storefront — lazy so dashboard visitors don't parse storefront code ──
+const PublicStorefrontPage = React.lazy(() =>
+  import('./pages/storefront/PublicStorefrontPage').then(m => ({ default: m.PublicStorefrontPage }))
+);
+const OrderConfirmationPage = React.lazy(() =>
+  import('./pages/storefront/OrderConfirmationPage').then(m => ({ default: m.OrderConfirmationPage }))
+);
+const StorefrontCustomPage = React.lazy(() =>
+  import('./pages/storefront/StorefrontCustomPage').then(m => ({ default: m.StorefrontCustomPage }))
+);
 import { CartProvider } from './context/CartContext';
 
 // Analytics

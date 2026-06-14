@@ -25,8 +25,11 @@ export default defineConfig({
     },
   },
   build: {
-    // Raise the chunk size warning threshold (we're splitting manually below)
     chunkSizeWarningLimit: 600,
+    // Enable minification of CSS class names for smaller output
+    cssMinify: true,
+    // Increase inline limit — small assets get base64'd into JS instead of extra requests
+    assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
         manualChunks(id) {
