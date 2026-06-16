@@ -86,6 +86,14 @@
     .rc-dots span:nth-child(3){animation-delay:.36s;}
     @keyframes rcb{0%,80%,100%{transform:translateY(0);opacity:.4;}40%{transform:translateY(-7px);opacity:1;}}
 
+    /* Product card scroller */
+    .rc-scroller{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:8px 2px 14px;width:100%;flex-shrink:0;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent;cursor:grab;}
+    .rc-scroller.rc-drag{cursor:grabbing;scroll-behavior:auto;}
+    .rc-scroller::-webkit-scrollbar{height:7px;}
+    .rc-scroller::-webkit-scrollbar-track{background:transparent;}
+    .rc-scroller::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
+    .rc-scroller::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
+
     /* Category chips */
     .rc-cats{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px;}
     .rc-cat{padding:7px 14px;border:1.5px solid ${S}33;color:${S};border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s;background:#fff;}
@@ -543,7 +551,7 @@
 
   function renderCards(products) {
     var scroller = document.createElement('div');
-    scroller.style.cssText = 'display:flex;gap:12px;overflow-x:auto;padding:8px 2px 12px;width:100%;flex-shrink:0;scrollbar-width:none;';
+    scroller.className = 'rc-scroller';
     products.forEach(function(p) {
       var card = document.createElement('div');
       card.style.cssText = 'flex-shrink:0;width:158px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.1);display:flex;flex-direction:column;cursor:pointer;transition:transform .18s,box-shadow .18s;';
@@ -589,6 +597,41 @@
 
       scroller.appendChild(card);
     });
+
+    // Vertical wheel → horizontal scroll (desktop can't scroll a horizontal row otherwise)
+    scroller.addEventListener('wheel', function(e) {
+      if (e.deltaY === 0) return;
+      var max = scroller.scrollWidth - scroller.clientWidth;
+      if (max <= 0) return;
+      var atStart = scroller.scrollLeft <= 0;
+      var atEnd = scroller.scrollLeft >= max - 1;
+      // Only hijack the wheel while there's room to scroll sideways
+      if (!((atStart && e.deltaY < 0) || (atEnd && e.deltaY > 0))) {
+        scroller.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Click-and-drag to scroll
+    var down = false, startX = 0, startScroll = 0, moved = 0;
+    scroller.addEventListener('pointerdown', function(e) {
+      down = true; moved = 0; startX = e.clientX; startScroll = scroller.scrollLeft;
+      scroller.classList.add('rc-drag');
+    });
+    window.addEventListener('pointermove', function(e) {
+      if (!down) return;
+      var dx = e.clientX - startX; moved = Math.abs(dx);
+      scroller.scrollLeft = startScroll - dx;
+    });
+    window.addEventListener('pointerup', function() {
+      if (!down) return;
+      down = false; scroller.classList.remove('rc-drag');
+    });
+    // Suppress the click that follows a drag so cards don't open mid-swipe
+    scroller.addEventListener('click', function(e) {
+      if (moved > 6) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+
     msgs.appendChild(scroller);
     setTimeout(function() { msgs.scrollTop = msgs.scrollHeight; }, 50);
   }
