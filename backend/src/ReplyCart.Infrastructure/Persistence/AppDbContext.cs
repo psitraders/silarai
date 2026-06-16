@@ -90,6 +90,7 @@ public class AppDbContext : DbContext, IAppDbContext
     // Chatbot-as-a-Service (external clients)
     public DbSet<ChatbotClient>  ChatbotClients  => Set<ChatbotClient>();
     public DbSet<ChatbotProduct> ChatbotProducts => Set<ChatbotProduct>();
+    public DbSet<ChatbotOrder>   ChatbotOrders   => Set<ChatbotOrder>();
 
     // Custom pages (tenant storefront)
     public DbSet<StorefrontPage> StorefrontPages => Set<StorefrontPage>();

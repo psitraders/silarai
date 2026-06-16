@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
+using ReplyCart.Domain.Chatbot;
 using ReplyCart.Infrastructure.Persistence;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -48,8 +50,13 @@ public class ChatbotController(
             .OrderBy(p => p.Category).ThenBy(p => p.Title)
             .ToListAsync(ct);
 
-        // ── Build system prompt ───────────────────────────────────────────────
-        var systemPrompt = BuildSystemPrompt(client, products);
+        // ── Resolve focused product (single-product conversation mode) ────────
+        ChatbotProduct? focused = null;
+        if (request.FocusedProductId is Guid fid)
+            focused = products.FirstOrDefault(p => p.Id == fid);
+
+        // ── Build system prompt (focused or full catalogue) ───────────────────
+        var systemPrompt = BuildSystemPrompt(client, products, focused);
 
         // ── Get conversation history ──────────────────────────────────────────
         var history = chatMemory.GetHistory(sessionId);
@@ -60,7 +67,7 @@ public class ChatbotController(
 
         var replyText = aiReply.ReplyText;
 
-        // ── Handle order_ready state ──────────────────────────────────────────
+        // ── Handle order_ready state → persist order + payment ────────────────
         object? orderData = null;
         if (aiReply.StateSignal?.ToLower() == "order_ready"
             && !string.IsNullOrWhiteSpace(aiReply.ExtractedCartJson))
@@ -76,25 +83,96 @@ public class ChatbotController(
 
             if (cart != null && cart.Count > 0)
             {
+                var total = cart.Sum(i => i.Qty * i.UnitPrice);
+
+                // Decide payment method — honour what's actually enabled for the client.
+                var wantsOnline = (aiReply.ExtractedPaymentMethod ?? "cod").ToLower() == "online";
+                var canOnline   = wantsOnline && client.OnlineEnabled
+                                  && !string.IsNullOrWhiteSpace(client.RazorpayKeyId)
+                                  && !string.IsNullOrWhiteSpace(client.RazorpayKeySecret);
+                var method = canOnline ? "online" : "cod";
+
+                var order = new ChatbotOrder
+                {
+                    Id              = Guid.NewGuid(),
+                    ClientId        = client.Id,
+                    OrderNumber     = GenerateOrderNumber(),
+                    SessionId       = request.SessionId,
+                    CustomerName    = aiReply.ExtractedName,
+                    CustomerPhone   = aiReply.ExtractedPhone,
+                    DeliveryAddress = aiReply.ExtractedAddress,
+                    ItemsJson       = JsonSerializer.Serialize(cart.Select(i => new
+                    {
+                        title     = i.Title,
+                        qty       = i.Qty,
+                        unitPrice = i.UnitPrice,
+                        variant   = i.VariantInfo,
+                    })),
+                    Total           = total,
+                    Currency        = client.Currency,
+                    PaymentMethod   = method,
+                    PaymentStatus   = "pending",
+                    OrderStatus     = "placed",
+                    CreatedAt       = DateTime.UtcNow,
+                };
+
+                // ── Create Razorpay order for online payment ──────────────────
+                object? razorpay = null;
+                if (method == "online")
+                {
+                    var rzpOrderId = await CreateRazorpayOrderAsync(client, total, order.OrderNumber, ct);
+                    if (rzpOrderId != null)
+                    {
+                        order.RazorpayOrderId = rzpOrderId;
+                        razorpay = new
+                        {
+                            keyId    = client.RazorpayKeyId,
+                            orderId  = rzpOrderId,
+                            amount   = (long)Math.Round(total * 100), // paise
+                            currency = client.Currency,
+                        };
+                        replyText = $"Almost there! Please complete the secure payment of {client.Currency} {total:F0} to confirm your order.";
+                    }
+                    else
+                    {
+                        // Razorpay failed → gracefully fall back to COD
+                        order.PaymentMethod = method = "cod";
+                        replyText = $"Order placed! Your order ID is {order.OrderNumber}. (Online payment is temporarily unavailable, so this is set to Cash on Delivery.)";
+                    }
+                }
+
+                if (method == "cod")
+                    replyText = $"Order confirmed! Your order ID is {order.OrderNumber}. We'll deliver it and collect {client.Currency} {total:F0} as Cash on Delivery.";
+
+                db.ChatbotOrders.Add(order);
+                await db.SaveChangesAsync(ct);
+
                 orderData = new
                 {
-                    customerName    = aiReply.ExtractedName,
-                    customerPhone   = aiReply.ExtractedPhone,
-                    deliveryAddress = aiReply.ExtractedAddress,
-                    paymentMethod   = aiReply.ExtractedPaymentMethod ?? "cod",
-                    items           = cart.Select(i => new
+                    id            = order.Id,
+                    orderNumber   = order.OrderNumber,
+                    customerName  = order.CustomerName,
+                    customerPhone = order.CustomerPhone,
+                    deliveryAddress = order.DeliveryAddress,
+                    paymentMethod = order.PaymentMethod,
+                    paymentStatus = order.PaymentStatus,
+                    currency      = order.Currency,
+                    total,
+                    items         = cart.Select(i => new
                     {
                         title     = i.Title,
                         qty       = i.Qty,
                         unitPrice = i.UnitPrice,
                         variant   = i.VariantInfo,
                     }).ToList(),
-                    total = cart.Sum(i => i.Qty * i.UnitPrice),
+                    razorpay,
                 };
 
                 // ── Fire webhook to client's system if configured ─────────────
                 if (!string.IsNullOrWhiteSpace(client.WebhookUrl))
                 {
+                    var webhookUrl = client.WebhookUrl;
+                    var capturedOrder = orderData;
                     _ = Task.Run(async () =>
                     {
                         try
@@ -104,9 +182,9 @@ public class ChatbotController(
                             {
                                 clientId  = client.Id,
                                 sessionId = request.SessionId,
-                                order     = orderData,
+                                order     = capturedOrder,
                             });
-                            await http.PostAsync(client.WebhookUrl,
+                            await http.PostAsync(webhookUrl,
                                 new StringContent(payload, Encoding.UTF8, "application/json"));
                         }
                         catch (Exception ex)
@@ -118,35 +196,41 @@ public class ChatbotController(
             }
         }
 
-        // ── Always return relevant product cards ──────────────────────────────
-        // Strategy: keyword-match user message against category + title.
-        // Fall back to a spread across all categories so cards ALWAYS appear.
-        var msgLower = request.Message.ToLowerInvariant();
-        var allWords = msgLower.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        // Score every product against the user's message
-        var scored = products.Select(p =>
+        // ── Product cards to return ───────────────────────────────────────────
+        // In focused mode: only ever return the focused product.
+        List<ChatbotProduct> topMatches;
+        if (focused != null)
         {
-            var searchable = ((p.Category ?? "") + " " + p.Title + " " + (p.Description ?? "")).ToLowerInvariant();
-            var score = allWords.Count(w => w.Length >= 3 && searchable.Contains(w));
-            return (product: p, score);
-        }).ToList();
+            topMatches = [focused];
+        }
+        else
+        {
+            var msgLower = request.Message.ToLowerInvariant();
+            var allWords = msgLower.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        var topMatches = scored.Where(x => x.score > 0)
+            var scored = products.Select(p =>
+            {
+                var searchable = ((p.Category ?? "") + " " + p.Title + " " + (p.Description ?? "")).ToLowerInvariant();
+                var score = allWords.Count(w => w.Length >= 3 && searchable.Contains(w));
+                return (product: p, score);
+            }).ToList();
+
+            topMatches = scored.Where(x => x.score > 0)
                                .OrderByDescending(x => x.score)
                                .Take(6)
                                .Select(x => x.product)
                                .ToList();
 
-        // If nothing matched, return a spread across categories (always show cards)
-        if (topMatches.Count == 0 && products.Count > 0)
-        {
-            topMatches = products
-                .GroupBy(p => p.Category ?? "Other")
-                .OrderBy(g => g.Key)
-                .SelectMany(g => g.Take(1))   // 1 per category
-                .Take(6)
-                .ToList();
+            // If nothing matched, return a spread across categories (always show cards)
+            if (topMatches.Count == 0 && products.Count > 0)
+            {
+                topMatches = products
+                    .GroupBy(p => p.Category ?? "Other")
+                    .OrderBy(g => g.Key)
+                    .SelectMany(g => g.Take(1))   // 1 per category
+                    .Take(6)
+                    .ToList();
+            }
         }
 
         // NOTE: do NOT cast to (object) — System.Text.Json loses all properties on object-typed lists
@@ -170,14 +254,55 @@ public class ChatbotController(
         });
     }
 
+    // ── Verify Razorpay payment (called by widget after checkout success) ─────
+    [HttpPost("{apiKey}/orders/{orderId:guid}/verify-payment")]
+    public async Task<IActionResult> VerifyPayment(
+        string apiKey, Guid orderId,
+        [FromBody] VerifyChatbotPaymentRequest req,
+        CancellationToken ct)
+    {
+        var client = await db.ChatbotClients
+            .Where(c => c.ApiKey == apiKey && c.IsActive)
+            .FirstOrDefaultAsync(ct);
+        if (client == null) return NotFound(new { error = "Invalid API key." });
+
+        var order = await db.ChatbotOrders
+            .FirstOrDefaultAsync(o => o.Id == orderId && o.ClientId == client.Id, ct);
+        if (order == null) return NotFound(new { error = "Order not found." });
+
+        if (string.IsNullOrWhiteSpace(client.RazorpayKeySecret))
+            return BadRequest(new { error = "Online payments not configured." });
+
+        // Razorpay signature = HMAC_SHA256(razorpay_order_id + "|" + razorpay_payment_id, key_secret)
+        var expected = HmacSha256Hex(
+            $"{req.RazorpayOrderId}|{req.RazorpayPaymentId}", client.RazorpayKeySecret);
+
+        if (!string.Equals(expected, req.RazorpaySignature, StringComparison.OrdinalIgnoreCase))
+        {
+            order.PaymentStatus = "failed";
+            await db.SaveChangesAsync(ct);
+            return BadRequest(new { error = "Payment verification failed.", success = false });
+        }
+
+        order.PaymentStatus     = "paid";
+        order.OrderStatus       = "confirmed";
+        order.RazorpayPaymentId = req.RazorpayPaymentId;
+        await db.SaveChangesAsync(ct);
+
+        return Ok(new { success = true, orderNumber = order.OrderNumber });
+    }
+
     // ── Widget info endpoint (for embed script) ───────────────────────────────
     [HttpGet("{apiKey}/config")]
     public async Task<IActionResult> GetConfig(string apiKey, CancellationToken ct)
     {
-        // Check existence separately from active status for better diagnostics
         var row = await db.ChatbotClients
             .Where(c => c.ApiKey == apiKey)
-            .Select(c => new { c.Name, c.LogoUrl, c.WelcomeMessage, c.Currency, c.Language, c.IsActive })
+            .Select(c => new
+            {
+                c.Id, c.Name, c.LogoUrl, c.WelcomeMessage, c.Currency, c.Language, c.IsActive,
+                c.CodEnabled, c.OnlineEnabled, c.RazorpayKeyId,
+            })
             .FirstOrDefaultAsync(ct);
 
         if (row == null)
@@ -191,13 +316,8 @@ public class ChatbotController(
             return StatusCode(403, new { error = "This chatbot is currently inactive." });
         }
 
-        var clientId = await db.ChatbotClients
-            .Where(c => c.ApiKey == apiKey)
-            .Select(c => c.Id)
-            .FirstOrDefaultAsync(ct);
-
         var products = await db.ChatbotProducts
-            .Where(p => p.ClientId == clientId && p.IsAvailable)
+            .Where(p => p.ClientId == row.Id && p.IsAvailable)
             .OrderBy(p => p.Category).ThenBy(p => p.Title)
             .Select(p => new { p.Id, p.Title, p.Description, p.Price, p.SalePrice, p.Variants, p.ImageUrl, p.Category })
             .ToListAsync(ct);
@@ -209,6 +329,12 @@ public class ChatbotController(
             WelcomeMessage = row.WelcomeMessage ?? $"Hi! Welcome to {row.Name}. How can I help you today?",
             row.Currency,
             row.Language,
+            Payment = new
+            {
+                codEnabled    = row.CodEnabled,
+                onlineEnabled = row.OnlineEnabled && !string.IsNullOrWhiteSpace(row.RazorpayKeyId),
+                razorpayKeyId = row.OnlineEnabled ? row.RazorpayKeyId : null,
+            },
             Products = products,
         });
     }
@@ -235,10 +361,63 @@ public class ChatbotController(
         return Ok(products);
     }
 
+    // ── Razorpay order creation ───────────────────────────────────────────────
+    private async Task<string?> CreateRazorpayOrderAsync(
+        Domain.Chatbot.ChatbotClient client, decimal total, string receipt, CancellationToken ct)
+    {
+        try
+        {
+            var http = httpClientFactory.CreateClient();
+            var auth = Convert.ToBase64String(
+                Encoding.UTF8.GetBytes($"{client.RazorpayKeyId}:{client.RazorpayKeySecret}"));
+            var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.razorpay.com/v1/orders");
+            msg.Headers.Add("Authorization", $"Basic {auth}");
+            var body = JsonSerializer.Serialize(new
+            {
+                amount   = (long)Math.Round(total * 100), // paise
+                currency = client.Currency,
+                receipt,
+            });
+            msg.Content = new StringContent(body, Encoding.UTF8, "application/json");
+
+            var resp = await http.SendAsync(msg, ct);
+            var json = await resp.Content.ReadAsStringAsync(ct);
+            if (!resp.IsSuccessStatusCode)
+            {
+                logger.LogWarning("Razorpay order create failed ({Status}): {Body}", resp.StatusCode, json);
+                return null;
+            }
+            using var doc = JsonDocument.Parse(json);
+            return doc.RootElement.TryGetProperty("id", out var idEl) ? idEl.GetString() : null;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Razorpay order creation error for client {Id}", client.Id);
+            return null;
+        }
+    }
+
+    private static string HmacSha256Hex(string payload, string secret)
+    {
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static string GenerateOrderNumber()
+    {
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        var suffix = new char[4];
+        for (var i = 0; i < suffix.Length; i++)
+            suffix[i] = chars[RandomNumberGenerator.GetInt32(chars.Length)];
+        return $"RC-{DateTime.UtcNow:yyMMdd}-{new string(suffix)}";
+    }
+
     // ── System prompt builder ─────────────────────────────────────────────────
     private static string BuildSystemPrompt(
         Domain.Chatbot.ChatbotClient client,
-        List<Domain.Chatbot.ChatbotProduct> products)
+        List<Domain.Chatbot.ChatbotProduct> products,
+        Domain.Chatbot.ChatbotProduct? focused)
     {
         var sb = new StringBuilder();
 
@@ -248,42 +427,72 @@ public class ChatbotController(
         sb.AppendLine($"Currency: {client.Currency}");
         sb.AppendLine();
 
-        sb.AppendLine("=== PRODUCT CATALOGUE ===");
-        if (products.Count == 0)
+        // Which payment options are actually available
+        var pays = new List<string>();
+        if (client.CodEnabled) pays.Add("Cash on Delivery");
+        if (client.OnlineEnabled && !string.IsNullOrWhiteSpace(client.RazorpayKeyId)) pays.Add("Online Payment");
+        if (pays.Count == 0) pays.Add("Cash on Delivery");
+
+        if (focused != null)
         {
-            sb.AppendLine("(No products available at this time.)");
+            // ── Single-product focused conversation ───────────────────────────
+            var priceStr = focused.SalePrice.HasValue
+                ? $"{focused.Price:F0} (sale: {focused.SalePrice.Value:F0})"
+                : $"{focused.Price:F0}";
+            sb.AppendLine("=== THE CUSTOMER IS VIEWING THIS SPECIFIC PRODUCT ===");
+            sb.AppendLine($"• {focused.Title} — {client.Currency} {priceStr}");
+            if (!string.IsNullOrWhiteSpace(focused.Category))   sb.AppendLine($"  Category: {focused.Category}");
+            if (!string.IsNullOrWhiteSpace(focused.Description)) sb.AppendLine($"  Details: {focused.Description.Replace("\n", " ")}");
+            if (!string.IsNullOrWhiteSpace(focused.Variants))   sb.AppendLine($"  Variants: {focused.Variants}");
+            sb.AppendLine();
+            sb.AppendLine("=== RULES ===");
+            sb.AppendLine("• Keep every reply to 1-2 short sentences. Be warm and helpful.");
+            sb.AppendLine("• NEVER use markdown — plain text only.");
+            sb.AppendLine("• ONLY discuss the product above. Do NOT mention, suggest, or list any other products.");
+            sb.AppendLine("• If the customer asks for something else, tell them they can tap 'Browse all products' to see more.");
+            sb.AppendLine("• To order: confirm variant/size, then collect name, phone, delivery address.");
+            sb.AppendLine($"• Available payment options: {string.Join(", ", pays)}. Ask which they prefer.");
         }
         else
         {
-            foreach (var p in products)
+            // ── Full catalogue conversation ───────────────────────────────────
+            sb.AppendLine("=== PRODUCT CATALOGUE ===");
+            if (products.Count == 0)
             {
-                var priceStr = p.SalePrice.HasValue
-                    ? $"{p.Price:F0} (sale: {p.SalePrice.Value:F0})"
-                    : $"{p.Price:F0}";
-                var cat = string.IsNullOrWhiteSpace(p.Category) ? "" : $"[{p.Category}] ";
-                sb.Append($"• {cat}{p.Title} — {client.Currency} {priceStr}");
-                if (!string.IsNullOrWhiteSpace(p.Description))
-                    sb.Append($" | {p.Description.Replace("\n", " ")}");
-                sb.AppendLine();
-                if (!string.IsNullOrWhiteSpace(p.Variants))
-                    sb.AppendLine($"  Variants: {p.Variants}");
+                sb.AppendLine("(No products available at this time.)");
             }
+            else
+            {
+                foreach (var p in products)
+                {
+                    var priceStr = p.SalePrice.HasValue
+                        ? $"{p.Price:F0} (sale: {p.SalePrice.Value:F0})"
+                        : $"{p.Price:F0}";
+                    var cat = string.IsNullOrWhiteSpace(p.Category) ? "" : $"[{p.Category}] ";
+                    sb.Append($"• {cat}{p.Title} — {client.Currency} {priceStr}");
+                    if (!string.IsNullOrWhiteSpace(p.Description))
+                        sb.Append($" | {p.Description.Replace("\n", " ")}");
+                    sb.AppendLine();
+                    if (!string.IsNullOrWhiteSpace(p.Variants))
+                        sb.AppendLine($"  Variants: {p.Variants}");
+                }
+            }
+
+            var categories = products.Select(p => p.Category).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
+            if (categories.Count > 0)
+                sb.AppendLine($"Categories available: {string.Join(", ", categories)}");
+
+            sb.AppendLine();
+            sb.AppendLine("=== RULES ===");
+            sb.AppendLine("• Keep every reply to 1-2 short sentences. Be warm and helpful.");
+            sb.AppendLine("• NEVER use markdown — no **bold**, no *italic*, no - bullet lists. Plain text only.");
+            sb.AppendLine("• On first message / greeting: welcome the customer and list the categories available. Ask which they are interested in.");
+            sb.AppendLine("• When customer picks a category or mentions a product type: name 2-3 specific products with prices.");
+            sb.AppendLine("• NEVER say 'I can't show' — just describe products in plain text.");
+            sb.AppendLine("• When customer wants to order: ask for size/variant, then name, phone, delivery address.");
+            sb.AppendLine($"• Available payment options: {string.Join(", ", pays)}. Ask which they prefer.");
         }
 
-        // List distinct categories so the AI can mention them
-        var categories = products.Select(p => p.Category).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
-        if (categories.Count > 0)
-            sb.AppendLine($"Categories available: {string.Join(", ", categories)}");
-
-        sb.AppendLine();
-        sb.AppendLine("=== RULES ===");
-        sb.AppendLine("• Keep every reply to 1-2 short sentences. Be warm and helpful.");
-        sb.AppendLine("• NEVER use markdown — no **bold**, no *italic*, no - bullet lists. Plain text only.");
-        sb.AppendLine("• On first message / greeting: welcome the customer and list the categories available. Ask which they are interested in.");
-        sb.AppendLine("• When customer picks a category or mentions a product type: name 2-3 specific products with prices.");
-        sb.AppendLine("• NEVER say 'I can't show' — just describe products in plain text.");
-        sb.AppendLine("• When customer wants to order: ask for size/variant, then name, phone, delivery address.");
-        sb.AppendLine("• Ask payment: Cash on Delivery or Online Payment?");
         sb.AppendLine("• Once confirmed, output ONLY this JSON:");
         sb.AppendLine("  {\"reply\":\"Order confirmed!\",\"state\":\"order_ready\",\"name\":\"<n>\",\"phone\":\"<p>\",\"address\":\"<a>\",\"payment_method\":\"cod\",\"cart\":[{\"title\":\"<t>\",\"qty\":1,\"unit_price\":100,\"variant_info\":\"<size>\"}]}");
         sb.AppendLine("• payment_method = 'online' for UPI/card, 'cod' for cash.");
@@ -292,7 +501,12 @@ public class ChatbotController(
     }
 }
 
-public record ChatbotMessageRequest(string? SessionId, string Message);
+public record ChatbotMessageRequest(string? SessionId, string Message, Guid? FocusedProductId = null);
+
+public record VerifyChatbotPaymentRequest(
+    string RazorpayOrderId,
+    string RazorpayPaymentId,
+    string RazorpaySignature);
 
 public class ChatbotCartItem
 {
@@ -301,5 +515,3 @@ public class ChatbotCartItem
     public decimal UnitPrice   { get; set; }
     public string? VariantInfo { get; set; }
 }
-
-

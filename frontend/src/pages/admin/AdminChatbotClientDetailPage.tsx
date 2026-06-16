@@ -5,6 +5,7 @@ import {
   Bot, ArrowLeft, Copy, Check, RefreshCw, Plus, Trash2,
   Save, Code, Package, Settings, Send, MessageCircle,
   ShoppingBag, Upload, RefreshCcw, Pencil, X, CheckCircle2,
+  CreditCard, Receipt,
 } from 'lucide-react';
 import apiClient from '../../api/client';
 import { Button } from '../../components/ui/Button';
@@ -49,8 +50,34 @@ interface ChatbotClientDetail {
   igAccountId: string | null; igAccessToken: string | null;
   shopifyDomain: string | null; shopifyApiKey: string | null;
   lastShopifySync: string | null;
+  codEnabled: boolean; onlineEnabled: boolean;
+  razorpayKeyId: string | null; razorpayKeySecret: string | null;
 }
-type Tab = 'products' | 'channels' | 'catalog' | 'settings' | 'embed';
+interface ChatbotOrder {
+  id: string; orderNumber: string; customerName: string | null;
+  customerPhone: string | null; deliveryAddress: string | null;
+  itemsJson: string; total: number; currency: string;
+  paymentMethod: string; paymentStatus: string; orderStatus: string;
+  razorpayOrderId: string | null; razorpayPaymentId: string | null;
+  createdAt: string;
+}
+type Tab = 'products' | 'orders' | 'channels' | 'catalog' | 'payments' | 'settings' | 'embed';
+
+// Fields every "save client" mutation must pass through so other tabs don't wipe them.
+function clientPassthrough(c: ChatbotClientDetail) {
+  return {
+    name: c.name, businessDesc: c.businessDesc, currency: c.currency,
+    language: c.language, webhookUrl: c.webhookUrl, contactEmail: c.contactEmail,
+    contactPhone: c.contactPhone, logoUrl: c.logoUrl, welcomeMessage: c.welcomeMessage,
+    waPhoneNumberId: c.waPhoneNumberId, waAccessToken: c.waAccessToken,
+    waPhoneNumber: c.waPhoneNumber, waBusinessId: c.waBusinessId,
+    fbPageId: c.fbPageId, fbPageAccessToken: c.fbPageAccessToken,
+    igAccountId: c.igAccountId, igAccessToken: c.igAccessToken,
+    shopifyDomain: c.shopifyDomain, shopifyApiKey: c.shopifyApiKey,
+    codEnabled: c.codEnabled, onlineEnabled: c.onlineEnabled,
+    razorpayKeyId: c.razorpayKeyId, razorpayKeySecret: c.razorpayKeySecret,
+  };
+}
 
 // ── Input helper ──────────────────────────────────────────────────────────────
 const inp = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white';
@@ -99,8 +126,10 @@ export function AdminChatbotClientDetailPage() {
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'products', label: 'Products', icon: Package },
+    { id: 'orders',   label: 'Orders', icon: Receipt },
     { id: 'channels', label: 'Channels', icon: MessageCircle },
     { id: 'catalog',  label: 'Catalog Sync', icon: ShoppingBag },
+    { id: 'payments', label: 'Payments', icon: CreditCard },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'embed',    label: 'Embed', icon: Code },
   ];
@@ -182,8 +211,10 @@ export function AdminChatbotClientDetailPage() {
 
       {/* ── Tab content ── */}
       {tab === 'products' && <ProductsTab client={client} onRefresh={refresh} />}
+      {tab === 'orders'   && <OrdersTab   client={client} />}
       {tab === 'channels' && <ChannelsTab client={client} onRefresh={refresh} />}
       {tab === 'catalog'  && <CatalogTab  client={client} onRefresh={refresh} />}
+      {tab === 'payments' && <PaymentsTab client={client} onRefresh={refresh} />}
       {tab === 'settings' && <SettingsTab client={client} onRefresh={refresh} />}
       {tab === 'embed' && (
         <div className="space-y-4">
@@ -448,11 +479,8 @@ function ChannelsTab({ client, onRefresh }: { client: ChatbotClientDetail; onRef
 
   const saveMutation = useMutation({
     mutationFn: () => apiClient.put(`/admin/chatbot-clients/${client.id}`, {
-      name: client.name, businessDesc: client.businessDesc, currency: client.currency,
-      language: client.language, webhookUrl: client.webhookUrl, contactEmail: client.contactEmail,
-      contactPhone: client.contactPhone, logoUrl: client.logoUrl, welcomeMessage: client.welcomeMessage,
+      ...clientPassthrough(client),
       ...form,
-      shopifyDomain: client.shopifyDomain, shopifyApiKey: client.shopifyApiKey,
     }),
     onSuccess: () => { setSaved(true); setTimeout(() => setSaved(false), 2500); onRefresh(); },
   });
@@ -549,13 +577,7 @@ function CatalogTab({ client, onRefresh }: { client: ChatbotClientDetail; onRefr
 
   const saveCreds = useMutation({
     mutationFn: () => apiClient.put(`/admin/chatbot-clients/${client.id}`, {
-      name: client.name, businessDesc: client.businessDesc, currency: client.currency,
-      language: client.language, webhookUrl: client.webhookUrl, contactEmail: client.contactEmail,
-      contactPhone: client.contactPhone, logoUrl: client.logoUrl, welcomeMessage: client.welcomeMessage,
-      waPhoneNumberId: client.waPhoneNumberId, waAccessToken: client.waAccessToken,
-      waPhoneNumber: client.waPhoneNumber, waBusinessId: client.waBusinessId,
-      fbPageId: client.fbPageId, fbPageAccessToken: client.fbPageAccessToken,
-      igAccountId: client.igAccountId, igAccessToken: client.igAccessToken,
+      ...clientPassthrough(client),
       shopifyDomain, shopifyApiKey,
     }),
     onSuccess: () => { setShopifySaved(true); setTimeout(() => setShopifySaved(false), 2500); onRefresh(); },
@@ -673,12 +695,8 @@ function SettingsTab({ client, onRefresh }: { client: ChatbotClientDetail; onRef
 
   const saveMutation = useMutation({
     mutationFn: () => apiClient.put(`/admin/chatbot-clients/${client.id}`, {
+      ...clientPassthrough(client),
       ...form,
-      waPhoneNumberId: client.waPhoneNumberId, waAccessToken: client.waAccessToken,
-      waPhoneNumber: client.waPhoneNumber, waBusinessId: client.waBusinessId,
-      fbPageId: client.fbPageId, fbPageAccessToken: client.fbPageAccessToken,
-      igAccountId: client.igAccountId, igAccessToken: client.igAccessToken,
-      shopifyDomain: client.shopifyDomain, shopifyApiKey: client.shopifyApiKey,
     }),
     onSuccess: () => { setSaved(true); setTimeout(() => setSaved(false), 2500); onRefresh(); },
   });
@@ -731,6 +749,220 @@ function SettingsTab({ client, onRefresh }: { client: ChatbotClientDetail; onRef
         {saved && <p className="text-sm text-green-600 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Saved!</p>}
       </div>
     </Card>
+  );
+}
+
+// ── Payments Tab ──────────────────────────────────────────────────────────────
+function PaymentsTab({ client, onRefresh }: { client: ChatbotClientDetail; onRefresh: () => void }) {
+  const [codEnabled, setCod] = useState(client.codEnabled);
+  const [onlineEnabled, setOnline] = useState(client.onlineEnabled);
+  const [razorpayKeyId, setKeyId] = useState(client.razorpayKeyId ?? '');
+  const [razorpayKeySecret, setSecret] = useState(client.razorpayKeySecret ?? '');
+  const [saved, setSaved] = useState(false);
+
+  const save = useMutation({
+    mutationFn: () => apiClient.put(`/admin/chatbot-clients/${client.id}`, {
+      ...clientPassthrough(client),
+      codEnabled, onlineEnabled,
+      razorpayKeyId: razorpayKeyId.trim() || null,
+      razorpayKeySecret: razorpayKeySecret.trim() || null,
+    }),
+    onSuccess: () => { setSaved(true); setTimeout(() => setSaved(false), 2500); onRefresh(); },
+  });
+
+  const onlineReady = onlineEnabled && razorpayKeyId.trim() && razorpayKeySecret.trim();
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white">
+            <CreditCard className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="font-semibold text-slate-800">Payment Methods</p>
+            <p className="text-xs text-slate-400">Choose how customers can pay when they order in chat</p>
+          </div>
+        </div>
+
+        {/* Toggles */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+            <input type="checkbox" checked={codEnabled} onChange={e => setCod(e.target.checked)}
+              className="w-4 h-4 rounded accent-teal-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-800">Cash on Delivery</p>
+              <p className="text-xs text-slate-400">Customer pays in cash when the order arrives</p>
+            </div>
+          </label>
+          <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+            <input type="checkbox" checked={onlineEnabled} onChange={e => setOnline(e.target.checked)}
+              className="w-4 h-4 rounded accent-teal-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-800">Online Payment (Razorpay)</p>
+              <p className="text-xs text-slate-400">UPI, cards, netbanking via Razorpay checkout in the chat</p>
+            </div>
+            {onlineReady
+              ? <span className="text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-full font-medium">Ready ✓</span>
+              : onlineEnabled && <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full font-medium">Add keys</span>}
+          </label>
+        </div>
+
+        {/* Razorpay keys */}
+        {onlineEnabled && (
+          <div className="grid grid-cols-1 gap-4 mt-4 pt-4 border-t border-slate-100">
+            <PField label="Razorpay Key ID" value={razorpayKeyId} onChange={setKeyId}
+              placeholder="rzp_test_xxxxxxxx or rzp_live_xxxxxxxx"
+              hint="Razorpay Dashboard → Settings → API Keys" />
+            <PField label="Razorpay Key Secret" value={razorpayKeySecret} onChange={setSecret}
+              placeholder="••••••••••••••••" password
+              hint="Stored securely. Used server-side to create & verify payments." />
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 mt-5 pt-5 border-t border-slate-100">
+          <Button type="button" loading={save.isPending} onClick={() => save.mutate()}>
+            <Save className="w-4 h-4 mr-1.5" /> Save Payment Settings
+          </Button>
+          {saved && <p className="text-sm text-green-600 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Saved!</p>}
+        </div>
+      </Card>
+
+      <InfoBox color="blue" title="How online payments work">
+        <span>When a customer chooses online payment, the chatbot opens Razorpay checkout, collects payment, and verifies it automatically. Paid orders show up in the <strong>Orders</strong> tab as <strong>Paid</strong>.</span>
+      </InfoBox>
+    </div>
+  );
+}
+
+// ── Orders Tab ────────────────────────────────────────────────────────────────
+interface OrderItem { title: string; qty: number; unitPrice: number; variant?: string | null }
+
+function OrdersTab({ client }: { client: ChatbotClientDetail }) {
+  const qc = useQueryClient();
+  const { data: orders, isLoading } = useQuery<ChatbotOrder[]>({
+    queryKey: ['admin-chatbot-orders', client.id],
+    queryFn: () => apiClient.get(`/admin/chatbot-clients/${client.id}/orders`).then(r => r.data),
+  });
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const updateStatus = useMutation({
+    mutationFn: (v: { orderId: string; orderStatus?: string; paymentStatus?: string }) =>
+      apiClient.put(`/admin/chatbot-clients/${client.id}/orders/${v.orderId}/status`,
+        { orderStatus: v.orderStatus, paymentStatus: v.paymentStatus }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-chatbot-orders', client.id] }),
+  });
+
+  if (isLoading) return <div className="py-12 text-center text-slate-400 text-sm">Loading orders…</div>;
+
+  if (!orders || orders.length === 0) {
+    return (
+      <div className="rounded-2xl border-2 border-dashed border-slate-200 py-12 text-center">
+        <Receipt className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+        <p className="text-slate-500 font-medium">No orders yet</p>
+        <p className="text-sm text-slate-400 mt-1">Orders placed through the chatbot will appear here</p>
+      </div>
+    );
+  }
+
+  const payBadge = (s: string) => s === 'paid'
+    ? 'bg-green-50 text-green-700 border-green-200'
+    : s === 'failed' ? 'bg-red-50 text-red-700 border-red-200'
+    : 'bg-amber-50 text-amber-700 border-amber-200';
+  const ordBadge = (s: string) => s === 'confirmed' || s === 'fulfilled'
+    ? 'bg-green-50 text-green-700 border-green-200'
+    : s === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200'
+    : 'bg-slate-100 text-slate-600 border-slate-200';
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-slate-500">
+        <span className="font-semibold text-slate-700">{orders.length}</span> order{orders.length === 1 ? '' : 's'}
+      </p>
+      <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white divide-y divide-slate-100">
+        {orders.map(o => {
+          let items: OrderItem[] = [];
+          try { items = JSON.parse(o.itemsJson); } catch { /* ignore */ }
+          const isOpen = expanded === o.id;
+          return (
+            <div key={o.id} className={isOpen ? 'bg-slate-50/60' : 'hover:bg-slate-50'}>
+              <button onClick={() => setExpanded(isOpen ? null : o.id)}
+                className="w-full text-left px-4 py-3 flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm font-semibold text-slate-800">{o.orderNumber}</span>
+                    <span className="text-xs text-slate-400">{new Date(o.createdAt).toLocaleString()}</span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    {o.customerName ?? 'Guest'}{o.customerPhone ? ` · ${o.customerPhone}` : ''} · {items.length} item{items.length === 1 ? '' : 's'}
+                  </p>
+                </div>
+                <span className="font-semibold text-slate-800 text-sm">{o.currency} {o.total.toLocaleString()}</span>
+                <span className={`text-xs px-2 py-1 rounded-full border font-medium ${payBadge(o.paymentStatus)}`}>
+                  {o.paymentMethod === 'online' ? 'Online' : 'COD'} · {o.paymentStatus}
+                </span>
+                <span className={`text-xs px-2 py-1 rounded-full border font-medium ${ordBadge(o.orderStatus)}`}>{o.orderStatus}</span>
+              </button>
+
+              {isOpen && (
+                <div className="px-4 pb-4 pt-1 text-sm">
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Delivery Address</p>
+                      <p className="text-slate-700">{o.deliveryAddress ?? '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Payment</p>
+                      <p className="text-slate-700">
+                        {o.paymentMethod === 'online' ? 'Online (Razorpay)' : 'Cash on Delivery'} — {o.paymentStatus}
+                      </p>
+                      {o.razorpayPaymentId && <p className="text-xs text-slate-400 font-mono mt-0.5">{o.razorpayPaymentId}</p>}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 overflow-hidden mb-3">
+                    {items.map((it, i) => (
+                      <div key={i} className="flex items-center justify-between px-3 py-2 text-sm border-b last:border-b-0 border-slate-100">
+                        <span className="text-slate-700">
+                          {it.title}{it.variant ? <span className="text-slate-400"> · {it.variant}</span> : ''}
+                          <span className="text-slate-400"> × {it.qty}</span>
+                        </span>
+                        <span className="font-medium text-slate-700">{o.currency} {(it.unitPrice * it.qty).toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {o.paymentStatus !== 'paid' && (
+                      <button onClick={() => updateStatus.mutate({ orderId: o.id, paymentStatus: 'paid' })}
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700">
+                        Mark Paid
+                      </button>
+                    )}
+                    {o.orderStatus !== 'confirmed' && o.orderStatus !== 'fulfilled' && (
+                      <button onClick={() => updateStatus.mutate({ orderId: o.id, orderStatus: 'confirmed' })}
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg bg-teal-600 text-white hover:bg-teal-700">
+                        Confirm
+                      </button>
+                    )}
+                    {o.orderStatus !== 'fulfilled' && (
+                      <button onClick={() => updateStatus.mutate({ orderId: o.id, orderStatus: 'fulfilled' })}
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100">
+                        Mark Fulfilled
+                      </button>
+                    )}
+                    {o.orderStatus !== 'cancelled' && (
+                      <button onClick={() => updateStatus.mutate({ orderId: o.id, orderStatus: 'cancelled' })}
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50">
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

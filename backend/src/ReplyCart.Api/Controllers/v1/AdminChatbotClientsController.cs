@@ -54,6 +54,8 @@ public class AdminChatbotClientsController(
                 c.IgAccountId, c.IgAccessToken,
                 // Shopify
                 c.ShopifyDomain, c.ShopifyApiKey, c.LastShopifySync,
+                // Payments
+                c.CodEnabled, c.OnlineEnabled, c.RazorpayKeyId, c.RazorpayKeySecret,
                 Products = db.ChatbotProducts
                     .Where(p => p.ClientId == c.Id)
                     .OrderBy(p => p.Category).ThenBy(p => p.Title)
@@ -89,6 +91,10 @@ public class AdminChatbotClientsController(
             ContactPhone   = req.ContactPhone?.Trim(),
             LogoUrl        = req.LogoUrl?.Trim(),
             WelcomeMessage = req.WelcomeMessage?.Trim(),
+            CodEnabled     = req.CodEnabled ?? true,
+            OnlineEnabled  = req.OnlineEnabled ?? false,
+            RazorpayKeyId     = req.RazorpayKeyId?.Trim(),
+            RazorpayKeySecret = req.RazorpayKeySecret?.Trim(),
             IsActive       = true,
             CreatedAt      = DateTime.UtcNow,
         };
@@ -129,6 +135,11 @@ public class AdminChatbotClientsController(
         // Shopify
         client.ShopifyDomain    = req.ShopifyDomain?.Trim();
         client.ShopifyApiKey    = req.ShopifyApiKey?.Trim();
+        // Payments
+        if (req.CodEnabled.HasValue)    client.CodEnabled    = req.CodEnabled.Value;
+        if (req.OnlineEnabled.HasValue) client.OnlineEnabled = req.OnlineEnabled.Value;
+        client.RazorpayKeyId     = req.RazorpayKeyId?.Trim();
+        client.RazorpayKeySecret = req.RazorpayKeySecret?.Trim();
         client.UpdatedAt        = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
@@ -447,6 +458,45 @@ public class AdminChatbotClientsController(
         await db.SaveChangesAsync(ct);
         return NoContent();
     }
+
+    // ── Orders ────────────────────────────────────────────────────────────────
+    /// <summary>List all orders placed through this client's chatbot, newest first.</summary>
+    [HttpGet("{id:guid}/orders")]
+    public async Task<IActionResult> GetOrders(Guid id, CancellationToken ct)
+    {
+        var client = await db.ChatbotClients.FindAsync([id], ct);
+        if (client == null) return NotFound(new { message = "Client not found." });
+
+        var orders = await db.ChatbotOrders
+            .Where(o => o.ClientId == id)
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(o => new
+            {
+                o.Id, o.OrderNumber, o.CustomerName, o.CustomerPhone, o.DeliveryAddress,
+                o.ItemsJson, o.Total, o.Currency, o.PaymentMethod, o.PaymentStatus,
+                o.OrderStatus, o.RazorpayOrderId, o.RazorpayPaymentId, o.CreatedAt,
+            })
+            .ToListAsync(ct);
+
+        return Ok(orders);
+    }
+
+    /// <summary>Update an order's fulfilment / payment status from the admin panel.</summary>
+    [HttpPut("{id:guid}/orders/{orderId:guid}/status")]
+    public async Task<IActionResult> UpdateOrderStatus(
+        Guid id, Guid orderId, [FromBody] UpdateChatbotOrderStatusRequest req, CancellationToken ct)
+    {
+        var order = await db.ChatbotOrders
+            .FirstOrDefaultAsync(o => o.Id == orderId && o.ClientId == id, ct);
+        if (order == null) return NotFound(new { message = "Order not found." });
+
+        if (!string.IsNullOrWhiteSpace(req.OrderStatus))   order.OrderStatus   = req.OrderStatus.Trim();
+        if (!string.IsNullOrWhiteSpace(req.PaymentStatus)) order.PaymentStatus = req.PaymentStatus.Trim();
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await db.SaveChangesAsync(ct);
+        return NoContent();
+    }
 }
 
 // ── Request DTOs ──────────────────────────────────────────────────────────────
@@ -474,7 +524,17 @@ public record UpsertChatbotClientRequest(
     string? IgAccessToken,
     // Shopify
     string? ShopifyDomain,
-    string? ShopifyApiKey
+    string? ShopifyApiKey,
+    // Payments
+    bool?   CodEnabled,
+    bool?   OnlineEnabled,
+    string? RazorpayKeyId,
+    string? RazorpayKeySecret
+);
+
+public record UpdateChatbotOrderStatusRequest(
+    string? OrderStatus,
+    string? PaymentStatus
 );
 
 public record UpsertChatbotProductRequest(

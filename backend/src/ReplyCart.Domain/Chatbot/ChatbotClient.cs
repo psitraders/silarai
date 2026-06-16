@@ -36,5 +36,12 @@ public class ChatbotClient : BaseEntity
     public string? ShopifyApiKey     { get; set; }   // Admin API access token
     public DateTime? LastShopifySync { get; set; }
 
+    // ── Payments ──────────────────────────────────────────────────────────────
+    public bool    CodEnabled        { get; set; } = true;    // Cash on Delivery
+    public bool    OnlineEnabled     { get; set; } = false;   // Online payment via Razorpay
+    public string? RazorpayKeyId     { get; set; }            // rzp_live_xxx / rzp_test_xxx (public)
+    public string? RazorpayKeySecret { get; set; }            // secret — never sent to widget
+
     public ICollection<ChatbotProduct> Products { get; set; } = [];
+    public ICollection<ChatbotOrder>   Orders   { get; set; } = [];
 }
