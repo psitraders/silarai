@@ -160,7 +160,7 @@
         <input id="rc-inp" type="text" placeholder="Type a message..." autocomplete="off"/>
         <button id="rc-snd" disabled><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
       </div>
-      <div id="rc-pw">Powered by <a href="https://replycart.app" target="_blank">ReplyCart</a></div>
+      <div id="rc-pw">Powered by <a href="https://silarai.com" target="_blank">Silarai</a></div>
     </div>
     <div id="rc-teaser">
       <button id="rc-tclose" aria-label="Dismiss">&#x2715;</button>
