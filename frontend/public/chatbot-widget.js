@@ -34,6 +34,21 @@
     #rc-fab::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid ${S}55;animation:rc-ring 2.4s ease-out infinite;}
     @keyframes rc-ring{0%{transform:scale(1);opacity:.7;}100%{transform:scale(1.5);opacity:0;}}
     #rc-badge{position:absolute;top:-2px;right:-2px;min-width:22px;height:22px;background:#ef4444;border-radius:11px;border:2px solid #fff;display:none;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;font-family:Inter,sans-serif;padding:0 5px;z-index:1;}
+    #rc-online{position:absolute;bottom:3px;${POSITION==='left'?'left':'right'}:3px;width:14px;height:14px;border-radius:50%;background:#4ade80;border:2.5px solid #fff;z-index:1;box-shadow:0 0 0 2px rgba(74,222,128,.35);animation:rc-pulse 2s infinite;}
+    @keyframes rc-attn{0%,88%,100%{transform:scale(1) rotate(0);}90%{transform:scale(1.07) rotate(-8deg);}93%{transform:scale(1.07) rotate(8deg);}96%{transform:scale(1.07) rotate(-8deg);}98%{transform:scale(1.07) rotate(0);}}
+    #rc-fab.rc-attn{animation:rc-attn 5s ease-in-out infinite;}
+
+    /* Greeting teaser */
+    #rc-teaser{position:fixed;bottom:104px;${POSITION==='left'?'left':'right'}:24px;width:262px;background:#fff;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.2);padding:14px 16px 14px 14px;display:none;align-items:flex-start;gap:11px;z-index:2147483645;font-family:Inter,sans-serif;cursor:pointer;}
+    #rc-teaser.show{display:flex;animation:rc-tpop .45s cubic-bezier(.34,1.56,.64,1);}
+    @keyframes rc-tpop{from{opacity:0;transform:translateY(18px) scale(.88);}to{opacity:1;transform:translateY(0) scale(1);}}
+    #rc-teaser::after{content:'';position:absolute;bottom:-7px;${POSITION==='left'?'left':'right'}:30px;width:15px;height:15px;background:#fff;transform:rotate(45deg);}
+    #rc-tav{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,${S},${A});display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;overflow:hidden;box-shadow:0 4px 10px ${S}44;}
+    #rc-tav img{width:100%;height:100%;object-fit:cover;}
+    #rc-ttext{font-size:13px;color:#475569;line-height:1.5;font-weight:500;padding-right:6px;}
+    #rc-ttext b{display:block;color:#1e293b;font-weight:700;margin-bottom:2px;font-size:13.5px;}
+    #rc-tclose{position:absolute;top:7px;right:9px;border:none;background:none;color:#cbd5e1;font-size:15px;cursor:pointer;line-height:1;padding:2px;}
+    #rc-tclose:hover{color:#64748b;}
 
     #rc-box{position:fixed;bottom:100px;${POSITION==='left'?'left':'right'}:16px;width:400px;max-width:calc(100vw - 20px);height:640px;max-height:calc(100vh - 120px);display:none;flex-direction:column;border-radius:26px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.28),0 4px 12px rgba(0,0,0,.12);z-index:2147483645;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;}
     #rc-box.open{display:flex;animation:rc-pop .32s cubic-bezier(.34,1.56,.64,1);}
@@ -147,7 +162,12 @@
       </div>
       <div id="rc-pw">Powered by <a href="https://replycart.app" target="_blank">ReplyCart</a></div>
     </div>
-    <button id="rc-fab" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><div id="rc-badge"></div></button>`;
+    <div id="rc-teaser">
+      <button id="rc-tclose" aria-label="Dismiss">&#x2715;</button>
+      <div id="rc-tav"><span id="rc-tinit">AI</span></div>
+      <div id="rc-ttext"><b id="rc-tname">Need a hand?</b><span id="rc-tmsg">Hi! 👋 Looking for something special? I can help you find it.</span></div>
+    </div>
+    <button id="rc-fab" class="rc-attn" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><div id="rc-online"></div><div id="rc-badge"></div></button>`;
   document.body.appendChild(el);
 
   var box = document.getElementById('rc-box'),
@@ -164,7 +184,24 @@
       focusBar = document.getElementById('rc-focus'),
       focusImg = document.getElementById('rc-focus-img'),
       focusTitle = document.getElementById('rc-focus-title'),
-      browseBtn = document.getElementById('rc-browse');
+      browseBtn = document.getElementById('rc-browse'),
+      teaser = document.getElementById('rc-teaser'),
+      tclose = document.getElementById('rc-tclose'),
+      tav = document.getElementById('rc-tav'),
+      tinit = document.getElementById('rc-tinit'),
+      tname = document.getElementById('rc-tname');
+
+  // ── Greeting teaser ──────────────────────────────────────────────────────────
+  var TEASER_KEY = 'rc_teaser_' + API_KEY;
+  function hideTeaser() { teaser.classList.remove('show'); }
+  function showTeaser() {
+    if (open || sessionStorage.getItem(TEASER_KEY) === '1') return;
+    teaser.classList.add('show');
+  }
+  teaser.addEventListener('click', function() { hideTeaser(); doOpen(); });
+  tclose.addEventListener('click', function(e) {
+    e.stopPropagation(); hideTeaser(); sessionStorage.setItem(TEASER_KEY, '1');
+  });
 
   var open = false, busy = false, greeted = false, unread = 0;
 
@@ -277,6 +314,7 @@
   // ── Open / close ─────────────────────────────────────────────────────────────
   function doOpen() {
     open = true; unread = 0; badge.style.display = 'none';
+    hideTeaser(); fab.classList.remove('rc-attn');
     box.classList.add('open');
     fab.querySelector('svg').innerHTML = '<path fill="#fff" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>';
     inp.focus();
@@ -289,21 +327,37 @@
   fab.addEventListener('click', function() { open ? doClose() : doOpen(); });
   xcl.addEventListener('click', doClose);
 
-  // ── Init ─────────────────────────────────────────────────────────────────────
-  function init() {
-    fetch(API_BASE + '/api/v1/chatbot/' + API_KEY + '/config')
+  // ── Config (prefetched on load so header + teaser show branding early) ───────
+  var welcomeMsg = '', configPromise = null;
+  function loadConfig() {
+    return fetch(API_BASE + '/api/v1/chatbot/' + API_KEY + '/config')
       .then(function(r) { return r.ok ? r.json() : {}; })
-      .catch(function(e) { console.error('[RC] init error', e); return {}; })
+      .catch(function(e) { console.error('[RC] config error', e); return {}; })
       .then(function(c) {
         allProducts = Array.isArray(c.products) ? c.products : [];
         if (c.payment) payCfg = c.payment;
-        if (c.name) { clientName = c.name; nameEl.textContent = c.name; initEl.textContent = c.name.charAt(0).toUpperCase(); }
-        if (c.logoUrl) { avEl.innerHTML = '<img src="' + c.logoUrl + '" alt="">'; }
-        addMsg('bot', c.welcomeMessage || ('Hi! Welcome to ' + (c.name || 'our store') + ' ✨ What are you looking for today?'));
-        if (allProducts.length > 0) showCategories();
-        // Preload Razorpay checkout if online payments are enabled
-        if (payCfg.onlineEnabled) loadRazorpay();
+        welcomeMsg = c.welcomeMessage || ('Hi! Welcome to ' + (c.name || 'our store') + ' ✨ What are you looking for today?');
+        if (c.name) {
+          clientName = c.name;
+          var ltr = c.name.charAt(0).toUpperCase();
+          nameEl.textContent = c.name; initEl.textContent = ltr; tinit.textContent = ltr;
+          tname.textContent = 'Chat with ' + c.name;
+        }
+        if (c.logoUrl) {
+          var im = '<img src="' + c.logoUrl + '" alt="">';
+          avEl.innerHTML = im; tav.innerHTML = im;
+        }
+        if (payCfg.onlineEnabled) loadRazorpay();   // preload Razorpay checkout
       });
+  }
+  function ensureConfig() { if (!configPromise) configPromise = loadConfig(); return configPromise; }
+
+  // First-open greeting (config already loading/loaded by now)
+  function init() {
+    ensureConfig().then(function() {
+      addMsg('bot', welcomeMsg);
+      if (allProducts.length > 0) showCategories();
+    });
   }
 
   // ── Category chips ───────────────────────────────────────────────────────────
@@ -637,5 +691,9 @@
   }
 
   function showBadge() { badge.style.display = 'flex'; badge.textContent = unread > 9 ? '9+' : unread; }
+
+  // ── Bootstrap ────────────────────────────────────────────────────────────────
+  ensureConfig();                       // prefetch branding + products immediately
+  setTimeout(showTeaser, 3500);         // nudge the visitor after a few seconds
 
 })();
