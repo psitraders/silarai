@@ -465,10 +465,16 @@
 
     var bodyEl = document.createElement('div');
     bodyEl.style.cssText = 'padding:14px 16px;';
+    var money = function(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); };
     var items = (o.items || []).map(function(it) {
-      return '<div style="display:flex;justify-content:space-between;font-size:13px;color:#475569;padding:4px 0;">' +
-        '<span>' + it.title + (it.variant ? ' · ' + it.variant : '') + ' × ' + it.qty + '</span>' +
-        '<span style="font-weight:600;color:#1e293b;">₹' + (it.unitPrice * it.qty) + '</span></div>';
+      var thumb = it.imageUrl
+        ? '<img src="' + it.imageUrl + '" alt="" style="width:38px;height:38px;border-radius:9px;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'"/>'
+        : '<div style="width:38px;height:38px;border-radius:9px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;">🛍</div>';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;">' +
+        thumb +
+        '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1e293b;line-height:1.3;">' + it.title + '</div>' +
+        '<div style="font-size:11px;color:#94a3b8;">' + (it.variant ? it.variant + ' · ' : '') + 'Qty ' + it.qty + '</div></div>' +
+        '<span style="font-weight:700;color:#1e293b;font-size:13px;white-space:nowrap;">' + money(it.unitPrice * it.qty) + '</span></div>';
     }).join('');
     var payLabel = o.paymentMethod === 'online'
       ? (paid ? 'Paid online' : 'Online payment pending')
@@ -476,7 +482,7 @@
     bodyEl.innerHTML = items +
       '<div style="border-top:1px dashed #e2e8f0;margin-top:8px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;">' +
         '<span style="font-size:12px;color:#64748b;font-weight:600;">' + payLabel + '</span>' +
-        '<span style="font-size:17px;font-weight:800;color:' + S + ';">₹' + o.total + '</span></div>';
+        '<span style="font-size:17px;font-weight:800;color:' + S + ';">' + money(o.total) + '</span></div>';
     card.appendChild(bodyEl);
 
     // Pay-now action if online + still pending

@@ -83,7 +83,34 @@ public class ChatbotController(
 
             if (cart != null && cart.Count > 0)
             {
-                var total = cart.Sum(i => i.Qty * i.UnitPrice);
+                // Resolve real price + image from OUR catalogue — never trust the AI's unit_price.
+                ChatbotProduct? ResolveProduct(string? title)
+                {
+                    if (focused != null) return focused;          // single-product mode
+                    var t = (title ?? "").Trim();
+                    if (t.Length == 0) return null;
+                    return products.FirstOrDefault(p => string.Equals(p.Title, t, StringComparison.OrdinalIgnoreCase))
+                        ?? products.FirstOrDefault(p =>
+                               p.Title.Contains(t, StringComparison.OrdinalIgnoreCase)
+                            || t.Contains(p.Title, StringComparison.OrdinalIgnoreCase));
+                }
+
+                var lineItems = cart.Select(i =>
+                {
+                    var prod = ResolveProduct(i.Title);
+                    var unit = prod != null ? (prod.SalePrice ?? prod.Price)
+                             : (i.UnitPrice > 0 ? i.UnitPrice : 0);
+                    return new
+                    {
+                        title     = prod?.Title ?? i.Title,
+                        qty       = i.Qty < 1 ? 1 : i.Qty,
+                        unitPrice = unit,
+                        variant   = i.VariantInfo,
+                        imageUrl  = prod?.ImageUrl,
+                    };
+                }).ToList();
+
+                var total = lineItems.Sum(i => i.qty * i.unitPrice);
 
                 // Decide payment method — honour what's actually enabled for the client.
                 var wantsOnline = (aiReply.ExtractedPaymentMethod ?? "cod").ToLower() == "online";
@@ -101,13 +128,7 @@ public class ChatbotController(
                     CustomerName    = aiReply.ExtractedName,
                     CustomerPhone   = aiReply.ExtractedPhone,
                     DeliveryAddress = aiReply.ExtractedAddress,
-                    ItemsJson       = JsonSerializer.Serialize(cart.Select(i => new
-                    {
-                        title     = i.Title,
-                        qty       = i.Qty,
-                        unitPrice = i.UnitPrice,
-                        variant   = i.VariantInfo,
-                    })),
+                    ItemsJson       = JsonSerializer.Serialize(lineItems),
                     Total           = total,
                     Currency        = client.Currency,
                     PaymentMethod   = method,
@@ -158,13 +179,7 @@ public class ChatbotController(
                     paymentStatus = order.PaymentStatus,
                     currency      = order.Currency,
                     total,
-                    items         = cart.Select(i => new
-                    {
-                        title     = i.Title,
-                        qty       = i.Qty,
-                        unitPrice = i.UnitPrice,
-                        variant   = i.VariantInfo,
-                    }).ToList(),
+                    items         = lineItems,
                     razorpay,
                 };
 
