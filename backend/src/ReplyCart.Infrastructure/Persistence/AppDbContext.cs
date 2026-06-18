@@ -88,9 +88,10 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<WaTemplate> WaTemplates => Set<WaTemplate>();
 
     // Chatbot-as-a-Service (external clients)
-    public DbSet<ChatbotClient>  ChatbotClients  => Set<ChatbotClient>();
-    public DbSet<ChatbotProduct> ChatbotProducts => Set<ChatbotProduct>();
-    public DbSet<ChatbotOrder>   ChatbotOrders   => Set<ChatbotOrder>();
+    public DbSet<ChatbotClient>   ChatbotClients   => Set<ChatbotClient>();
+    public DbSet<ChatbotProduct>  ChatbotProducts  => Set<ChatbotProduct>();
+    public DbSet<ChatbotOrder>    ChatbotOrders    => Set<ChatbotOrder>();
+    public DbSet<ChatbotDocument> ChatbotDocuments => Set<ChatbotDocument>();
 
     // Custom pages (tenant storefront)
     public DbSet<StorefrontPage> StorefrontPages => Set<StorefrontPage>();

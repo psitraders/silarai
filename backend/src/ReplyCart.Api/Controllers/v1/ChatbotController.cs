@@ -55,8 +55,16 @@ public class ChatbotController(
         if (request.FocusedProductId is Guid fid)
             focused = products.FirstOrDefault(p => p.Id == fid);
 
+        // ── Knowledge base (uploaded policy / compliance / FAQ docs) ──────────
+        var docs = await db.ChatbotDocuments
+            .Where(d => d.ClientId == client.Id)
+            .Select(d => new { d.FileName, d.ExtractedText })
+            .ToListAsync(ct);
+        var knowledge = BuildKnowledgeContext(
+            docs.Select(d => (d.FileName, d.ExtractedText)).ToList(), request.Message);
+
         // ── Build system prompt (focused or full catalogue) ───────────────────
-        var systemPrompt = BuildSystemPrompt(client, products, focused);
+        var systemPrompt = BuildSystemPrompt(client, products, focused, knowledge);
 
         // ── Get conversation history ──────────────────────────────────────────
         var history = chatMemory.GetHistory(sessionId);
@@ -428,11 +436,51 @@ public class ChatbotController(
         return $"RC-{DateTime.UtcNow:yyMMdd}-{new string(suffix)}";
     }
 
+    // ── Knowledge-base retrieval (keyword-ranked passages) ────────────────────
+    private static string? BuildKnowledgeContext(
+        List<(string FileName, string Text)> docs, string message, int maxChars = 3000)
+    {
+        if (docs == null || docs.Count == 0) return null;
+
+        var chunks = new List<(string Doc, string Text)>();
+        foreach (var (file, text) in docs)
+        {
+            if (string.IsNullOrWhiteSpace(text)) continue;
+            for (int i = 0; i < text.Length; i += 600)
+                chunks.Add((file, text.Substring(i, Math.Min(600, text.Length - i))));
+        }
+        if (chunks.Count == 0) return null;
+
+        var words = message.ToLowerInvariant()
+            .Split([' ', ',', '.', '?', '!', '\n', '\t', ';', ':'], StringSplitOptions.RemoveEmptyEntries)
+            .Where(w => w.Length >= 3).Distinct().ToList();
+
+        var scored = chunks
+            .Select(c => (chunk: c, score: words.Count(w => c.Text.ToLowerInvariant().Contains(w))))
+            .ToList();
+
+        var picked = scored.Any(x => x.score > 0)
+            ? scored.Where(x => x.score > 0).OrderByDescending(x => x.score).Select(x => x.chunk)
+            : chunks.Take(6);   // no keyword hit → include the opening passages
+
+        var sb = new StringBuilder();
+        int used = 0;
+        foreach (var (doc, text) in picked)
+        {
+            var t = text.Trim();
+            if (used + t.Length > maxChars) break;
+            sb.AppendLine($"[{doc}] {t}");
+            used += t.Length;
+        }
+        return sb.Length > 0 ? sb.ToString() : null;
+    }
+
     // ── System prompt builder ─────────────────────────────────────────────────
     private static string BuildSystemPrompt(
         Domain.Chatbot.ChatbotClient client,
         List<Domain.Chatbot.ChatbotProduct> products,
-        Domain.Chatbot.ChatbotProduct? focused)
+        Domain.Chatbot.ChatbotProduct? focused,
+        string? knowledgeBase = null)
     {
         var sb = new StringBuilder();
 
@@ -506,6 +554,15 @@ public class ChatbotController(
             sb.AppendLine("• NEVER say 'I can't show' — just describe products in plain text.");
             sb.AppendLine("• When customer wants to order: ask for size/variant, then name, phone, delivery address.");
             sb.AppendLine($"• Available payment options: {string.Join(", ", pays)}. Ask which they prefer.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(knowledgeBase))
+        {
+            sb.AppendLine();
+            sb.AppendLine("=== KNOWLEDGE BASE (store policies & documents) ===");
+            sb.AppendLine("Use the passages below to answer questions about policies, privacy, shipping, returns, warranty, compliance, etc. Answer faithfully from this content. If the answer isn't here, say you'll connect them with the team — do NOT invent policy details.");
+            sb.AppendLine(knowledgeBase);
+            sb.AppendLine();
         }
 
         sb.AppendLine("• Once confirmed, output ONLY this JSON:");

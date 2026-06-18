@@ -5,7 +5,7 @@ import {
   Bot, ArrowLeft, Copy, Check, RefreshCw, Plus, Trash2,
   Save, Code, Package, Settings, Send, MessageCircle,
   ShoppingBag, Upload, RefreshCcw, Pencil, X, CheckCircle2,
-  CreditCard, Receipt,
+  CreditCard, Receipt, BookOpen, FileText,
 } from 'lucide-react';
 import apiClient from '../../api/client';
 import { Button } from '../../components/ui/Button';
@@ -678,7 +678,117 @@ function CatalogTab({ client, onRefresh }: { client: ChatbotClientDetail; onRefr
         </Button>
         {csvResult && <p className="mt-3 text-sm">{csvResult}</p>}
       </Card>
+
+      {/* Knowledge Base */}
+      <KnowledgeBaseCard client={client} />
     </div>
+  );
+}
+
+// ── Knowledge Base ────────────────────────────────────────────────────────────
+interface KbDoc {
+  id: string; fileName: string; contentType: string;
+  sizeBytes: number; charCount: number; createdAt: string;
+}
+
+function formatBytes(b: number) {
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+  return `${(b / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function KnowledgeBaseCard({ client }: { client: ChatbotClientDetail }) {
+  const qc = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const { data: docs = [], isLoading } = useQuery<KbDoc[]>({
+    queryKey: ['chatbot-docs', client.id],
+    queryFn: () => apiClient.get(`/admin/chatbot-clients/${client.id}/documents`).then(r => r.data),
+  });
+
+  const upload = useMutation({
+    mutationFn: (file: File) => {
+      const fd = new FormData(); fd.append('file', file);
+      return apiClient.post(`/admin/chatbot-clients/${client.id}/documents`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    },
+    onSuccess: (res) => {
+      setMsg({ ok: true, text: `Added “${res.data.fileName}” — ${res.data.charCount.toLocaleString()} characters indexed` });
+      qc.invalidateQueries({ queryKey: ['chatbot-docs', client.id] });
+    },
+    onError: (e: unknown) => {
+      const m = (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Upload failed';
+      setMsg({ ok: false, text: m });
+    },
+  });
+
+  const del = useMutation({
+    mutationFn: (docId: string) => apiClient.delete(`/admin/chatbot-clients/${client.id}/documents/${docId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['chatbot-docs', client.id] }),
+  });
+
+  return (
+    <Card>
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center text-white">
+          <BookOpen className="w-4 h-4" />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-slate-800">Knowledge Base</p>
+          <p className="text-xs text-slate-400">Upload policies, FAQs & docs — the AI answers questions using them</p>
+        </div>
+      </div>
+
+      <div className="bg-slate-50 rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
+        <code className="text-xs text-slate-500">PDF, Word (.docx), or text (.txt / .md) · up to 10 MB</code>
+      </div>
+
+      <input ref={fileRef} type="file" accept=".pdf,.docx,.txt,.md,.markdown,.csv" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) { setMsg(null); upload.mutate(f); } e.target.value = ''; }} />
+      <Button type="button" variant="outline" loading={upload.isPending} onClick={() => fileRef.current?.click()}>
+        <Upload className="w-4 h-4 mr-1.5" /> Upload Document
+      </Button>
+      {msg && (
+        <p className={`mt-3 text-sm flex items-center gap-1.5 ${msg.ok ? 'text-green-600' : 'text-red-500'}`}>
+          {msg.ok ? <CheckCircle2 className="w-4 h-4" /> : <X className="w-4 h-4" />}{msg.text}
+        </p>
+      )}
+
+      {/* Document list */}
+      <div className="mt-5">
+        {isLoading ? (
+          <p className="text-sm text-slate-400">Loading…</p>
+        ) : docs.length === 0 ? (
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 py-8 text-center">
+            <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-sm text-slate-500 font-medium">No documents yet</p>
+            <p className="text-xs text-slate-400 mt-1">Upload a privacy policy, return policy or FAQ to get started</p>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
+            {docs.map(d => (
+              <div key={d.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-4 h-4 text-indigo-500" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-slate-800 truncate">{d.fileName}</p>
+                  <p className="text-xs text-slate-400">
+                    {formatBytes(d.sizeBytes)} · {d.charCount.toLocaleString()} chars · {new Date(d.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <button onClick={() => del.mutate(d.id)} disabled={del.isPending}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }
 

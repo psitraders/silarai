@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ReplyCart.Api.Services;
 using ReplyCart.Domain.Chatbot;
 using ReplyCart.Infrastructure.Persistence;
 using System.Globalization;
@@ -494,6 +495,81 @@ public class AdminChatbotClientsController(
         if (!string.IsNullOrWhiteSpace(req.PaymentStatus)) order.PaymentStatus = req.PaymentStatus.Trim();
         order.UpdatedAt = DateTime.UtcNow;
 
+        await db.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ── Knowledge base documents ──────────────────────────────────────────────
+    /// <summary>List uploaded knowledge-base documents (metadata only).</summary>
+    [HttpGet("{id:guid}/documents")]
+    public async Task<IActionResult> GetDocuments(Guid id, CancellationToken ct)
+    {
+        var client = await db.ChatbotClients.FindAsync([id], ct);
+        if (client == null) return NotFound(new { message = "Client not found." });
+
+        var docs = await db.ChatbotDocuments
+            .Where(d => d.ClientId == id)
+            .OrderByDescending(d => d.CreatedAt)
+            .Select(d => new { d.Id, d.FileName, d.ContentType, d.SizeBytes, d.CharCount, d.CreatedAt })
+            .ToListAsync(ct);
+
+        return Ok(docs);
+    }
+
+    /// <summary>
+    /// Upload a knowledge-base document (PDF / Word / text). Text is extracted and stored;
+    /// the chatbot uses it to answer policy / compliance / FAQ questions.
+    /// </summary>
+    [HttpPost("{id:guid}/documents")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadDocument(Guid id, IFormFile file, CancellationToken ct)
+    {
+        var client = await db.ChatbotClients.FindAsync([id], ct);
+        if (client == null) return NotFound(new { message = "Client not found." });
+        if (file == null || file.Length == 0) return BadRequest(new { message = "No file uploaded." });
+        if (file.Length > 10 * 1024 * 1024) return BadRequest(new { message = "File too large (max 10 MB)." });
+
+        string text;
+        try
+        {
+            await using var s = file.OpenReadStream();
+            text = DocumentTextExtractor.Extract(s, file.FileName, file.ContentType ?? "");
+        }
+        catch (NotSupportedException ex) { return BadRequest(new { message = ex.Message }); }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Document extraction failed for client {Id}, file {File}", id, file.FileName);
+            return BadRequest(new { message = "Could not read this file. Please try a different format." });
+        }
+
+        if (!DocumentTextExtractor.LooksReadable(text))
+            return BadRequest(new { message = "Couldn't extract readable text. If this is a scanned/image PDF, upload a Word or text version instead." });
+
+        var doc = new ChatbotDocument
+        {
+            Id            = Guid.NewGuid(),
+            ClientId      = id,
+            FileName      = file.FileName,
+            ContentType   = file.ContentType ?? "",
+            SizeBytes     = file.Length,
+            CharCount     = text.Length,
+            ExtractedText = text,
+            CreatedAt     = DateTime.UtcNow,
+        };
+        db.ChatbotDocuments.Add(doc);
+        await db.SaveChangesAsync(ct);
+
+        return Ok(new { doc.Id, doc.FileName, doc.CharCount });
+    }
+
+    /// <summary>Delete a knowledge-base document.</summary>
+    [HttpDelete("{id:guid}/documents/{docId:guid}")]
+    public async Task<IActionResult> DeleteDocument(Guid id, Guid docId, CancellationToken ct)
+    {
+        var doc = await db.ChatbotDocuments.FirstOrDefaultAsync(d => d.Id == docId && d.ClientId == id, ct);
+        if (doc == null) return NotFound();
+
+        db.ChatbotDocuments.Remove(doc);
         await db.SaveChangesAsync(ct);
         return NoContent();
     }
