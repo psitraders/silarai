@@ -684,6 +684,22 @@ public class PublicStorefrontController(
             }
             catch { /* ignore malformed cart JSON */ }
 
+            // Server is the price authority — overwrite the AI's unit_price with the
+            // real catalogue price (base/discounted + variant adjustment) so the total
+            // the customer sees and pays is always correct.
+            if (aiCart != null && aiCart.Count > 0)
+            {
+                aiCart = aiCart.Select(i =>
+                {
+                    var p = Guid.TryParse(i.ProductId, out var pid)
+                        ? products.FirstOrDefault(x => x.Id == pid)
+                        : null;
+                    p ??= products.FirstOrDefault(x =>
+                        string.Equals(x.Title.Trim(), i.Title.Trim(), StringComparison.OrdinalIgnoreCase));
+                    return p == null ? i : i with { UnitPrice = ResolveUnitPrice(p, i.VariantInfo) };
+                }).ToList();
+            }
+
             var paymentMethodEarly = aiReply.ExtractedPaymentMethod?.ToLower()?.Trim();
             var isOnlineEarly = paymentMethodEarly is "online" or "upi" or "gpay"
                 or "google pay" or "phonepe" or "paytm" or "razorpay" or "card"
@@ -1095,6 +1111,24 @@ public class PublicStorefrontController(
     // â”€â”€ COD orders (public) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // â”€â”€ Chat COD confirm â€” place order after OTP verification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+    // ── Server-side price authority ───────────────────────────────────────────
+    // Never trust the unit price supplied by the AI or the client. Recompute every
+    // line item from the catalogue: (discounted ?? base) price + matched variant
+    // adjustment. Prevents wrong order totals (e.g. AI quoting ₹9400 but writing ₹4900).
+    private static decimal ResolveUnitPrice(Domain.Catalog.Product product, string? variantInfo)
+    {
+        var basePrice = product.DiscountedPrice ?? product.BasePrice;
+        var variants  = product.Variants?.Where(v => v.IsAvailable).ToList();
+        if (variants == null || variants.Count == 0 || string.IsNullOrWhiteSpace(variantInfo))
+            return basePrice;
+
+        var vi = variantInfo.Trim().ToLowerInvariant();
+        var match = variants.FirstOrDefault(v =>
+                (!string.IsNullOrWhiteSpace(v.Value) && vi.Contains(v.Value.Trim().ToLowerInvariant()))
+             || (!string.IsNullOrWhiteSpace(v.Name)  && vi.Contains(v.Name.Trim().ToLowerInvariant())));
+        return basePrice + (match?.PriceAdjustment ?? 0);
+    }
+
     [HttpPost("chat/confirm-cod-order")]
     public async Task<IActionResult> ConfirmChatCodOrder(
         string slug,
@@ -1115,7 +1149,21 @@ public class PublicStorefrontController(
             return BadRequest(new { error = "Cart is empty." });
 
         var tenantId    = tenantContext.CurrentTenantId;
-        var totalAmount = req.Cart.Sum(i => i.Qty * i.UnitPrice);
+
+        // Server is the price authority — recompute every line from the catalogue,
+        // never trust the client-supplied unit price.
+        var codProducts = await db.Products
+            .Where(p => p.TenantId == tenantId)
+            .Include(p => p.Variants)
+            .ToListAsync(ct);
+        decimal ResolveCartPrice(ChatCartItem i)
+        {
+            var p = Guid.TryParse(i.ProductId, out var pid) ? codProducts.FirstOrDefault(x => x.Id == pid) : null;
+            p ??= codProducts.FirstOrDefault(x => string.Equals(x.Title.Trim(), i.Title.Trim(), StringComparison.OrdinalIgnoreCase));
+            return p == null ? i.UnitPrice : ResolveUnitPrice(p, i.VariantInfo);
+        }
+        var pricedCart  = req.Cart.Select(i => new { Item = i, Unit = ResolveCartPrice(i) }).ToList();
+        var totalAmount = pricedCart.Sum(x => x.Unit * x.Item.Qty);
         var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}";
 
         // Normalize phone to digits-only so the lookup is consistent regardless of
@@ -1152,15 +1200,15 @@ public class PublicStorefrontController(
             db.Customers.Add(customer);
         }
 
-        var orderItems = req.Cart.Select(i => new OrderItem
+        var orderItems = pricedCart.Select(x => new OrderItem
         {
             TenantId     = tenantId,
-            ProductId    = Guid.TryParse(i.ProductId, out var pid) ? pid : Guid.Empty,
-            ProductTitle = i.Title,
-            VariantInfo  = i.VariantInfo,
-            Quantity     = i.Qty,
-            UnitPrice    = i.UnitPrice,
-            TotalPrice   = i.Qty * i.UnitPrice,
+            ProductId    = Guid.TryParse(x.Item.ProductId, out var pid) ? pid : Guid.Empty,
+            ProductTitle = x.Item.Title,
+            VariantInfo  = x.Item.VariantInfo,
+            Quantity     = x.Item.Qty,
+            UnitPrice    = x.Unit,
+            TotalPrice   = x.Unit * x.Item.Qty,
         }).ToList();
 
         var order = new Order
@@ -1190,17 +1238,12 @@ public class PublicStorefrontController(
 
         db.Orders.Add(order);
 
-        // Decrement stock
-        var productIds = req.Cart.Select(i => i.ProductId).ToList();
-        var dbProducts = await db.Products
-            .Where(p => p.TenantId == tenantId)
-            .ToListAsync(ct);
-
+        // Decrement stock (reuse the already-loaded catalogue)
         foreach (var cartItem in req.Cart)
         {
             var dbProd = Guid.TryParse(cartItem.ProductId, out var spid)
-                ? dbProducts.FirstOrDefault(p => p.Id == spid)
-                : dbProducts.FirstOrDefault(p =>
+                ? codProducts.FirstOrDefault(p => p.Id == spid)
+                : codProducts.FirstOrDefault(p =>
                     string.Equals(p.Title.Trim(), cartItem.Title.Trim(), StringComparison.OrdinalIgnoreCase));
 
             if (dbProd?.StockQuantity != null)
@@ -1221,8 +1264,8 @@ public class PublicStorefrontController(
 
             if (!string.IsNullOrWhiteSpace(ownerEmail))
             {
-                var notifItems = req.Cart.Select(i =>
-                    new OrderNotificationItem(i.Title, i.VariantInfo, i.Qty, i.UnitPrice));
+                var notifItems = pricedCart.Select(x =>
+                    new OrderNotificationItem(x.Item.Title, x.Item.VariantInfo, x.Item.Qty, x.Unit));
 
                 await emailService.SendNewOrderNotificationAsync(
                     toEmail:         ownerEmail,
@@ -1252,7 +1295,7 @@ public class PublicStorefrontController(
         {
             if (!string.IsNullOrWhiteSpace(req.CustomerEmail))
             {
-                var confItems    = req.Cart.Select(i => new OrderNotificationItem(i.Title, i.VariantInfo, i.Qty, i.UnitPrice));
+                var confItems    = pricedCart.Select(x => new OrderNotificationItem(x.Item.Title, x.Item.VariantInfo, x.Item.Qty, x.Unit));
                 var sfBase       = await StorefrontBaseUrlAsync(slug, CancellationToken.None);
                 var trackingUrl  = $"{sfBase}/order-confirmation/{order.Id}";
                 var (_, _, sName) = await LoadOwnerInfoAsync(tenantId, CancellationToken.None);
@@ -1339,6 +1382,7 @@ public class PublicStorefrontController(
         var productIds = request.Items.Select(i => i.ProductId).Distinct().ToList();
         var products = await db.Products
             .Where(p => productIds.Contains(p.Id) && p.TenantId == tenantId)
+            .Include(p => p.Variants)
             .ToListAsync(ct);
 
         foreach (var item in request.Items)
@@ -1352,7 +1396,14 @@ public class PublicStorefrontController(
                 return BadRequest(new { errors = new[] { $"Only {product.StockQuantity.Value} of '{product.Title}' available." } });
         }
 
-        var totalAmount = request.Items.Sum(i => i.Quantity * i.UnitPrice);
+        // Server is the price authority — recompute from the catalogue, not the client.
+        decimal ResolveItemPrice(CodOrderItemRequest i)
+        {
+            var p = products.FirstOrDefault(x => x.Id == i.ProductId);
+            return p == null ? i.UnitPrice : ResolveUnitPrice(p, i.VariantInfo);
+        }
+        var pricedItems = request.Items.Select(i => new { Item = i, Unit = ResolveItemPrice(i) }).ToList();
+        var totalAmount = pricedItems.Sum(x => x.Unit * x.Item.Quantity);
         var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}";
 
         // Customer upsert â€” normalize phone to digits-only for consistent lookup
@@ -1385,15 +1436,15 @@ public class PublicStorefrontController(
             db.Customers.Add(customer);
         }
 
-        var items = request.Items.Select(i => new OrderItem
+        var items = pricedItems.Select(x => new OrderItem
         {
             TenantId = tenantId,
-            ProductId = i.ProductId,
-            ProductTitle = i.ProductTitle,
-            VariantInfo = i.VariantInfo,
-            Quantity = i.Quantity,
-            UnitPrice = i.UnitPrice,
-            TotalPrice = i.Quantity * i.UnitPrice
+            ProductId = x.Item.ProductId,
+            ProductTitle = x.Item.ProductTitle,
+            VariantInfo = x.Item.VariantInfo,
+            Quantity = x.Item.Quantity,
+            UnitPrice = x.Unit,
+            TotalPrice = x.Unit * x.Item.Quantity
         }).ToList();
 
         var order = new Order
@@ -1449,8 +1500,8 @@ public class PublicStorefrontController(
                 .Select(b => b.Currency)
                 .FirstOrDefaultAsync(CancellationToken.None) ?? "INR";
 
-            var notifItems = request.Items
-                .Select(i => new OrderNotificationItem(i.ProductTitle, i.VariantInfo, i.Quantity, i.UnitPrice))
+            var notifItems = pricedItems
+                .Select(x => new OrderNotificationItem(x.Item.ProductTitle, x.Item.VariantInfo, x.Item.Quantity, x.Unit))
                 .ToList();
 
             // Owner email
