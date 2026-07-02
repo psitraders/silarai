@@ -1316,12 +1316,14 @@ function ProductChatCard({
 
 // ── Chatbot ───────────────────────────────────────────────────────────────────
 
-function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
+function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct, categoryId, categoryName }: {
   store: StoreData;
   themeColor: string;
   slug: string;
   onOpenCart: () => void;
   onViewProduct?: (productId: string) => void;
+  categoryId?: string | null;
+  categoryName?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [panelVisible, setPanelVisible] = useState(false);
@@ -1380,7 +1382,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
       const res = await fetch(`${BASE_URL}/public/${slug}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, message: text }),
+        body: JSON.stringify({ sessionId, message: text, categoryId: categoryId || undefined, categoryName: categoryName || undefined }),
       });
       const data = await res.json();
       if (data.sessionId) setSessionId(data.sessionId);
@@ -1415,7 +1417,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
     } finally {
       setIsTyping(false);
     }
-  }, [slug, sessionId, isTyping, store.whatsAppNumber]);
+  }, [slug, sessionId, isTyping, store.whatsAppNumber, categoryId, categoryName]);
 
   const handleOnlinePayment = useCallback((cart: ChatMessage['onlineCart']) => {
     if (!cart) return;
@@ -3619,6 +3621,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         slug={slug!}
         onOpenCart={() => setCartOpen(true)}
         onViewProduct={handleChatViewProduct}
+        categoryId={selectedCategory}
+        categoryName={categories.find(c => c.id === selectedCategory)?.name ?? null}
       />
 
       {/* Product detail modal */}

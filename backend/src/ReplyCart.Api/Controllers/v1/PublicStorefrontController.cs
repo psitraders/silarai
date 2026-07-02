@@ -538,7 +538,7 @@ public class PublicStorefrontController(
             .ToListAsync(ct);
 
         // Build the RAG system prompt
-        var systemPrompt = BuildChatSystemPrompt(business, products);
+        var systemPrompt = BuildChatSystemPrompt(business, products, request.CategoryName);
 
         // Retrieve session history
         var history = chatMemory.GetHistory(sessionId);
@@ -873,11 +873,16 @@ public class PublicStorefrontController(
         var browseTrigger = msgLower.Contains("featured") || msgLower.Contains("browse")
                          || msgLower.Contains("all product") || msgLower.Contains("show product");
 
-        var productPool = (orderPlaced != null || onlinePaymentCart != null)
-            ? []
-            : browseTrigger
-                ? products.Where(p => p.IsFeatured).ToList()   // featured products when browsing
-                : products.Where(p => TitleMatchesReply(p.Title.ToLowerInvariant(), replyLower)).ToList();
+        List<Product> productPool;
+        if (orderPlaced != null || onlinePaymentCart != null)
+            productPool = [];
+        else if (browseTrigger)
+            // Browsing inside a category -> show that category; otherwise show featured.
+            productPool = request.CategoryId.HasValue
+                ? products.Where(p => p.CategoryId == request.CategoryId.Value).ToList()
+                : products.Where(p => p.IsFeatured).ToList();
+        else
+            productPool = products.Where(p => TitleMatchesReply(p.Title.ToLowerInvariant(), replyLower)).ToList();
 
         var mentionedProducts = productPool
             .Take(4)
@@ -920,7 +925,7 @@ public class PublicStorefrontController(
     }
 
     /// <summary>Builds the RAG system prompt from store info and full product catalog (with variants).</summary>
-    private static string BuildChatSystemPrompt(Business business, List<Product> products)
+    private static string BuildChatSystemPrompt(Business business, List<Product> products, string? currentCategory = null)
     {
         var sb       = new StringBuilder();
         var currency = business.Currency ?? "INR";
@@ -936,6 +941,12 @@ public class PublicStorefrontController(
 
         if (!string.IsNullOrWhiteSpace(business.AiStoreContext))
             sb.AppendLine($"Store policies/FAQ: {business.AiStoreContext}");
+
+        if (!string.IsNullOrWhiteSpace(currentCategory))
+        {
+            sb.AppendLine();
+            sb.AppendLine($"The customer is currently browsing the '{currentCategory}' category. Prioritise products from this category. If this category has no matching products, tell them it's empty and suggest other categories - do NOT present products from unrelated categories as if they belong to '{currentCategory}'.");
+        }
 
         sb.AppendLine();
         sb.AppendLine("=== PRODUCT CATALOG ===");
@@ -1936,7 +1947,7 @@ internal record PublicCategoryFlat(Guid Id, string Name, string? Description, st
 public record PublicSubCategoryDto(Guid Id, string Name, string? Description, string? ImageUrl);
 public record PublicCategoryDto(Guid Id, string Name, string? Description, string? ImageUrl, bool IsFeatured, List<PublicSubCategoryDto> SubCategories);
 
-public record StorefrontChatRequest(string? SessionId, string Message);
+public record StorefrontChatRequest(string? SessionId, string Message, Guid? CategoryId = null, string? CategoryName = null);
 
 public record PublicInquiryRequest(
     string CustomerName,
