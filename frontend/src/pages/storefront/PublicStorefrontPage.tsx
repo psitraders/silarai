@@ -1316,7 +1316,7 @@ function ProductChatCard({
 
 // ── Chatbot ───────────────────────────────────────────────────────────────────
 
-function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct, categoryId, categoryName }: {
+function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct, categoryId, categoryName, loggedInName, loggedInEmail }: {
   store: StoreData;
   themeColor: string;
   slug: string;
@@ -1324,6 +1324,8 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct, categoryI
   onViewProduct?: (productId: string) => void;
   categoryId?: string | null;
   categoryName?: string | null;
+  loggedInName?: string | null;
+  loggedInEmail?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [panelVisible, setPanelVisible] = useState(false);
@@ -1382,7 +1384,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct, categoryI
       const res = await fetch(`${BASE_URL}/public/${slug}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, message: text, categoryId: categoryId || undefined, categoryName: categoryName || undefined }),
+        body: JSON.stringify({ sessionId, message: text, categoryId: categoryId || undefined, categoryName: categoryName || undefined, customerName: loggedInName || undefined, customerEmail: loggedInEmail || undefined }),
       });
       const data = await res.json();
       if (data.sessionId) setSessionId(data.sessionId);
@@ -1417,7 +1419,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct, categoryI
     } finally {
       setIsTyping(false);
     }
-  }, [slug, sessionId, isTyping, store.whatsAppNumber, categoryId, categoryName]);
+  }, [slug, sessionId, isTyping, store.whatsAppNumber, categoryId, categoryName, loggedInName, loggedInEmail]);
 
   const handleOnlinePayment = useCallback((cart: ChatMessage['onlineCart']) => {
     if (!cart) return;
@@ -3623,6 +3625,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         onViewProduct={handleChatViewProduct}
         categoryId={selectedCategory}
         categoryName={categories.find(c => c.id === selectedCategory)?.name ?? null}
+        loggedInName={customer?.name ?? null}
+        loggedInEmail={customer?.email ?? null}
       />
 
       {/* Product detail modal */}

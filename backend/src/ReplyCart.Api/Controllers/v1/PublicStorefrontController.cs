@@ -538,7 +538,7 @@ public class PublicStorefrontController(
             .ToListAsync(ct);
 
         // Build the RAG system prompt
-        var systemPrompt = BuildChatSystemPrompt(business, products, request.CategoryName);
+        var systemPrompt = BuildChatSystemPrompt(business, products, request.CategoryName, request.CustomerName, request.CustomerEmail);
 
         // Retrieve session history
         var history = chatMemory.GetHistory(sessionId);
@@ -925,7 +925,7 @@ public class PublicStorefrontController(
     }
 
     /// <summary>Builds the RAG system prompt from store info and full product catalog (with variants).</summary>
-    private static string BuildChatSystemPrompt(Business business, List<Product> products, string? currentCategory = null)
+    private static string BuildChatSystemPrompt(Business business, List<Product> products, string? currentCategory = null, string? loggedInName = null, string? loggedInEmail = null)
     {
         var sb       = new StringBuilder();
         var currency = business.Currency ?? "INR";
@@ -941,6 +941,12 @@ public class PublicStorefrontController(
 
         if (!string.IsNullOrWhiteSpace(business.AiStoreContext))
             sb.AppendLine($"Store policies/FAQ: {business.AiStoreContext}");
+
+        if (!string.IsNullOrWhiteSpace(loggedInName))
+        {
+            sb.AppendLine();
+            sb.AppendLine($"The customer is signed in as {loggedInName}{(string.IsNullOrWhiteSpace(loggedInEmail) ? "" : $" ({loggedInEmail})")}. Greet them by their first name. Do NOT ask for their name or email again - you already have them. For an order you still need their phone number and delivery address.");
+        }
 
         if (!string.IsNullOrWhiteSpace(currentCategory))
         {
@@ -1947,7 +1953,10 @@ internal record PublicCategoryFlat(Guid Id, string Name, string? Description, st
 public record PublicSubCategoryDto(Guid Id, string Name, string? Description, string? ImageUrl);
 public record PublicCategoryDto(Guid Id, string Name, string? Description, string? ImageUrl, bool IsFeatured, List<PublicSubCategoryDto> SubCategories);
 
-public record StorefrontChatRequest(string? SessionId, string Message, Guid? CategoryId = null, string? CategoryName = null);
+public record StorefrontChatRequest(
+    string? SessionId, string Message,
+    Guid? CategoryId = null, string? CategoryName = null,
+    string? CustomerName = null, string? CustomerEmail = null);
 
 public record PublicInquiryRequest(
     string CustomerName,
