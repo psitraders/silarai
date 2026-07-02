@@ -202,7 +202,7 @@ function ProductCard({
     if (outOfStock) return;
     onAddToCart(product);
     setAddedFlash(true);
-    setTimeout(() => setAddedFlash(false), 1400);
+    setTimeout(() => setAddedFlash(false), 3000);
   };
 
   return (
@@ -1232,7 +1232,7 @@ function ProductChatCard({
     if (outOfStock || !onAddToCart) return;
     onAddToCart(product);
     setAddedFlash(true);
-    setTimeout(() => setAddedFlash(false), 1400);
+    setTimeout(() => setAddedFlash(false), 3000);
   };
 
   return (
@@ -1339,7 +1339,7 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
-  const { addItem, clearCart } = useCart();
+  const { addItem, clearCart, totalItems } = useCart();
 
   // Chat COD OTP state (lives here so only one active form at a time)
   const [chatOtpEmail,   setChatOtpEmail]   = useState('');
@@ -1360,7 +1360,14 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
   }, [open]);
 
   useEffect(() => {
-    if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!open) return;
+    const el = bottomRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    // Re-scroll after async content (product cards / images) changes the panel height,
+    // so the newest reply is always in view without the user scrolling manually.
+    const t = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'end' }), 250);
+    return () => clearTimeout(t);
   }, [messages, open, isTyping]);
 
   const send = useCallback(async (text: string) => {
@@ -1383,7 +1390,9 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
       const hasPending = !!data.pendingCodOrder;
 
       let quickReplies: string[] | undefined;
-      if (data.leadCreated && !hasOrder && !hasOnline && !hasPending)
+      if (data.escalate)
+        quickReplies = ['💬 Chat with us on WhatsApp'];
+      else if (data.leadCreated && !hasOrder && !hasOnline && !hasPending)
         quickReplies = ['🛒 Place an order', '🔥 Browse products', '💬 Open WhatsApp'];
       else if (hasOrder)
         quickReplies = ['🛍️ Shop more products', '💬 Open WhatsApp'];
@@ -1550,6 +1559,18 @@ function Chatbot({ store, themeColor, slug, onOpenCart, onViewProduct }: {
             </div>
 
             <div className="flex items-center gap-1.5 flex-shrink-0 relative">
+              <button
+                onClick={() => { setOpen(false); onOpenCart(); }}
+                className="relative w-8 h-8 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
+                title="View cart"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] font-bold flex items-center justify-center border border-white">
+                    {totalItems > 9 ? '9+' : totalItems}
+                  </span>
+                )}
+              </button>
               {whatsappUrl && (
                 <a href={whatsappUrl} target="_blank" rel="noreferrer"
                   className="w-8 h-8 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"

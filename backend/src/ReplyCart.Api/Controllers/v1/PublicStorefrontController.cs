@@ -560,6 +560,26 @@ public class PublicStorefrontController(
             });
         }
 
+        // â”€â”€ Escalation â€” AI signalled it can't help / customer wants a human â”€â”€
+        if (aiReply.StateSignal?.ToLower() == "escalate")
+        {
+            chatMemory.AddMessages(sessionId,
+                new ConversationMessage("user",      request.Message),
+                new ConversationMessage("assistant", aiReply.ReplyText ?? string.Empty));
+            return Ok(new
+            {
+                sessionId,
+                reply             = aiReply.ReplyText ?? "Let me connect you with our team.",
+                leadCreated       = false,
+                mentionedProducts = Array.Empty<object>(),
+                orderPlaced       = (object?)null,
+                onlinePaymentCart = (object?)null,
+                escalate          = true,
+                supportWhatsapp   = business.WhatsAppNumber,
+                slug,
+            });
+        }
+
         // â”€â”€ Lead / customer capture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         bool leadCreated = false;
         if (!string.IsNullOrWhiteSpace(aiReply.ExtractedName) && !string.IsNullOrWhiteSpace(aiReply.ExtractedPhone))
@@ -973,13 +993,18 @@ public class PublicStorefrontController(
         sb.AppendLine("    \"That doesn't look like a valid phone number. Could you share your 10-digit mobile number? ðŸ“±\"");
         sb.AppendLine("  â€¢ Do NOT proceed or save the phone until it has at least 10 digits.");
         sb.AppendLine("Name:");
-        sb.AppendLine("  â€¢ Must look like a real person's name â€” at least 2 characters, contains actual letters, not random repeated letters.");
+        sb.AppendLine("  â€¢ Accept ANY plausible human name, including names with repeated or double letters (e.g. 'Santthosh Krishhnan g', 'Aaliyah'). Indian and non-English names are valid.");
         sb.AppendLine("  â€¢ If the name looks fake (e.g., 'DDDD', 'XXXX', single letters, only numbers), say:");
         sb.AppendLine("    \"Could you share your real name so I can address your order correctly? ðŸ˜Š\"");
-        sb.AppendLine("  â€¢ Do NOT proceed with a name that is clearly not a real name.");
+        sb.AppendLine("  â€¢ Ask AT MOST ONCE for a clearer name; if the customer reconfirms it, ACCEPT it and continue - never refuse the same name twice.");
         sb.AppendLine("Address:");
         sb.AppendLine("  â€¢ Must be at least 10 characters and look like an actual address (house/area/city).");
         sb.AppendLine("  â€¢ If it looks like random text, ask for a proper delivery address.");
+        sb.AppendLine();
+        sb.AppendLine("=== SCOPE and ESCALATION ===");
+        sb.AppendLine($"- You ONLY help with {business.Name}: its products, prices, availability, delivery, and placing or tracking orders.");
+        sb.AppendLine($"- If asked anything off-topic (weather, news, general knowledge, other companies, coding, sports, etc.), do NOT answer it. Reply in ONE short line and steer back, e.g. \"I'm the shopping assistant for {business.Name} - I can help you find products or place an order. What are you looking for?\"");
+        sb.AppendLine("- If you genuinely cannot help (the answer isn't in the catalog or store policies), OR the customer is upset/frustrated, OR they ask to talk to a human, do NOT guess - output the escalate JSON (see JSON STATES).");
         sb.AppendLine();
         sb.AppendLine("=== CONVERSATION FLOW ===");
         sb.AppendLine("Step 1. Greet and help customer browse / answer questions.");
@@ -992,6 +1017,8 @@ public class PublicStorefrontController(
         sb.AppendLine("Step 6. Once customer says yes / confirm / ok â€” ALWAYS output the FULL order_ready JSON (name, phone, address, payment_method, cart). NEVER reply with plain text at this step.");
         sb.AppendLine();
         sb.AppendLine("=== JSON STATES ===");
+        sb.AppendLine("When you cannot help, the customer is frustrated, or they want a human:");
+        sb.AppendLine("  {\"reply\":\"I'm sorry I couldn't fully help with that - let me connect you with our team.\",\"state\":\"escalate\"}");
         sb.AppendLine("When name + phone are both valid (but order not yet confirmed):");
         sb.AppendLine("  {\"reply\":\"...\",\"state\":\"lead_captured\",\"name\":\"<name>\",\"phone\":\"<phone>\"}");
         sb.AppendLine("When customer confirms the order:");
