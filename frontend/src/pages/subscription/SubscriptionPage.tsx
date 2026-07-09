@@ -1,16 +1,16 @@
-﻿import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery } from '@tanstack/react-query';
 import {
-  Check, Zap, Crown, Star, ArrowRight, ShieldCheck, Calendar,
-  AlertCircle, CheckCircle2, Sparkles, Package, Users, Bot,
-  BarChart2, Palette, MessageCircle,
+  ShieldCheck, Calendar, AlertCircle, Sparkles, Package, Users, Bot,
+  BarChart2, Palette, MessageCircle, Mail, Headset,
 } from 'lucide-react';
 import apiClient from '../../api/client';
-import axios from 'axios';
 import { PageLoader } from '../../components/ui/Spinner';
-import { Button } from '../../components/ui/Button';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
+// Plan changes are handled by the Silarai team — no self-service checkout.
+const SUPPORT_WHATSAPP = 'https://wa.me/918849549690?text=' +
+  encodeURIComponent("Hi! I'd like to change my Silarai plan.");
+const SUPPORT_EMAIL = 'mailto:support@silarai.app?subject=' +
+  encodeURIComponent('Silarai plan change request');
 
 interface Plan {
   id: string;
@@ -49,18 +49,6 @@ interface Subscription {
   pendingRequest?: PendingRequest;
 }
 
-const PLAN_META: Record<string, { icon: React.ElementType; color: string; bg: string; border: string; popular?: boolean; badge?: string }> = {
-  basic:        { icon: Star,  color: 'text-slate-600',  bg: 'bg-slate-50',  border: 'border-slate-200' },
-  pro:          { icon: Zap,   color: 'text-teal-600',   bg: 'bg-teal-50',   border: 'border-teal-400',   popular: true, badge: 'Most Popular' },
-  professional: { icon: Crown, color: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-400', badge: 'Best Value' },
-};
-
-const PLAN_FEATURES: Record<string, string[]> = {
-  basic:        ['AI chatbot for your website', 'Embed widget & API key', 'WhatsApp / Facebook / Instagram bot', 'Order webhook integration', 'Token usage dashboard', 'Community support'],
-  pro:          ['500 products', '3 staff users', 'Custom branding', 'All integrations', '1,000 leads/month', '200 AI suggestions/mo', 'Advanced analytics', 'Priority support'],
-  professional: ['Unlimited products', 'Unlimited staff', 'Full branding', 'All integrations', 'Unlimited leads', 'Unlimited AI', 'Dedicated manager'],
-};
-
 function fmt(n: number) {
   if (n >= 2147483647) return '∞';
   if (n >= 1000) return `${(n / 1000).toFixed(0)}K`;
@@ -68,33 +56,14 @@ function fmt(n: number) {
 }
 
 export function SubscriptionPage() {
-  const qc = useQueryClient();
-  const [annual, setAnnual] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-
   const { data: sub, isLoading: subLoading } = useQuery<Subscription>({
     queryKey: ['subscription'],
     queryFn: () => apiClient.get('/subscription').then(r => r.data),
   });
 
-  const { data: plans = [], isLoading: plansLoading } = useQuery<Plan[]>({
-    queryKey: ['plans'],
-    queryFn: () => axios.get(`${BASE_URL}/plans`).then(r => r.data),
-  });
+  if (subLoading) return <PageLoader />;
 
-  const selectMutation = useMutation({
-    mutationFn: ({ planId, isAnnual }: { planId: string; isAnnual: boolean }) =>
-      apiClient.post(`/subscription/select/${planId}`, { isAnnual }).then(r => r.data),
-    onSuccess: (data) => {
-      setSuccess(data.message);
-      qc.invalidateQueries({ queryKey: ['subscription'] });
-    },
-  });
-
-  if (subLoading || plansLoading) return <PageLoader />;
-
-  const currentPlanSlug  = sub?.planSlug ?? 'basic';
-  const pendingRequest   = sub?.pendingRequest;
+  const pendingRequest = sub?.pendingRequest;
 
   return (
     <div className="space-y-8 max-w-4xl">
@@ -104,19 +73,8 @@ export function SubscriptionPage() {
         <p className="text-slate-500 text-sm mt-0.5">Manage your plan, view usage, and upgrade when you're ready.</p>
       </div>
 
-      {/* Success banner */}
-      {success && (
-        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-2xl p-4">
-          <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold text-green-900 text-sm">Request sent!</p>
-            <p className="text-green-700 text-sm mt-0.5">{success}</p>
-          </div>
-        </div>
-      )}
-
       {/* Pending request banner */}
-      {pendingRequest && !success && (
+      {pendingRequest && (
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
           <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
@@ -206,116 +164,36 @@ export function SubscriptionPage() {
         )}
       </div>
 
-      {/* Plan selector */}
-      <div>
-        <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-          <h2 className="text-lg font-bold text-slate-900">Choose a plan</h2>
-
-          {/* Billing toggle */}
-          <div className="flex items-center gap-2 bg-slate-100 rounded-xl p-1">
-            <button
-              onClick={() => setAnnual(false)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${!annual ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setAnnual(true)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${annual ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
-            >
-              Annual
-              <span className="bg-green-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">-25%</span>
-            </button>
+      {/* Change plan — handled by the Silarai team */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+            <Headset className="w-5 h-5 text-teal-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Want to change your plan?</h2>
+            <p className="text-sm text-slate-500">
+              Contact the Silarai team — we'll recommend the right plan and activate it for you.
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {plans.map(plan => {
-            const meta = PLAN_META[plan.slug] ?? PLAN_META.basic;
-            const PlanIcon = meta.icon;
-            const features = PLAN_FEATURES[plan.slug] ?? [];
-            const price = annual && plan.annualPrice > 0 ? Math.round(plan.annualPrice / 12) : plan.monthlyPrice;
-            const isFree = plan.monthlyPrice === 0;
-            const isCurrent = plan.slug === currentPlanSlug;
-            const isPending = pendingRequest?.planSlug === plan.slug;
-
-            return (
-              <div
-                key={plan.id}
-                className={`relative bg-white rounded-2xl border-2 p-5 flex flex-col gap-4 transition-all ${meta.border} ${
-                  isCurrent ? 'ring-2 ring-teal-500 ring-offset-2' : 'hover:shadow-md'
-                } ${meta.popular && !isCurrent ? 'shadow-sm' : ''}`}
-              >
-                {isCurrent && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-full">
-                    Current Plan
-                  </div>
-                )}
-                {!isCurrent && meta.badge && (
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-3 py-0.5 rounded-full ${meta.popular ? 'bg-teal-600' : 'bg-violet-600'}`}>
-                    {meta.badge}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${meta.bg}`}>
-                    <PlanIcon className={`w-4 h-4 ${meta.color}`} />
-                  </div>
-                  <h3 className="font-bold text-slate-900">{plan.name}</h3>
-                </div>
-
-                <div>
-                  {isFree ? (
-                    <p className="text-2xl font-bold text-slate-900">Free <span className="text-sm text-slate-400 font-normal">forever</span></p>
-                  ) : (
-                    <>
-                      <p className="text-2xl font-bold text-slate-900">
-                        ₹{price.toLocaleString(undefined)}
-                        <span className="text-sm text-slate-400 font-normal">/mo</span>
-                      </p>
-                      {annual && (
-                        <p className="text-xs text-green-600 font-medium">
-                          ₹{plan.annualPrice.toLocaleString(undefined)}/year
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                <ul className="space-y-1.5 flex-1">
-                  {features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
-                      <Check className={`w-3.5 h-3.5 flex-shrink-0 ${meta.color}`} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <Button
-                  onClick={() => selectMutation.mutate({ planId: plan.id, isAnnual: annual })}
-                  loading={selectMutation.isPending && selectMutation.variables?.planId === plan.id}
-                  disabled={isCurrent || isPending}
-                  variant={isCurrent || isPending ? 'outline' : meta.popular ? 'primary' : 'outline'}
-                  className="w-full justify-center"
-                >
-                  {isCurrent ? (
-                    <><Check className="w-3.5 h-3.5 mr-1.5" /> Current Plan</>
-                  ) : isPending ? (
-                    <><AlertCircle className="w-3.5 h-3.5 mr-1.5 text-amber-500" /> Pending Approval</>
-                  ) : isFree ? (
-                    'Switch to Free'
-                  ) : (
-                    <>{plan.name === 'Pro' ? '⚡' : '👑'} Request {plan.name} <ArrowRight className="w-3.5 h-3.5 ml-1" /></>
-                  )}
-                </Button>
-              </div>
-            );
-          })}
+        <div className="flex flex-wrap gap-3 mt-4">
+          <a
+            href={SUPPORT_WHATSAPP}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors"
+          >
+            <MessageCircle className="w-4 h-4" /> Chat on WhatsApp
+          </a>
+          <a
+            href={SUPPORT_EMAIL}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+          >
+            <Mail className="w-4 h-4" /> Email support
+          </a>
         </div>
-
-        {selectMutation.isError && (
-          <p className="text-sm text-red-500 mt-3 text-center">Something went wrong. Please try again.</p>
-        )}
       </div>
 
       {/* Info box */}
@@ -324,8 +202,8 @@ export function SubscriptionPage() {
         <div className="text-sm text-blue-800">
           <p className="font-semibold mb-1">How plan activation works</p>
           <p className="text-blue-600 leading-relaxed">
-            After selecting a plan, our team will reach out via WhatsApp to complete the payment via UPI / Razorpay.
-            Your plan activates instantly after payment confirmation. All paid plans include a 30-day free trial.
+            Reach out on WhatsApp or email, complete the payment via UPI / Razorpay,
+            and our team activates your plan instantly after confirmation.
           </p>
         </div>
       </div>
