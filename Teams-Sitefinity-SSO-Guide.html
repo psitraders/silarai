@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sitefinity Renderer + Azure AD SSO — Microsoft Teams Integration Guide</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6fb; color: #222; line-height: 1.7; }
+
+  .cover {
+    background: linear-gradient(135deg, #1a3a6b 0%, #0078d4 60%, #00b4d8 100%);
+    color: white;
+    padding: 60px 40px 50px 40px;
+    text-align: center;
+  }
+  .cover h1 { font-size: 2.2em; font-weight: 700; margin-bottom: 12px; }
+  .cover .subtitle { font-size: 1.1em; opacity: 0.88; max-width: 700px; margin: 0 auto 20px; }
+  .cover .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 4px 18px;
+    font-size: 0.85em;
+    margin: 4px;
+  }
+
+  .toc {
+    background: white;
+    border-left: 5px solid #0078d4;
+    margin: 30px auto;
+    max-width: 900px;
+    padding: 24px 30px;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  .toc h2 { color: #0078d4; margin-bottom: 14px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: #0078d4; text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+
+  .section {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    margin: 28px 0;
+    overflow: hidden;
+  }
+  .section-header {
+    background: #0078d4;
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-header .num {
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.95em; flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 1.1em; font-weight: 600; }
+  .section-body { padding: 24px; }
+
+  h3 { color: #0078d4; margin: 20px 0 10px; font-size: 1em; text-transform: uppercase; letter-spacing: 0.5px; }
+  h4 { color: #333; margin: 16px 0 8px; font-size: 0.97em; font-weight: 600; }
+
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-size: 0.82em;
+    line-height: 1.6;
+    margin: 12px 0;
+    border-left: 4px solid #0078d4;
+  }
+  code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
+  p code, li code {
+    background: #eef4ff;
+    color: #0050a0;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+
+  .steps { counter-reset: step; list-style: none; padding: 0; }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 14px;
+    margin: 14px 0;
+    align-items: flex-start;
+  }
+  .steps li::before {
+    content: counter(step);
+    background: #0078d4;
+    color: white;
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85em;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  ul.bullets { padding-left: 20px; margin: 10px 0; }
+  ul.bullets li { margin: 6px 0; }
+
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout.warning { background: #fff8e1; border-left: 4px solid #f59e0b; }
+  .callout.info { background: #e8f4fd; border-left: 4px solid #0078d4; }
+  .callout.success { background: #e8f5e9; border-left: 4px solid #22c55e; }
+  .callout.danger { background: #fdecea; border-left: 4px solid #ef4444; }
+  .callout .icon { font-size: 1.3em; flex-shrink: 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.9em; }
+  th { background: #0078d4; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e5e7eb; }
+  tr:nth-child(even) td { background: #f8faff; }
+  tr:last-child td { border-bottom: none; }
+
+  .flow {
+    background: #f0f7ff;
+    border: 1px solid #b3d4f5;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 14px 0;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+    font-size: 0.92em;
+  }
+  .flow-step .arrow { color: #0078d4; font-size: 1.2em; }
+  .flow-step .label {
+    background: #0078d4;
+    color: white;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 0.82em;
+    font-weight: 600;
+  }
+
+  .file-label {
+    background: #374151;
+    color: #9ca3af;
+    font-size: 0.75em;
+    padding: 4px 12px 0;
+    border-radius: 8px 8px 0 0;
+    display: inline-block;
+    font-family: monospace;
+    margin-bottom: -4px;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #f8faff;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card h4 { color: #0078d4; margin-top: 0; }
+
+  footer {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+    font-size: 0.85em;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <h1>Sitefinity Renderer + Azure AD SSO</h1>
+  <p class="subtitle">Step-by-step guide to embed Sitefinity Renderer pages inside Microsoft Teams with seamless authentication — no login popup, no redirects.</p>
+  <div>
+    <span class="badge">Sitefinity Renderer</span>
+    <span class="badge">Azure AD / Entra ID</span>
+    <span class="badge">Microsoft Teams</span>
+    <span class="badge">ASP.NET Core</span>
+    <span class="badge">Teams SSO</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#s1">The Problem</a></li>
+    <li><a href="#s2">The Solution — Teams SSO + Token Exchange</a></li>
+    <li><a href="#s3">Prerequisites</a></li>
+    <li><a href="#s4">NuGet Packages</a></li>
+    <li><a href="#s5">Azure AD App Registration</a></li>
+    <li><a href="#s6">appsettings.json Configuration</a></li>
+    <li><a href="#s7">Program.cs Configuration</a></li>
+    <li><a href="#s8">Teams Tab Landing Page</a></li>
+    <li><a href="#s9">Teams Auth Controller (Token Exchange)</a></li>
+    <li><a href="#s10">Teams App Manifest</a></li>
+    <li><a href="#s11">Testing Checklist</a></li>
+    <li><a href="#s12">Common Failure Points</a></li>
+    <li><a href="#s13">Complete Flow Diagram</a></li>
+  </ol>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section" id="s1">
+  <div class="section-header">
+    <div class="num">1</div>
+    <h2>The Problem</h2>
+  </div>
+  <div class="section-body">
+    <p>When embedding a Sitefinity Renderer page inside Microsoft Teams, authentication breaks due to how Teams renders tab content:</p>
+    <ul class="bullets" style="margin-top:14px;">
+      <li>Teams tabs run inside an <strong>iframe with a restricted webview</strong></li>
+      <li>Standard OpenID Connect / OAuth <strong>redirect flows break</strong> inside iframes</li>
+      <li>Popup windows are <strong>blocked</strong> or lose Teams context</li>
+      <li>Third-party cookies are <strong>blocked</strong> (affects session persistence)</li>
+      <li><code>login.microsoftonline.com</code> has iframe-embedding restrictions (<code>X-Frame-Options</code>)</li>
+    </ul>
+    <div class="callout danger" style="margin-top:16px;">
+      <div class="icon">🚫</div>
+      <div>The normal OpenID Connect login flow simply <strong>does not work</strong> inside Teams tabs. You need a purpose-built Teams SSO integration.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section" id="s2">
+  <div class="section-header">
+    <div class="num">2</div>
+    <h2>The Solution — Teams SSO + Token Exchange</h2>
+  </div>
+  <div class="section-body">
+    <p>Use Teams' native SSO to silently get an Azure AD token, then exchange it for a Sitefinity session cookie on the backend.</p>
+    <div class="flow" style="margin-top:16px;">
+      <div class="flow-step"><span class="label">1</span><span>User opens Teams Tab</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">2</span><span><code>/teams-tab</code> page loads — no auth required</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">3</span><span>Teams SDK <code>getAuthToken()</code> — silent SSO, no popup, Azure AD issues token automatically</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">4</span><span>POST token to <code>/auth/teams-exchange</code></span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">5</span><span>On-Behalf-Of flow → Microsoft Graph <code>/me</code> → get email + name</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">6</span><span><code>HttpContext.SignInAsync()</code> — sets auth cookie</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">7</span><span>Redirect to real Sitefinity Renderer page — fully authenticated</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">8</span><span>Sitefinity personalization works normally</span></div>
+    </div>
+    <div class="callout success" style="margin-top:4px;">
+      <div class="icon">✅</div>
+      <div><strong>User experience:</strong> The tab loads and the user is logged in automatically — zero login prompts, zero redirects.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section" id="s3">
+  <div class="section-header">
+    <div class="num">3</div>
+    <h2>Prerequisites</h2>
+  </div>
+  <div class="section-body">
+    <div class="grid2">
+      <div class="card">
+        <h4>Technology Stack</h4>
+        <ul class="bullets">
+          <li>Sitefinity Renderer (.NET Core / ASP.NET Core)</li>
+          <li>Azure AD (Entra ID) as OpenID provider</li>
+          <li>Microsoft Teams (Desktop, Web, Mobile)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Access Required</h4>
+        <ul class="bullets">
+          <li>Azure Portal — App Registration permissions</li>
+          <li>Teams Admin — to upload custom apps</li>
+          <li>SSL certificate on your domain (HTTPS required)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section" id="s4">
+  <div class="section-header">
+    <div class="num">4</div>
+    <h2>NuGet Packages</h2>
+  </div>
+  <div class="section-body">
+    <p>Run these commands in your Sitefinity Renderer project directory:</p>
+    <pre><code>dotnet add package Microsoft.Identity.Client
+dotnet add package Microsoft.IdentityModel.Protocols.OpenIdConnect
+dotnet add package System.IdentityModel.Tokens.Jwt</code></pre>
+    <div class="callout info">
+      <div class="icon">ℹ️</div>
+      <div><code>Microsoft.Identity.Client</code> (MSAL) handles the On-Behalf-Of token exchange with Azure AD.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section" id="s5">
+  <div class="section-header">
+    <div class="num">5</div>
+    <h2>Azure AD App Registration (One-Time Setup)</h2>
+  </div>
+  <div class="section-body">
+
+    <h3>Step 1 — Create the App Registration</h3>
+    <ol class="steps">
+      <li>Go to <strong>portal.azure.com</strong> → <strong>Azure Active Directory</strong> → <strong>App Registrations</strong></li>
+      <li>Click <strong>New Registration</strong>
+        <ul class="bullets" style="margin-top:6px;">
+          <li>Name: <code>SitefinityTeamsApp</code></li>
+          <li>Supported account types: <strong>Single tenant</strong> (your org)</li>
+          <li>Redirect URI: <code>https://yourdomain.com/auth/teams-callback</code></li>
+        </ul>
+      </li>
+      <li>Click <strong>Register</strong></li>
+    </ol>
+
+    <h3>Step 2 — Configure Authentication</h3>
+    <ol class="steps">
+      <li>Go to <strong>Authentication</strong> tab</li>
+      <li>Click <strong>Add a platform</strong> → <strong>Single Page Application</strong></li>
+      <li>Add Redirect URI: <code>https://yourdomain.com/auth/teams-callback</code></li>
+      <li>Under <em>Implicit grant</em>, check both: <strong>Access tokens</strong> and <strong>ID tokens</strong></li>
+      <li>Click <strong>Save</strong></li>
+    </ol>
+
+    <h3>Step 3 — Expose an API</h3>
+    <ol class="steps">
+      <li>Go to <strong>Expose an API</strong> tab</li>
+      <li>Set Application ID URI: <code>api://yourdomain.com/YOUR_CLIENT_ID</code></li>
+      <li>Click <strong>Add a scope</strong>:
+        <ul class="bullets" style="margin-top:6px;">
+          <li>Scope name: <code>access_as_user</code></li>
+          <li>Who can consent: <strong>Admins and users</strong></li>
+          <li>Display name: <em>Access Sitefinity as user</em></li>
+        </ul>
+      </li>
+      <li>Under <strong>Authorized client applications</strong>, add both Teams client IDs:
+        <pre><code>1fec8e78-bce4-4aaf-ab1b-5451cc387264   (Teams desktop & mobile)
+5e3ce6c0-2b1f-4285-8d4b-75ee78787346   (Teams web)</code></pre>
+      </li>
+    </ol>
+
+    <h3>Step 4 — API Permissions</h3>
+    <ol class="steps">
+      <li>Go to <strong>API Permissions</strong> tab</li>
+      <li>Click <strong>Add a permission</strong> → <strong>Microsoft Graph</strong> → <strong>Delegated</strong></li>
+      <li>Select <code>User.Read</code></li>
+      <li>Click <strong>Grant admin consent</strong> for your organization</li>
+    </ol>
+
+    <h3>Step 5 — Create Client Secret</h3>
+    <ol class="steps">
+      <li>Go to <strong>Certificates &amp; Secrets</strong> tab</li>
+      <li>Click <strong>New client secret</strong></li>
+      <li>Set expiry (recommend 24 months)</li>
+      <li>Copy the <strong>VALUE</strong> immediately — you only see it once!</li>
+    </ol>
+
+    <h3>Step 6 — Note Down These Values</h3>
+    <table>
+      <tr><th>Value</th><th>Where to Find It</th></tr>
+      <tr><td><strong>Tenant ID</strong></td><td>App Registration → Overview page</td></tr>
+      <tr><td><strong>Client ID</strong></td><td>App Registration → Overview page</td></tr>
+      <tr><td><strong>Client Secret</strong></td><td>Certificates &amp; Secrets (copy immediately after creation)</td></tr>
+    </table>
+
+    <div class="callout warning">
+      <div class="icon">⚠️</div>
+      <div>The Authorized client app IDs in <strong>Expose an API</strong> are mandatory. Without them, Teams SSO silent token will fail with a consent error.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section" id="s6">
+  <div class="section-header">
+    <div class="num">6</div>
+    <h2>appsettings.json Configuration</h2>
+  </div>
+  <div class="section-body">
+    <p>Add these settings to your Sitefinity Renderer <code>appsettings.json</code>:</p>
+    <div class="file-label">appsettings.json</div>
+    <pre><code>{
+  "AzureAd": {
+    "TenantId": "YOUR_TENANT_ID",
+    "ClientId": "YOUR_CLIENT_ID",
+    "ClientSecret": "YOUR_CLIENT_SECRET",
+    "Instance": "https://login.microsoftonline.com/"
+  },
+  "TeamsTab": {
+    "RedirectUrl": "/your-sitefinity-page"
+  }
+}</code></pre>
+    <div class="callout warning">
+      <div class="icon">⚠️</div>
+      <div>Never commit <code>ClientSecret</code> to source control. Use <strong>Azure Key Vault</strong> or environment variables in production.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 7 -->
+<div class="section" id="s7">
+  <div class="section-header">
+    <div class="num">7</div>
+    <h2>Program.cs Configuration</h2>
+  </div>
+  <div class="section-body">
+    <div class="file-label">Program.cs</div>
+    <pre><code>var builder = WebApplication.CreateBuilder(args);
+
+// ── Cookie Auth ────────────────────────────────────────────────────────────
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "SitefinityTeamsAuth";
+        options.Cookie.SameSite = SameSiteMode.None;     // REQUIRED for Teams iframe
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.HttpOnly = true;
+        options.LoginPath = "/teams-tab";                // Teams tab IS the login page
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+
+builder.Services.Configure&lt;CookiePolicyOptions&gt;(options =>
+{
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+    options.Secure = CookieSecurePolicy.Always;
+});
+
+builder.Services.AddHttpClient();
+builder.Services.AddControllers();
+
+// ── Your existing Sitefinity Renderer services stay here ──────────────────
+
+var app = builder.Build();
+
+// ── iframe / CSP headers — MUST be registered FIRST ──────────────────────
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Remove("X-Frame-Options");
+    context.Response.Headers["Content-Security-Policy"] =
+        "frame-ancestors 'self' https://teams.microsoft.com " +
+        "https://*.teams.microsoft.com https://*.skype.com";
+    await next();
+});
+
+app.UseCookiePolicy();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+// ── Your existing Sitefinity Renderer middleware stays here ───────────────
+
+app.Run();</code></pre>
+
+    <div class="callout info">
+      <div class="icon">ℹ️</div>
+      <div>The iframe header middleware <strong>must</strong> come before all other middleware so the headers are set on every response, including Sitefinity Renderer pages.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 8 -->
+<div class="section" id="s8">
+  <div class="section-header">
+    <div class="num">8</div>
+    <h2>Teams Tab Landing Page</h2>
+  </div>
+  <div class="section-body">
+    <p>This is a lightweight page with <strong>no auth requirement</strong>. It loads the Teams SDK, gets the SSO token silently, and hands it to the backend.</p>
+
+    <h3>Controller</h3>
+    <div class="file-label">Controllers/TeamsTabController.cs</div>
+    <pre><code>using Microsoft.AspNetCore.Mvc;
+
+public class TeamsTabController : Controller
+{
+    [HttpGet("/teams-tab")]
+    public IActionResult Index()
+    {
+        return View();
+    }
+}</code></pre>
+
+    <h3>View</h3>
+    <div class="file-label">Views/TeamsTab/Index.cshtml</div>
+    <pre><code>@{
+    Layout = null; // No Sitefinity layout — standalone page
+}
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Signing in...&lt;/title&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+    &lt;script src="https://res.cdn.office.net/teams-js/2.22.0/js/MicrosoftTeams.min.js"&gt;&lt;/script&gt;
+    &lt;style&gt;
+        body { font-family: 'Segoe UI', sans-serif; display:flex; align-items:center;
+               justify-content:center; height:100vh; margin:0; background:#f4f6fb; }
+        .msg { color:#0078d4; font-size:1.1em; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;p class="msg"&gt;Signing you in, please wait...&lt;/p&gt;
+
+    &lt;script&gt;
+        microsoftTeams.app.initialize().then(() =&gt; {
+            microsoftTeams.authentication.getAuthToken({
+                successCallback: function (token) {
+                    // Send token to backend for exchange
+                    fetch('/auth/teams-exchange', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: token }),
+                        credentials: 'include'   // important: sends/receives cookies
+                    })
+                    .then(r =&gt; r.json())
+                    .then(data =&gt; {
+                        if (data.success) {
+                            window.location.href = data.redirectUrl;
+                        } else {
+                            document.querySelector('.msg').textContent =
+                                'Login failed: ' + data.error;
+                        }
+                    });
+                },
+                failureCallback: function (error) {
+                    // Fallback: trigger Teams-managed popup login
+                    microsoftTeams.authentication.authenticate({
+                        url: window.location.origin + '/auth/teams-popup',
+                        width: 600,
+                        height: 535,
+                        successCallback: () =&gt; window.location.href = '/your-sitefinity-page',
+                        failureCallback: (err) =&gt; {
+                            document.querySelector('.msg').textContent =
+                                'Login failed: ' + err;
+                        }
+                    });
+                }
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  </div>
+</div>
+
+<!-- SECTION 9 -->
+<div class="section" id="s9">
+  <div class="section-header">
+    <div class="num">9</div>
+    <h2>Teams Auth Controller (Token Exchange)</h2>
+  </div>
+  <div class="section-body">
+    <p>This controller receives the Teams token, performs the On-Behalf-Of flow to get a Graph token, retrieves the user profile, and signs the user into Sitefinity.</p>
+
+    <div class="file-label">Controllers/TeamsAuthController.cs</div>
+    <pre><code>using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Identity.Client;
+using System.Security.Claims;
+using System.Net.Http.Headers;
+
+[ApiController]
+public class TeamsAuthController : ControllerBase
+{
+    private readonly IConfiguration _config;
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public TeamsAuthController(IConfiguration config, IHttpClientFactory httpClientFactory)
+    {
+        _config = config;
+        _httpClientFactory = httpClientFactory;
+    }
+
+    // ── Main endpoint called from the Teams tab page ───────────────────────
+    [HttpPost("/auth/teams-exchange")]
+    public async Task&lt;IActionResult&gt; Exchange([FromBody] TokenRequest request)
+    {
+        try
+        {
+            var userInfo = await GetUserFromToken(request.Token);
+
+            if (userInfo == null)
+                return Ok(new { success = false, error = "Could not validate token" });
+
+            // Build claims — same structure as your OpenID claims
+            var claims = new List&lt;Claim&gt;
+            {
+                new Claim(ClaimTypes.Email,           userInfo.Email),
+                new Claim(ClaimTypes.Name,            userInfo.DisplayName),
+                new Claim(ClaimTypes.NameIdentifier,  userInfo.ObjectId),
+                new Claim("preferred_username",       userInfo.Email),
+                // Add any additional claims your Sitefinity personalization uses
+            };
+
+            var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            // Sign in — creates the auth cookie Sitefinity Renderer reads
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc   = DateTimeOffset.UtcNow.AddHours(8)
+                }
+            );
+
+            var redirectUrl = _config["TeamsTab:RedirectUrl"] ?? "/";
+            return Ok(new { success = true, redirectUrl });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new { success = false, error = ex.Message });
+        }
+    }
+
+    // ── On-Behalf-Of flow: Teams token → Graph token → user profile ────────
+    private async Task&lt;AzureUserInfo?&gt; GetUserFromToken(string teamsToken)
+    {
+        var tenantId     = _config["AzureAd:TenantId"];
+        var clientId     = _config["AzureAd:ClientId"];
+        var clientSecret = _config["AzureAd:ClientSecret"];
+        var instance     = _config["AzureAd:Instance"];
+
+        // Step 1: Exchange Teams token for a Graph-scoped token (OBO flow)
+        var app = ConfidentialClientApplicationBuilder
+            .Create(clientId)
+            .WithClientSecret(clientSecret)
+            .WithAuthority($"{instance}{tenantId}")
+            .Build();
+
+        var result = await app
+            .AcquireTokenOnBehalfOf(
+                new[] { "https://graph.microsoft.com/User.Read" },
+                new UserAssertion(teamsToken)
+            )
+            .ExecuteAsync();
+
+        // Step 2: Call Microsoft Graph /me with the new token
+        var httpClient = _httpClientFactory.CreateClient();
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", result.AccessToken);
+
+        var response = await httpClient.GetAsync("https://graph.microsoft.com/v1.0/me");
+
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var json      = await response.Content.ReadAsStringAsync();
+        var graphUser = System.Text.Json.JsonSerializer.Deserialize&lt;GraphUserResponse&gt;(json);
+
+        return new AzureUserInfo
+        {
+            Email       = graphUser?.Mail ?? graphUser?.UserPrincipalName ?? "",
+            DisplayName = graphUser?.DisplayName ?? "",
+            ObjectId    = graphUser?.Id ?? ""
+        };
+    }
+}
+
+// ── Models ──────────────────────────────────────────────────────────────────
+
+public class TokenRequest
+{
+    public string Token { get; set; } = "";
+}
+
+public class AzureUserInfo
+{
+    public string Email       { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public string ObjectId    { get; set; } = "";
+}
+
+public class GraphUserResponse
+{
+    [System.Text.Json.Serialization.JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("displayName")]
+    public string? DisplayName { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("mail")]
+    public string? Mail { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("userPrincipalName")]
+    public string? UserPrincipalName { get; set; }
+}</code></pre>
+  </div>
+</div>
+
+<!-- SECTION 10 -->
+<div class="section" id="s10">
+  <div class="section-header">
+    <div class="num">10</div>
+    <h2>Teams App Manifest</h2>
+  </div>
+  <div class="section-body">
+    <h3>Folder Structure</h3>
+    <pre><code>teams-app/
+  manifest.json
+  icon-color.png    (192 x 192 px — your app icon, full color)
+  icon-outline.png  (32 x 32 px — white/transparent outline icon)</code></pre>
+
+    <h3>manifest.json</h3>
+    <div class="file-label">teams-app/manifest.json</div>
+    <pre><code>{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "GENERATE-A-NEW-GUID-HERE",
+  "packageName": "com.yourcompany.sitefinity",
+  "developer": {
+    "name": "Your Company",
+    "websiteUrl": "https://yourdomain.com",
+    "privacyUrl": "https://yourdomain.com/privacy",
+    "termsOfUseUrl": "https://yourdomain.com/terms"
+  },
+  "name": {
+    "short": "Sitefinity Portal",
+    "full": "Sitefinity Company Portal"
+  },
+  "description": {
+    "short": "Company portal",
+    "full": "Sitefinity company portal with seamless Azure AD SSO"
+  },
+  "icons": {
+    "color": "icon-color.png",
+    "outline": "icon-outline.png"
+  },
+  "accentColor": "#0078D4",
+  "staticTabs": [
+    {
+      "entityId": "sitefinity-tab",
+      "name": "Portal",
+      "contentUrl": "https://yourdomain.com/teams-tab",
+      "websiteUrl": "https://yourdomain.com",
+      "scopes": ["personal"]
+    }
+  ],
+  "webApplicationInfo": {
+    "id": "YOUR_AZURE_CLIENT_ID",
+    "resource": "api://yourdomain.com/YOUR_AZURE_CLIENT_ID"
+  },
+  "validDomains": ["yourdomain.com"],
+  "permissions": ["identity"]
+}</code></pre>
+
+    <h3>Upload to Teams</h3>
+    <ol class="steps">
+      <li>Select the 3 files inside <code>teams-app/</code> and zip them (the files, not the folder)</li>
+      <li>Open Microsoft Teams → <strong>Apps</strong> → <strong>Manage your apps</strong></li>
+      <li>Click <strong>Upload an app</strong> → <strong>Upload a custom app</strong></li>
+      <li>Select your zip file</li>
+      <li>Click <strong>Add</strong></li>
+    </ol>
+
+    <div class="callout warning">
+      <div class="icon">⚠️</div>
+      <div>The <code>webApplicationInfo</code> block is <strong>mandatory</strong>. Without it, <code>getAuthToken()</code> will always fail silently and SSO will never work.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 11 -->
+<div class="section" id="s11">
+  <div class="section-header">
+    <div class="num">11</div>
+    <h2>Testing Checklist</h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr>
+        <th>Test</th>
+        <th>Expected Result</th>
+        <th>Status</th>
+      </tr>
+      <tr><td>Open tab in Teams Desktop</td><td>Silent SSO — no login prompt</td><td>☐</td></tr>
+      <tr><td>Open tab in Teams Web</td><td>Silent SSO — no login prompt</td><td>☐</td></tr>
+      <tr><td>Open tab in Teams Mobile</td><td>Silent SSO — no login prompt</td><td>☐</td></tr>
+      <tr><td>Network tab: <code>/auth/teams-exchange</code></td><td>Returns <code>{ success: true }</code></td><td>☐</td></tr>
+      <tr><td>DevTools → Application → Cookies</td><td><code>SitefinityTeamsAuth</code> cookie with <code>SameSite=None; Secure</code></td><td>☐</td></tr>
+      <tr><td>Sitefinity page loads</td><td>User identity is correct (check personalization)</td><td>☐</td></tr>
+      <tr><td>Personalization widgets</td><td>Show correct content for the logged-in user</td><td>☐</td></tr>
+      <tr><td>Token expiry after 8hrs</td><td>Tab auto re-authenticates silently on next open</td><td>☐</td></tr>
+      <tr><td>User with no Sitefinity account</td><td>Shows a clear error (not a blank page)</td><td>☐</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 12 -->
+<div class="section" id="s12">
+  <div class="section-header">
+    <div class="num">12</div>
+    <h2>Common Failure Points</h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr>
+        <th>#</th>
+        <th>Problem</th>
+        <th>Fix</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td><code>webApplicationInfo</code> missing or wrong in manifest</td>
+        <td>Verify <code>id</code> matches your Azure Client ID and <code>resource</code> matches your App ID URI exactly</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Cookie blocked in Teams iframe</td>
+        <td>Ensure cookie has <code>SameSite=None; Secure</code> — both must be set</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Page not loading in Teams (blank iframe)</td>
+        <td>Remove <code>X-Frame-Options</code> header; add CSP <code>frame-ancestors</code> for Teams domains</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Client secret error / 401 from Azure</td>
+        <td>Check the secret hasn't expired in Azure AD; regenerate if needed</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Authorized client app IDs missing</td>
+        <td>Add both Teams client IDs under <strong>Expose an API → Authorized client applications</strong></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Admin consent not granted</td>
+        <td>Go to API Permissions → click <strong>Grant admin consent</strong></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><code>getAuthToken()</code> fails with consent error</td>
+        <td>The scope <code>access_as_user</code> must be added in Expose an API; Teams client IDs must be authorized</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>On-Behalf-Of flow fails (<code>invalid_grant</code>)</td>
+        <td>Ensure the token audience matches your App ID URI; check tenant ID is correct</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 13 -->
+<div class="section" id="s13">
+  <div class="section-header">
+    <div class="num">13</div>
+    <h2>Complete Flow Diagram</h2>
+  </div>
+  <div class="section-body">
+    <div class="flow">
+      <div class="flow-step"><span class="label">User</span><span>Opens the Teams Tab in Desktop / Web / Mobile</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">Teams</span><span>Loads <code>https://yourdomain.com/teams-tab</code> in iframe — no auth cookie required</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">JS SDK</span><span><code>microsoftTeams.authentication.getAuthToken()</code> — Teams calls Azure AD silently using the user's existing Teams session</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">Azure AD</span><span>Issues a scoped token for <code>api://yourdomain.com/CLIENT_ID/access_as_user</code></span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">Fetch</span><span><code>POST /auth/teams-exchange</code> with <code>{ token: "..." }</code> — credentials: include</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">OBO</span><span>Backend: MSAL On-Behalf-Of flow — exchanges Teams token for Microsoft Graph token</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">Graph</span><span><code>GET https://graph.microsoft.com/v1.0/me</code> → returns email, display name, object ID</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">SignIn</span><span><code>HttpContext.SignInAsync()</code> — creates <code>SitefinityTeamsAuth</code> cookie with user claims</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">API</span><span>Returns <code>{ success: true, redirectUrl: "/your-sitefinity-page" }</code></span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">Redirect</span><span><code>window.location.href = redirectUrl</code> — browser navigates to Sitefinity Renderer page</span></div>
+      <div class="flow-step"><span class="arrow">↓</span></div>
+      <div class="flow-step"><span class="label">Done</span><span>Sitefinity Renderer page loads fully authenticated — personalization, roles, and user-specific content all work normally</span></div>
+    </div>
+
+    <div class="callout success" style="margin-top:16px;">
+      <div class="icon">✅</div>
+      <div>The entire flow happens in under 2 seconds with <strong>zero visible login prompts</strong>. The user just sees the Sitefinity page load.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer>
+  Sitefinity Renderer + Azure AD SSO — Microsoft Teams Integration Guide &nbsp;|&nbsp; Generated 2026
+</footer>
+
+</body>
+</html>

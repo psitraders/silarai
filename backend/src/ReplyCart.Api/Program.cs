@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using System.Text;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -113,7 +113,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(o =>
+        // Basic (chatbot-only) plan gate — 403s non-chatbot APIs for Basic tenants
+        o.Filters.Add<ReplyCart.Api.Security.BasicPlanAccessFilter>())
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(
             new System.Text.Json.Serialization.JsonStringEnumConverter()));
@@ -153,10 +155,10 @@ app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Silarai API
 // Wrapped in try/catch so a transient DB hiccup doesn't crash the whole process
 try
 {
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-    await DataSeeder.SeedAsync(app.Services, app.Logger);
+    //using var scope = app.Services.CreateScope();
+    //var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    //await db.Database.MigrateAsync();
+    //await DataSeeder.SeedAsync(app.Services, app.Logger);
 }
 catch (Exception ex)
 {

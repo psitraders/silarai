@@ -1,1 +1,0 @@
-import{ot as e}from"./chunk-admin-BRTuDWzk.js";import{_ as t}from"./chunk-ai-CXHRwKc4.js";function n(){let{data:n}=e({queryKey:[`business`],queryFn:t.getBusiness,staleTime:600*1e3});return n?.country}export{n as t};

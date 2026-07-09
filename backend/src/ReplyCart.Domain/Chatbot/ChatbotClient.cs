@@ -5,6 +5,8 @@ namespace ReplyCart.Domain.Chatbot;
 public class ChatbotClient : BaseEntity
 {
     // ── Core ──────────────────────────────────────────────────────────────────
+    // Owning tenant. Null = platform-level client managed only by the SuperAdmin.
+    public Guid?   TenantId        { get; set; }
     public string  Name            { get; set; } = string.Empty;
     public string  BusinessDesc    { get; set; } = string.Empty;
     public string  ApiKey          { get; set; } = string.Empty;   // rc_bot_xxxx

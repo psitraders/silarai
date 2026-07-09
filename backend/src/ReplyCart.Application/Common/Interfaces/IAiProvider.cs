@@ -135,7 +135,11 @@ public record ConversationReply(
     /// <summary>JSON array of cart items when state is "order_ready".</summary>
     string? ExtractedCartJson = null,
     /// <summary>"cod" or "online" — extracted from order_ready state.</summary>
-    string? ExtractedPaymentMethod = null
+    string? ExtractedPaymentMethod = null,
+    /// <summary>Prompt (input) tokens billed by the AI provider for this call. 0 if unknown.</summary>
+    int PromptTokens = 0,
+    /// <summary>Completion (output) tokens billed by the AI provider for this call. 0 if unknown.</summary>
+    int CompletionTokens = 0
 );
 
 /// <summary>AI-generated content for an auto-campaign post.</summary>

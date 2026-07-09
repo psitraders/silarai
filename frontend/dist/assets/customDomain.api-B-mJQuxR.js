@@ -1,1 +1,0 @@
-import{rt as e}from"./chunk-admin-BRTuDWzk.js";var t={get:()=>e.get(`/storefront/custom-domain`).then(e=>e.data),save:t=>e.put(`/storefront/custom-domain`,{domain:t}).then(e=>e.data),remove:()=>e.delete(`/storefront/custom-domain`).then(e=>e.data),refresh:()=>e.post(`/storefront/custom-domain/refresh`).then(e=>e.data)};export{t};

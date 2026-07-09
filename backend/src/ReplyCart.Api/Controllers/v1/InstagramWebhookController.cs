@@ -87,7 +87,7 @@ public class InstagramWebhookController : ControllerBase
 
                             await ChatbotClientWebhookHelper.HandleInstagramAsync(
                                 extClient, sid, text,
-                                _ai, _memory, _httpClientFactory, _logger, ct);
+                                _db, _ai, _memory, _httpClientFactory, _logger, ct);
                         }
                         continue;
                     }

@@ -1,5 +1,5 @@
 ﻿import { useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Bot, ArrowLeft, Copy, Check, RefreshCw, Plus, Trash2,
@@ -85,6 +85,8 @@ const inp = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus
 export function AdminChatbotClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  // Same page serves /admin/chatbot-clients/:id (SuperAdmin) and /chatbot-clients/:id (tenant)
+  const listPath = useLocation().pathname.startsWith('/admin') ? '/admin/chatbot-clients' : '/chatbot-clients';
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('products');
   const [copied, setCopied] = useState('');
@@ -141,7 +143,7 @@ export function AdminChatbotClientDetailPage() {
 
       {/* ── Header ── */}
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/admin/chatbot-clients')}
+        <button onClick={() => navigate(listPath)}
           className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
           <ArrowLeft className="w-5 h-5 text-slate-500" />
         </button>

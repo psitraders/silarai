@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Chatbot;
+using ReplyCart.Infrastructure.Persistence;
 using System.Text;
 using System.Text.Json;
 
@@ -17,13 +18,14 @@ public static class ChatbotClientWebhookHelper
         ChatbotClient client,
         string fromPhone,
         string messageText,
+        AppDbContext db,
         IAiProvider ai,
         IConversationMemoryService memory,
         IHttpClientFactory httpClientFactory,
         ILogger logger,
         CancellationToken ct)
     {
-        var reply = await GetAiReply(client, fromPhone, messageText, ai, memory, ct);
+        var reply = await GetAiReply(client, fromPhone, messageText, "whatsapp", db, ai, memory, ct);
 
         // Send reply via WhatsApp Cloud API using client's own token
         if (!string.IsNullOrWhiteSpace(client.WaPhoneNumberId) &&
@@ -61,13 +63,14 @@ public static class ChatbotClientWebhookHelper
         ChatbotClient client,
         string senderId,
         string messageText,
+        AppDbContext db,
         IAiProvider ai,
         IConversationMemoryService memory,
         IHttpClientFactory httpClientFactory,
         ILogger logger,
         CancellationToken ct)
     {
-        var reply = await GetAiReply(client, senderId, messageText, ai, memory, ct);
+        var reply = await GetAiReply(client, senderId, messageText, "facebook", db, ai, memory, ct);
 
         if (!string.IsNullOrWhiteSpace(client.FbPageId) &&
             !string.IsNullOrWhiteSpace(client.FbPageAccessToken))
@@ -95,13 +98,14 @@ public static class ChatbotClientWebhookHelper
         ChatbotClient client,
         string senderId,
         string messageText,
+        AppDbContext db,
         IAiProvider ai,
         IConversationMemoryService memory,
         IHttpClientFactory httpClientFactory,
         ILogger logger,
         CancellationToken ct)
     {
-        var reply = await GetAiReply(client, senderId, messageText, ai, memory, ct);
+        var reply = await GetAiReply(client, senderId, messageText, "instagram", db, ai, memory, ct);
 
         if (!string.IsNullOrWhiteSpace(client.IgAccountId) &&
             !string.IsNullOrWhiteSpace(client.IgAccessToken))
@@ -129,6 +133,8 @@ public static class ChatbotClientWebhookHelper
         ChatbotClient client,
         string sessionKey,
         string messageText,
+        string channel,
+        AppDbContext db,
         IAiProvider ai,
         IConversationMemoryService memory,
         CancellationToken ct)
@@ -139,6 +145,22 @@ public static class ChatbotClientWebhookHelper
 
         var aiReply = await ai.HandleConversationAsync(
             new ConversationRequest(prompt, history, messageText), ct);
+
+        // Record token consumption for tenant + admin usage reports
+        if (aiReply.PromptTokens > 0 || aiReply.CompletionTokens > 0)
+        {
+            db.ChatbotTokenUsages.Add(new ChatbotTokenUsage
+            {
+                Id               = Guid.NewGuid(),
+                ClientId         = client.Id,
+                TenantId         = client.TenantId,
+                Channel          = channel,
+                PromptTokens     = aiReply.PromptTokens,
+                CompletionTokens = aiReply.CompletionTokens,
+                CreatedAt        = DateTime.UtcNow,
+            });
+            await db.SaveChangesAsync(ct);
+        }
 
         memory.AddMessages(sessionId,
             new ConversationMessage("user",      messageText),

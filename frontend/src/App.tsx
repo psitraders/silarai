@@ -103,6 +103,8 @@ const AdminPlatformSettingsPage    = React.lazy(() => import('./pages/admin/Admi
 const PlatformLeadsPage            = React.lazy(() => import('./pages/admin/PlatformLeadsPage').then(m => ({ default: m.PlatformLeadsPage })));
 const AdminChatbotClientsPage      = React.lazy(() => import('./pages/admin/AdminChatbotClientsPage').then(m => ({ default: m.AdminChatbotClientsPage })));
 const AdminChatbotClientDetailPage = React.lazy(() => import('./pages/admin/AdminChatbotClientDetailPage').then(m => ({ default: m.AdminChatbotClientDetailPage })));
+const AdminChatbotUsagePage        = React.lazy(() => import('./pages/admin/AdminChatbotUsagePage').then(m => ({ default: m.AdminChatbotUsagePage })));
+const ChatbotUsagePage             = React.lazy(() => import('./pages/chatbot/ChatbotUsagePage').then(m => ({ default: m.ChatbotUsagePage })));
 
 // ── Custom domain detection ───────────────────────────────────────────────────
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
@@ -328,6 +330,11 @@ export default function App() {
               <Route path="/ai/product-description" element={<AiProductDescriptionPage />} />
               <Route path="/ai/reel-script"         element={<AiReelScriptPage />} />
 
+              {/* Chatbot clients (tenant self-service) + token usage */}
+              <Route path="/chatbot-clients"     element={<AdminChatbotClientsPage />} />
+              <Route path="/chatbot-clients/:id" element={<AdminChatbotClientDetailPage />} />
+              <Route path="/chatbot-usage"       element={<ChatbotUsagePage />} />
+
               {/* B2B */}
               <Route path="/b2b/quotes" element={<B2BDashboardPage />} />
 
@@ -346,6 +353,7 @@ export default function App() {
               <Route path="/admin/platform-leads"     element={<PlatformLeadsPage />} />
               <Route path="/admin/chatbot-clients"    element={<AdminChatbotClientsPage />} />
               <Route path="/admin/chatbot-clients/:id" element={<AdminChatbotClientDetailPage />} />
+              <Route path="/admin/chatbot-usage"      element={<AdminChatbotUsagePage />} />
             </Route>
 
             {/* Public storefront routes */}

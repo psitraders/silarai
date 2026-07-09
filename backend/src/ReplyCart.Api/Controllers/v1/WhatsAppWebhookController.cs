@@ -96,7 +96,7 @@ public class WhatsAppWebhookController : ControllerBase
                                 if (string.IsNullOrWhiteSpace(text)) continue;
                                 await ChatbotClientWebhookHelper.HandleWhatsAppAsync(
                                     extClient, message.From, text,
-                                    _ai, _memory, _httpClientFactory, _logger, ct);
+                                    _db, _ai, _memory, _httpClientFactory, _logger, ct);
                             }
                             continue;
                         }

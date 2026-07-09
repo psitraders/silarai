@@ -56,7 +56,7 @@ const PLAN_META: Record<string, { icon: React.ElementType; color: string; bg: st
 };
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  basic:        ['50 products', '1 staff user', 'Public storefront', 'WhatsApp integration', '100 leads/month', 'Community support'],
+  basic:        ['AI chatbot for your website', 'Embed widget & API key', 'WhatsApp / Facebook / Instagram bot', 'Order webhook integration', 'Token usage dashboard', 'Community support'],
   pro:          ['500 products', '3 staff users', 'Custom branding', 'All integrations', '1,000 leads/month', '200 AI suggestions/mo', 'Advanced analytics', 'Priority support'],
   professional: ['Unlimited products', 'Unlimited staff', 'Full branding', 'All integrations', 'Unlimited leads', 'Unlimited AI', 'Dedicated manager'],
 };

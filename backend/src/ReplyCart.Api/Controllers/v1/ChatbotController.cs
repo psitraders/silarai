@@ -75,6 +75,22 @@ public class ChatbotController(
 
         var replyText = aiReply.ReplyText;
 
+        // ── Record token consumption (tenant + admin usage reports) ───────────
+        if (aiReply.PromptTokens > 0 || aiReply.CompletionTokens > 0)
+        {
+            db.ChatbotTokenUsages.Add(new ChatbotTokenUsage
+            {
+                Id               = Guid.NewGuid(),
+                ClientId         = client.Id,
+                TenantId         = client.TenantId,
+                Channel          = "web",
+                PromptTokens     = aiReply.PromptTokens,
+                CompletionTokens = aiReply.CompletionTokens,
+                CreatedAt        = DateTime.UtcNow,
+            });
+            await db.SaveChangesAsync(ct);
+        }
+
         // ── Handle order_ready state → persist order + payment ────────────────
         object? orderData = null;
         if (aiReply.StateSignal?.ToLower() == "order_ready"

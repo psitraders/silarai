@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Inbox, Users, ShoppingBag, Package, Store,
   BarChart2, Settings, LogOut, MessageSquareQuote, X, Plug, Zap, Shield, Send, Sparkles,
   Tag, Star, ShoppingCart, Globe, UserCircle, Bot, MessagesSquare, Download, FlaskConical, FileText, MessageCircle,
+  Coins,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/auth.store';
@@ -22,7 +23,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const { logout, user } = useAuthStore();
   const { t } = useTranslation();
 
-  const navItems = [
+  const fullNavItems = [
     { path: '/dashboard',                icon: LayoutDashboard,   label: t('nav.dashboard') },
     { path: '/leads',                    icon: Inbox,             label: t('nav.leads') },
     { path: '/orders',                   icon: ShoppingBag,       label: t('nav.orders') },
@@ -41,6 +42,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     { path: '/ai/autopilot',            icon: Bot,                label: 'AI Autopilot' },
     { path: '/ai/conversations',        icon: MessagesSquare,     label: 'AI Conversations' },
     { path: '/ai/simulator',            icon: FlaskConical,       label: 'Chatbot Simulator' },
+    { path: '/chatbot-clients',         icon: Bot,                label: 'Chatbot Clients' },
+    { path: '/chatbot-usage',           icon: Coins,              label: 'Token Usage' },
     { path: '/b2b/quotes',             icon: FileText,           label: 'B2B Quote Inbox' },
     { path: '/ai/auto-campaigns',       icon: Zap,               label: 'Auto-Campaigns' },
     { path: '/ai/replies',              icon: MessageSquareQuote, label: t('nav.aiReplies') },
@@ -57,16 +60,30 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     staleTime: 5 * 60 * 1000,
   });
 
+  const isSuperAdmin = user?.roles.includes('SuperAdmin') ?? false;
+  // Basic plan = chatbot-only: the whole dashboard is hidden except chatbot screens
+  const chatbotOnly = !isSuperAdmin && (sub?.planSlug ?? 'basic') === 'basic';
+
+  const chatbotNavItems = [
+    { path: '/chatbot-clients',  icon: Bot,        label: 'Chatbot Clients' },
+    { path: '/chatbot-usage',    icon: Coins,      label: 'Token Usage' },
+    { path: '/settings/account', icon: UserCircle, label: t('nav.accountSecurity') },
+  ];
+
+  const navItems = chatbotOnly ? chatbotNavItems : fullNavItems;
+
   const { data: storefront } = useQuery({
     queryKey: ['storefront-settings'],
     queryFn: businessApi.getStorefrontSettings,
     staleTime: 5 * 60 * 1000,
+    enabled: !chatbotOnly,   // chatbot-only tenants have no storefront UI
   });
 
   const { data: customDomain } = useQuery({
     queryKey: ['custom-domain'],
     queryFn: customDomainApi.get,
     staleTime: 5 * 60 * 1000,
+    enabled: !chatbotOnly,
   });
 
   // Show custom domain when active, otherwise fall back to Silarai.app/slug
@@ -127,12 +144,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </NavLink>
           ))}
 
-          {user?.roles.includes('SuperAdmin') && (
+          {isSuperAdmin && (
             <div className="mt-2 pt-2 border-t border-slate-100">
               <p className="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Admin</p>
               {[
                 { to: '/admin/tenants',          icon: Shield,  label: 'Tenants' },
                 { to: '/admin/chatbot-clients', icon: Bot,     label: 'Chatbot Clients' },
+                { to: '/admin/chatbot-usage',   icon: Coins,   label: 'Token Usage' },
                 { to: '/admin/landing-page',    icon: Globe,   label: 'Landing Page' },
                 { to: '/admin/platform-leads',  icon: Inbox,   label: 'Platform Leads' },
               ].map(({ to, icon: Icon, label }) => (
@@ -190,8 +208,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             )}
           </NavLink>
 
-          {/* Store link */}
-          {storeUrl ? (
+          {/* Store link — hidden for chatbot-only (Basic) tenants */}
+          {chatbotOnly ? null : storeUrl ? (
             <a
               href={storeUrl}
               target="_blank"

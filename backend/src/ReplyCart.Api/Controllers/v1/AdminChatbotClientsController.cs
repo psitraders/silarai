@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReplyCart.Api.Services;
+using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Chatbot;
 using ReplyCart.Infrastructure.Persistence;
 using System.Globalization;
@@ -10,25 +11,59 @@ using System.Text.Json.Serialization;
 
 namespace ReplyCart.Api.Controllers.v1;
 
+/// <summary>
+/// Chatbot client management. SuperAdmin sees and manages every client;
+/// tenant users see and manage only clients owned by their tenant
+/// (self-service — any tenant can create its own chatbot clients).
+/// </summary>
 [ApiController]
 [Route("api/v1/admin/chatbot-clients")]
-[Authorize(Roles = "SuperAdmin")]
+[Route("api/v1/chatbot-clients")]
+[Authorize]
 public class AdminChatbotClientsController(
     AppDbContext db,
+    ITenantContext tenantContext,
     IHttpClientFactory httpClientFactory,
     ILogger<AdminChatbotClientsController> logger) : ControllerBase
 {
-    // ── List all clients ──────────────────────────────────────────────────────
+    private bool IsSuperAdmin => User.IsInRole("SuperAdmin");
+
+    // Null when the tenant middleware couldn't resolve a tenant (e.g. platform admin token).
+    private Guid? CallerTenantId => tenantContext.IsResolved ? tenantContext.CurrentTenantId : null;
+
+    /// <summary>Load a client the caller is allowed to manage, or null.</summary>
+    private async Task<ChatbotClient?> FindOwnedAsync(Guid id, CancellationToken ct)
+    {
+        var client = await db.ChatbotClients.FindAsync([id], ct);
+        if (client == null) return null;
+        if (!IsSuperAdmin && (CallerTenantId == null || client.TenantId != CallerTenantId)) return null;
+        return client;
+    }
+
+    // ── List clients (admin: all, tenant: own) ────────────────────────────────
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var clients = await db.ChatbotClients
+        var query = db.ChatbotClients.AsQueryable();
+        if (!IsSuperAdmin)
+        {
+            var tenantId = CallerTenantId;
+            if (tenantId == null) return Ok(Array.Empty<object>());
+            query = query.Where(c => c.TenantId == tenantId);
+        }
+
+        var clients = await query
             .OrderByDescending(c => c.CreatedAt)
             .Select(c => new
             {
                 c.Id, c.Name, c.BusinessDesc, c.ApiKey, c.Currency,
                 c.ContactEmail, c.ContactPhone, c.WebhookUrl,
                 c.WelcomeMessage, c.IsActive, c.CreatedAt,
+                c.TenantId,
+                TenantName = db.Tenants
+                    .Where(t => t.Id == c.TenantId)
+                    .Select(t => t.Name)
+                    .FirstOrDefault(),
                 ProductCount = db.ChatbotProducts.Count(p => p.ClientId == c.Id),
             })
             .ToListAsync(ct);
@@ -40,13 +75,20 @@ public class AdminChatbotClientsController(
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var client = await db.ChatbotClients
-            .Where(c => c.Id == id)
+        var query = db.ChatbotClients.Where(c => c.Id == id);
+        if (!IsSuperAdmin)
+        {
+            var tenantId = CallerTenantId;
+            if (tenantId == null) return NotFound(new { message = "Client not found." });
+            query = query.Where(c => c.TenantId == tenantId);
+        }
+
+        var client = await query
             .Select(c => new
             {
                 c.Id, c.Name, c.BusinessDesc, c.ApiKey, c.Currency, c.Language,
                 c.ContactEmail, c.ContactPhone, c.WebhookUrl, c.LogoUrl,
-                c.WelcomeMessage, c.IsActive, c.CreatedAt,
+                c.WelcomeMessage, c.IsActive, c.CreatedAt, c.TenantId,
                 // WhatsApp
                 c.WaPhoneNumberId, c.WaAccessToken, c.WaPhoneNumber, c.WaBusinessId,
                 // Facebook
@@ -79,9 +121,16 @@ public class AdminChatbotClientsController(
     {
         var apiKey = $"rc_bot_{Guid.NewGuid():N}";
 
+        // Tenant users always own the clients they create; admins may optionally
+        // assign a tenant (or leave the client platform-owned).
+        var ownerTenantId = IsSuperAdmin ? req.TenantId : CallerTenantId;
+        if (!IsSuperAdmin && ownerTenantId == null)
+            return Forbid();
+
         var client = new ChatbotClient
         {
             Id             = Guid.NewGuid(),
+            TenantId       = ownerTenantId,
             Name           = req.Name.Trim(),
             BusinessDesc   = req.BusinessDesc?.Trim() ?? string.Empty,
             ApiKey         = apiKey,
@@ -110,7 +159,7 @@ public class AdminChatbotClientsController(
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpsertChatbotClientRequest req, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         client.Name             = req.Name.Trim();
@@ -141,6 +190,9 @@ public class AdminChatbotClientsController(
         if (req.OnlineEnabled.HasValue) client.OnlineEnabled = req.OnlineEnabled.Value;
         client.RazorpayKeyId     = req.RazorpayKeyId?.Trim();
         client.RazorpayKeySecret = req.RazorpayKeySecret?.Trim();
+        // Only the SuperAdmin may (re)assign a client to a tenant
+        if (IsSuperAdmin && req.TenantId.HasValue)
+            client.TenantId = req.TenantId;
         client.UpdatedAt        = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
@@ -156,7 +208,7 @@ public class AdminChatbotClientsController(
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> ImportCsv(Guid id, IFormFile file, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
         if (file == null || file.Length == 0) return BadRequest(new { message = "No file uploaded." });
 
@@ -211,7 +263,7 @@ public class AdminChatbotClientsController(
     [HttpPost("{id:guid}/sync-shopify")]
     public async Task<IActionResult> SyncShopify(Guid id, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         if (string.IsNullOrWhiteSpace(client.ShopifyDomain) || string.IsNullOrWhiteSpace(client.ShopifyApiKey))
@@ -346,7 +398,7 @@ public class AdminChatbotClientsController(
     [HttpPut("{id:guid}/toggle-status")]
     public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         client.IsActive  = !client.IsActive;
@@ -359,7 +411,7 @@ public class AdminChatbotClientsController(
     [HttpPost("{id:guid}/regenerate-key")]
     public async Task<IActionResult> RegenerateKey(Guid id, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         client.ApiKey    = $"rc_bot_{Guid.NewGuid():N}";
@@ -372,7 +424,7 @@ public class AdminChatbotClientsController(
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         db.ChatbotClients.Remove(client);
@@ -387,7 +439,7 @@ public class AdminChatbotClientsController(
         [FromBody] List<UpsertChatbotProductRequest> products,
         CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         // Remove all existing products for this client
@@ -424,7 +476,7 @@ public class AdminChatbotClientsController(
         [FromBody] UpsertChatbotProductRequest req,
         CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         var product = new ChatbotProduct
@@ -451,6 +503,8 @@ public class AdminChatbotClientsController(
     [HttpDelete("{id:guid}/products/{productId:guid}")]
     public async Task<IActionResult> DeleteProduct(Guid id, Guid productId, CancellationToken ct)
     {
+        if (await FindOwnedAsync(id, ct) == null) return NotFound(new { message = "Client not found." });
+
         var product = await db.ChatbotProducts
             .FirstOrDefaultAsync(p => p.Id == productId && p.ClientId == id, ct);
         if (product == null) return NotFound();
@@ -465,7 +519,7 @@ public class AdminChatbotClientsController(
     [HttpGet("{id:guid}/orders")]
     public async Task<IActionResult> GetOrders(Guid id, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         var orders = await db.ChatbotOrders
@@ -487,6 +541,8 @@ public class AdminChatbotClientsController(
     public async Task<IActionResult> UpdateOrderStatus(
         Guid id, Guid orderId, [FromBody] UpdateChatbotOrderStatusRequest req, CancellationToken ct)
     {
+        if (await FindOwnedAsync(id, ct) == null) return NotFound(new { message = "Client not found." });
+
         var order = await db.ChatbotOrders
             .FirstOrDefaultAsync(o => o.Id == orderId && o.ClientId == id, ct);
         if (order == null) return NotFound(new { message = "Order not found." });
@@ -504,7 +560,7 @@ public class AdminChatbotClientsController(
     [HttpGet("{id:guid}/documents")]
     public async Task<IActionResult> GetDocuments(Guid id, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
 
         var docs = await db.ChatbotDocuments
@@ -524,7 +580,7 @@ public class AdminChatbotClientsController(
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadDocument(Guid id, IFormFile file, CancellationToken ct)
     {
-        var client = await db.ChatbotClients.FindAsync([id], ct);
+        var client = await FindOwnedAsync(id, ct);
         if (client == null) return NotFound(new { message = "Client not found." });
         if (file == null || file.Length == 0) return BadRequest(new { message = "No file uploaded." });
         if (file.Length > 10 * 1024 * 1024) return BadRequest(new { message = "File too large (max 10 MB)." });
@@ -566,6 +622,8 @@ public class AdminChatbotClientsController(
     [HttpDelete("{id:guid}/documents/{docId:guid}")]
     public async Task<IActionResult> DeleteDocument(Guid id, Guid docId, CancellationToken ct)
     {
+        if (await FindOwnedAsync(id, ct) == null) return NotFound(new { message = "Client not found." });
+
         var doc = await db.ChatbotDocuments.FirstOrDefaultAsync(d => d.Id == docId && d.ClientId == id, ct);
         if (doc == null) return NotFound();
 
@@ -605,7 +663,9 @@ public record UpsertChatbotClientRequest(
     bool?   CodEnabled,
     bool?   OnlineEnabled,
     string? RazorpayKeyId,
-    string? RazorpayKeySecret
+    string? RazorpayKeySecret,
+    // Owner tenant — honoured only when the caller is SuperAdmin
+    Guid?   TenantId = null
 );
 
 public record UpdateChatbotOrderStatusRequest(

@@ -332,6 +332,14 @@ public class OpenAiProvider : IAiProvider
             .GetProperty("content")
             .GetString() ?? "";
 
+        // Token usage reported by OpenAI — recorded per chatbot client for billing/reports.
+        int promptTokens = 0, completionTokens = 0;
+        if (doc.RootElement.TryGetProperty("usage", out var usage))
+        {
+            if (usage.TryGetProperty("prompt_tokens",     out var pt)) promptTokens     = pt.GetInt32();
+            if (usage.TryGetProperty("completion_tokens", out var ctk)) completionTokens = ctk.GetInt32();
+        }
+
         // The model may optionally wrap its reply in JSON with a state_signal field.
         // Try to parse; fall back to plain text reply with no state signal.
         try
@@ -358,12 +366,14 @@ public class OpenAiProvider : IAiProvider
                 var extractedCartJson    = root.TryGetProperty("cart",           out var cart) ? cart.ToString() : null;
                 var extractedPayment     = root.TryGetProperty("payment_method", out var pm)   ? pm.GetString() : null;
                 return new ConversationReply(replyText, stateSignal, extractedName, extractedPhone,
-                    extractedAddress, extractedCartJson, extractedPayment);
+                    extractedAddress, extractedCartJson, extractedPayment,
+                    promptTokens, completionTokens);
             }
         }
         catch { /* Not JSON – treat as plain text */ }
 
-        return new ConversationReply(rawText, null);
+        return new ConversationReply(rawText, null,
+            PromptTokens: promptTokens, CompletionTokens: completionTokens);
     }
 
     /// <inheritdoc />

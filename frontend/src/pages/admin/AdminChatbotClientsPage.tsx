@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Bot, Plus, ToggleLeft, ToggleRight, Trash2, Eye, Search } from 'lucide-react';
 import apiClient from '../../api/client';
 import { Button } from '../../components/ui/Button';
@@ -18,10 +18,15 @@ interface ChatbotClientSummary {
   isActive: boolean;
   createdAt: string;
   productCount: number;
+  tenantId: string | null;
+  tenantName: string | null;
 }
 
 export function AdminChatbotClientsPage() {
   const navigate = useNavigate();
+  // Same page serves /admin/chatbot-clients (SuperAdmin) and /chatbot-clients (tenant)
+  const isAdminView = useLocation().pathname.startsWith('/admin');
+  const basePath = isAdminView ? '/admin/chatbot-clients' : '/chatbot-clients';
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
@@ -117,6 +122,11 @@ export function AdminChatbotClientsPage() {
                   <td className="px-4 py-3">
                     <p className="font-semibold text-slate-900">{client.name}</p>
                     <p className="text-xs text-slate-400">{client.contactEmail ?? client.contactPhone ?? '—'}</p>
+                    {isAdminView && (
+                      <p className="text-[11px] text-teal-600 font-medium mt-0.5">
+                        {client.tenantName ?? 'Platform (unassigned)'}
+                      </p>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <code className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-700">
@@ -146,7 +156,7 @@ export function AdminChatbotClientsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => navigate(`/admin/chatbot-clients/${client.id}`)}
+                        onClick={() => navigate(`${basePath}/${client.id}`)}
                         className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
                         title="View / Edit"
                       >

@@ -213,7 +213,7 @@ export function RegisterPage() {
           <p className="text-white text-xs font-semibold mb-1">Free plan — no credit card needed</p>
           <p className="text-teal-300 text-xs">Upgrade anytime as your business grows.</p>
           <div className="flex gap-2 mt-3 flex-wrap">
-            {['50 products', '100 leads/mo', 'Storefront link', 'Order management'].map(f => (
+            {['AI website chatbot', 'Embed widget & API key', 'WhatsApp / FB / IG bot', 'Token usage dashboard'].map(f => (
               <span key={f} className="flex items-center gap-1 text-[11px] bg-white/10 text-teal-100 px-2 py-1 rounded-lg">
                 <CheckCircle2 className="w-3 h-3 text-teal-300" /> {f}
               </span>

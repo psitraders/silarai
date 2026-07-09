@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Silarai — Meta Integration Guide</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13px;
+      color: #1e293b;
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    /* ── Cover page ── */
+    .cover {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+      color: white;
+      text-align: center;
+      padding: 48px;
+      page-break-after: always;
+    }
+    .cover .logo {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+    .cover .logo span { color: #99f6e4; }
+    .cover .tagline {
+      font-size: 15px;
+      opacity: 0.85;
+      margin-bottom: 48px;
+      font-style: italic;
+    }
+    .cover h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    .cover .subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+      max-width: 480px;
+      margin-bottom: 48px;
+    }
+    .cover .meta-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 50px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .cover .date {
+      margin-top: 60px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 48px 40px;
+    }
+
+    @media print {
+      .cover { height: 100vh; }
+      .page-break { page-break-before: always; }
+      .no-print { display: none; }
+      body { font-size: 12px; }
+      .page { padding: 32px 40px; }
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 40px;
+    }
+    .toc h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0d9488;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .toc ol { padding-left: 20px; }
+    .toc li {
+      padding: 4px 0;
+      font-size: 13px;
+      color: #475569;
+    }
+    .toc li strong { color: #1e293b; }
+
+    /* ── Section headers ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .section-header .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .section-header p {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 1px;
+    }
+
+    /* ── Step boxes ── */
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #0d9488;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-content { flex: 1; }
+    .step-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 5px;
+    }
+    .step-content p, .step-content li {
+      font-size: 12.5px;
+      color: #475569;
+      line-height: 1.65;
+    }
+    .step-content ul, .step-content ol {
+      padding-left: 18px;
+      margin-top: 5px;
+    }
+    .step-content li { margin-bottom: 3px; }
+
+    /* ── Info boxes ── */
+    .info-box {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+    .info-box.blue  { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
+    .info-box.green { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
+    .info-box.amber { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+    .info-box.red   { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+    .info-box.teal  { background: #f0fdfa; border-left: 4px solid #0d9488; color: #134e4a; }
+    .info-box strong { font-weight: 700; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+    th {
+      background: #0d9488;
+      color: white;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+    code {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #0f172a;
+    }
+    .url-code {
+      background: #0f172a;
+      color: #34d399;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      display: block;
+      margin: 8px 0;
+      word-break: break-all;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge.green  { background: #dcfce7; color: #166534; }
+    .badge.blue   { background: #dbeafe; color: #1e40af; }
+    .badge.purple { background: #f3e8ff; color: #6b21a8; }
+    .badge.orange { background: #ffedd5; color: #9a3412; }
+    .badge.gray   { background: #f1f5f9; color: #475569; }
+
+    /* ── Dividers ── */
+    .divider {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 28px 0;
+    }
+    .section-gap { margin-top: 40px; }
+
+    /* ── Checklist ── */
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+    .checklist li {
+      padding: 5px 0 5px 26px;
+      position: relative;
+      font-size: 12.5px;
+      color: #334155;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before {
+      content: "☐";
+      position: absolute;
+      left: 0;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin: 12px 0;
+      font-size: 11.5px;
+    }
+    .flow-box {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-weight: 500;
+      color: #334155;
+    }
+    .flow-arrow { color: #0d9488; font-size: 16px; font-weight: 700; }
+
+    /* ── Page number footer ── */
+    .page-footer {
+      margin-top: 40px;
+      padding-top: 14px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    h2.section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .section-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 12px 0;
+    }
+    .mini-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .mini-card h4 {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+    .mini-card p, .mini-card li {
+      font-size: 11.5px;
+      color: #475569;
+      line-height: 1.55;
+    }
+    .mini-card ul { padding-left: 16px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ COVER PAGE ═══ -->
+<div class="cover">
+  <div class="logo">Sila<span>rai</span></div>
+  <div class="tagline">Turn WhatsApp Chats Into Orders</div>
+
+  <h1>Meta Integration<br>Complete Setup Guide</h1>
+  <div class="subtitle">
+    Step-by-step instructions to connect WhatsApp Business, Instagram DMs,
+    and Facebook Messenger to the Silarai platform.
+  </div>
+
+  <div class="meta-badge">
+    <span>&#128274;</span>
+    <span>WhatsApp Business API &nbsp;·&nbsp; Meta Graph API &nbsp;·&nbsp; Embedded Signup</span>
+  </div>
+
+  <div class="date">Generated June 2026 &nbsp;·&nbsp; For Internal Use — Silarai Engineering</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ PAGE 1 ═══ -->
+<div class="page">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><strong>How the Integration Works</strong> — Architecture overview &amp; message flow</li>
+      <li><strong>Part A — Developer Setup (Do Once)</strong>
+        <ol type="a" style="margin-top:6px;padding-left:18px">
+          <li>Create a Meta App</li>
+          <li>Add Products (WhatsApp, Messenger, Instagram)</li>
+          <li>Configure Webhooks in Meta Developer App</li>
+          <li>Add Azure App Service Environment Variables</li>
+          <li>Submit App for Meta Review</li>
+        </ol>
+      </li>
+      <li><strong>Part B — Per Merchant Setup</strong>
+        <ol type="a" style="margin-top:6px;padding-left:18px">
+          <li>WhatsApp via Embedded Signup (automatic)</li>
+          <li>Instagram DMs (manual — Pro plan)</li>
+          <li>Facebook Messenger (manual — Pro plan)</li>
+        </ol>
+      </li>
+      <li><strong>Testing &amp; Verification</strong></li>
+      <li><strong>Troubleshooting</strong></li>
+      <li><strong>Quick Reference Checklists</strong></li>
+    </ol>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section-header">
+    <div class="icon" style="background:#dbeafe;">&#128202;</div>
+    <div>
+      <h2>1 &nbsp; How the Integration Works</h2>
+      <p>Architecture overview — what talks to what</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="mini-card">
+      <h4>&#128242; WhatsApp Business API</h4>
+      <ul>
+        <li>Each merchant connects their own WhatsApp Business number</li>
+        <li>Uses Meta Cloud API (hosted by Meta, not on-premise)</li>
+        <li>Merchants get 1,000 free conversations/month from Meta</li>
+        <li>Connected via Embedded Signup (no manual API keys needed)</li>
+      </ul>
+    </div>
+    <div class="mini-card">
+      <h4>&#128172; Instagram &amp; Facebook</h4>
+      <ul>
+        <li>Requires a Facebook Page linked to the business</li>
+        <li>Instagram DMs flow through the connected Facebook Page's token</li>
+        <li>Pro plan feature only (subscription gate in UI)</li>
+        <li>Merchant pastes Page ID + Page Access Token manually</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size:13px;font-weight:600;margin:18px 0 8px;color:#0f172a;">Message Flow — Incoming Customer Message</p>
+
+  <div class="flow">
+    <div class="flow-box">Customer sends<br>WhatsApp/DM</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Meta Cloud API</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">POST /api/v1/<br>webhook/whatsapp</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">WhatsAppWebhook<br>Controller.cs</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">ProcessFacebook<br>MessageCommand</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Lead created<br>in Silarai DB</div>
+  </div>
+
+  <div class="flow" style="margin-top:6px;">
+    <div class="flow-box">Merchant sends<br>reply in Silarai</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">WhatsAppService.cs</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Meta Graph API<br>/messages</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Customer receives<br>WhatsApp message</div>
+  </div>
+
+  <p style="font-size:13px;font-weight:600;margin:18px 0 8px;color:#0f172a;">Backend Files Involved</p>
+
+  <table>
+    <tr>
+      <th>File</th>
+      <th>Purpose</th>
+    </tr>
+    <tr>
+      <td><code>WhatsAppWebhookController.cs</code></td>
+      <td>Receives incoming WhatsApp messages from Meta webhook, verifies token, dispatches commands</td>
+    </tr>
+    <tr>
+      <td><code>FacebookWebhookController.cs</code></td>
+      <td>Receives Instagram DMs + Facebook Messenger messages, same verify-token pattern</td>
+    </tr>
+    <tr>
+      <td><code>WhatsAppService.cs</code></td>
+      <td>Sends outbound WhatsApp messages, manages phone number registration with Meta</td>
+    </tr>
+    <tr>
+      <td><code>WhatsAppCatalogService.cs</code></td>
+      <td>Syncs product catalog to WhatsApp Business catalog for in-chat shopping</td>
+    </tr>
+    <tr>
+      <td><code>FacebookService.cs</code></td>
+      <td>Sends outbound Instagram/Facebook messages, validates Page tokens</td>
+    </tr>
+    <tr>
+      <td><code>ProcessFacebookMessageCommand.cs</code></td>
+      <td>MediatR command — creates or updates a Lead from incoming message payload</td>
+    </tr>
+    <tr>
+      <td><code>IntegrationsPage.tsx</code></td>
+      <td>Frontend UI — Embedded Signup button, manual credential forms, webhook display</td>
+    </tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Silarai — Meta Integration Guide</span>
+    <span>Page 1</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ PAGE 2 ═══ -->
+<div class="page page-break">
+
+  <h2 class="section-title">2 &nbsp; Part A — Developer Setup</h2>
+  <p class="section-subtitle">Do this ONCE as the platform owner. Merchants don't need to do any of these steps.</p>
+
+  <!-- A1 -->
+  <div class="section-header">
+    <div class="icon" style="background:#e0e7ff;">&#128736;</div>
+    <div>
+      <h2>A1 &nbsp; Create a Meta App</h2>
+      <p>Set up your Silarai app on the Meta Developer Portal</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h3>Go to Meta Developer Portal</h3>
+      <p>Open <strong>developers.facebook.com</strong> and log in with your Facebook account (use the account tied to your business).</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h3>Create a New App</h3>
+      <ul>
+        <li>Click <strong>My Apps</strong> (top right) → <strong>Create App</strong></li>
+        <li>Choose use case: <strong>"Other"</strong> → Next</li>
+        <li>Select app type: <strong>"Business"</strong> → Next</li>
+        <li>App name: <code>Silarai</code> (or your preferred name)</li>
+        <li>App contact email: your business email</li>
+        <li>Business account: select your Meta Business Account</li>
+        <li>Click <strong>Create App</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h3>Get Your App ID and App Secret</h3>
+      <ul>
+        <li>In your new app → <strong>Settings</strong> → <strong>Basic</strong></li>
+        <li>Copy <strong>App ID</strong> (e.g. <code>1234567890123456</code>)</li>
+        <li>Click "Show" next to <strong>App Secret</strong> and copy it</li>
+        <li>Save both — you'll need them in Step A4</li>
+      </ul>
+      <div class="info-box amber">
+        <strong>Security:</strong> Never commit App Secret to GitHub. Store only in Azure App Service Configuration (see Step A4).
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <h3>Set App Mode to Live (when ready for production)</h3>
+      <ul>
+        <li>Top of the App Dashboard → toggle from <strong>Development</strong> to <strong>Live</strong></li>
+        <li>Keep in Development while testing — Live mode requires Meta App Review (Step A5)</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- A2 -->
+  <div class="section-header">
+    <div class="icon" style="background:#dcfce7;">&#128241;</div>
+    <div>
+      <h2>A2 &nbsp; Add Products to Your App</h2>
+      <p>Enable WhatsApp, Messenger, and Instagram in your Meta App</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content">
+      <h3>Add WhatsApp</h3>
+      <ul>
+        <li>In App Dashboard sidebar → click <strong>Add Product</strong></li>
+        <li>Find <strong>WhatsApp</strong> → click <strong>Set Up</strong></li>
+        <li>Select or create a <strong>WhatsApp Business Account (WABA)</strong></li>
+        <li>This creates a test phone number you can use immediately</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-content">
+      <h3>Create WhatsApp Embedded Signup Configuration</h3>
+      <ul>
+        <li>In App sidebar → <strong>WhatsApp</strong> → <strong>Embedded Signup</strong></li>
+        <li>Click <strong>Create Configuration</strong></li>
+        <li>Name: <code>Silarai Merchant Signup</code></li>
+        <li>Scopes to request: check <strong>whatsapp_business_management</strong> + <strong>whatsapp_business_messaging</strong></li>
+        <li>Copy the <strong>Configuration ID</strong> (e.g. <code>1234567_embed_config</code>) — needed for Step A4</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-content">
+      <h3>Add Messenger</h3>
+      <ul>
+        <li>In App Dashboard → <strong>Add Product</strong> → <strong>Messenger</strong> → <strong>Set Up</strong></li>
+        <li>Connect a Facebook Page if prompted (use your own page for testing)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-content">
+      <h3>Add Instagram Graph API</h3>
+      <ul>
+        <li>In App Dashboard → <strong>Add Product</strong> → <strong>Instagram Graph API</strong> → <strong>Set Up</strong></li>
+        <li>Connect an Instagram Business account linked to a Facebook Page</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Silarai — Meta Integration Guide</span>
+    <span>Page 2</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ PAGE 3 ═══ -->
+<div class="page page-break">
+
+  <!-- A3 -->
+  <div class="section-header">
+    <div class="icon" style="background:#fce7f3;">&#128279;</div>
+    <div>
+      <h2>A3 &nbsp; Configure Webhooks in Meta Developer App</h2>
+      <p>Tell Meta where to send incoming messages</p>
+    </div>
+  </div>
+
+  <div class="info-box teal">
+    <strong>Your Webhook Base URL:</strong><br>
+    <code style="background:#ccfbf1;border:none;">https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1</code><br><br>
+    <strong>Your Verify Token:</strong> A secret string you choose and set in Azure App Service Configuration as <code>Facebook__WebhookVerifyToken</code>. Example: <code>sil-verify-2026-abc</code>
+  </div>
+
+  <p style="font-size:13px;font-weight:700;margin:16px 0 10px;color:#0f172a;">WhatsApp Webhook</p>
+
+  <div class="step">
+    <div class="step-num">9</div>
+    <div class="step-content">
+      <h3>Open WhatsApp Webhook Settings</h3>
+      <ul>
+        <li>In App sidebar → <strong>WhatsApp</strong> → <strong>Configuration</strong></li>
+        <li>Scroll to <strong>Webhook</strong> section → click <strong>Edit</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">10</div>
+    <div class="step-content">
+      <h3>Enter Callback URL and Verify Token</h3>
+      <div class="url-code">Callback URL: https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1/webhook/whatsapp</div>
+      <ul>
+        <li>Verify token: enter the same value you'll set as <code>Facebook__WebhookVerifyToken</code></li>
+        <li>Click <strong>Verify and Save</strong> — Meta will send a GET request with a challenge; your backend handles it automatically</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">11</div>
+    <div class="step-content">
+      <h3>Subscribe to Webhook Fields</h3>
+      <ul>
+        <li>After verifying, click <strong>Manage</strong> next to Webhook Fields</li>
+        <li>Check (subscribe): <strong>messages</strong>, <strong>message_deliveries</strong>, <strong>message_reads</strong>, <strong>messaging_handovers</strong></li>
+        <li>Click <strong>Done</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <p style="font-size:13px;font-weight:700;margin:0 0 10px;color:#0f172a;">Facebook Messenger Webhook</p>
+
+  <div class="step">
+    <div class="step-num">12</div>
+    <div class="step-content">
+      <h3>Open Messenger Webhook Settings</h3>
+      <ul>
+        <li>In App sidebar → <strong>Messenger</strong> → <strong>Settings</strong></li>
+        <li>Scroll to <strong>Webhooks</strong> → click <strong>Add Callback URL</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">13</div>
+    <div class="step-content">
+      <h3>Enter Callback URL and Subscribe</h3>
+      <div class="url-code">Callback URL: https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1/webhook/facebook</div>
+      <ul>
+        <li>Same Verify Token as above</li>
+        <li>Click <strong>Verify and Save</strong></li>
+        <li>Under "Webhook fields" click <strong>Add subscriptions</strong> for your Page</li>
+        <li>Subscribe to: <strong>messages</strong>, <strong>messaging_postbacks</strong>, <strong>messaging_seen</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <p style="font-size:13px;font-weight:700;margin:0 0 10px;color:#0f172a;">Instagram Webhook</p>
+
+  <div class="step">
+    <div class="step-num">14</div>
+    <div class="step-content">
+      <h3>Open Instagram Webhook Settings</h3>
+      <ul>
+        <li>In App sidebar → <strong>Instagram</strong> → <strong>Settings</strong></li>
+        <li>Scroll to <strong>Webhooks</strong> → click <strong>Add Callback URL</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">15</div>
+    <div class="step-content">
+      <h3>Enter Callback URL and Subscribe</h3>
+      <div class="url-code">Callback URL: https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1/webhook/facebook</div>
+      <ul>
+        <li>Same webhook URL and Verify Token as Facebook Messenger</li>
+        <li>Subscribe to: <strong>messages</strong>, <strong>messaging_seen</strong>, <strong>message_reactions</strong></li>
+      </ul>
+      <div class="info-box blue">
+        <strong>Note:</strong> Instagram DMs and Facebook Messenger both go to the same <code>/webhook/facebook</code> endpoint. The backend distinguishes them from the payload structure.
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Silarai — Meta Integration Guide</span>
+    <span>Page 3</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ PAGE 4 ═══ -->
+<div class="page page-break">
+
+  <!-- A4 -->
+  <div class="section-header">
+    <div class="icon" style="background:#fef3c7;">&#9729;</div>
+    <div>
+      <h2>A4 &nbsp; Add Azure App Service Environment Variables</h2>
+      <p>Store Meta credentials securely in Azure — never in git</p>
+    </div>
+  </div>
+
+  <div class="info-box amber">
+    <strong>Important:</strong> Do NOT edit <code>appsettings.json</code> for these values — that file cannot be committed to GitHub (contains secrets). Use Azure App Service Configuration instead.
+  </div>
+
+  <div class="step">
+    <div class="step-num">16</div>
+    <div class="step-content">
+      <h3>Open Azure App Service Configuration</h3>
+      <ul>
+        <li>Go to <strong>portal.azure.com</strong></li>
+        <li>Navigate to your App Service: <code>silarai-fbahb2bsg4cng3hq</code></li>
+        <li>Left sidebar → <strong>Settings</strong> → <strong>Configuration</strong></li>
+        <li>Click the <strong>Application settings</strong> tab</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">17</div>
+    <div class="step-content">
+      <h3>Add the Following Environment Variables</h3>
+      <p>Click <strong>+ New application setting</strong> for each row below:</p>
+      <table style="margin-top:10px;">
+        <tr>
+          <th>Name (Key)</th>
+          <th>Value</th>
+          <th>Where to Find</th>
+        </tr>
+        <tr>
+          <td><code>Facebook__AppId</code></td>
+          <td>Your Meta App ID</td>
+          <td>Meta Developer App → Settings → Basic → App ID</td>
+        </tr>
+        <tr>
+          <td><code>Facebook__AppSecret</code></td>
+          <td>Your Meta App Secret</td>
+          <td>Meta Developer App → Settings → Basic → App Secret</td>
+        </tr>
+        <tr>
+          <td><code>Facebook__WhatsAppConfigId</code></td>
+          <td>Embedded Signup Config ID</td>
+          <td>Meta App → WhatsApp → Embedded Signup → your config ID</td>
+        </tr>
+        <tr>
+          <td><code>Facebook__WebhookVerifyToken</code></td>
+          <td>Any secret string you choose</td>
+          <td>Make it up — e.g. <code>sil-verify-2026</code>. Must match what you entered in webhook setup (Steps 10, 13, 15)</td>
+        </tr>
+      </table>
+      <div class="info-box blue" style="margin-top:10px;">
+        <strong>Double-underscore <code>__</code> notation:</strong> Azure App Service uses <code>__</code> to represent nested JSON keys. So <code>Facebook__AppId</code> maps to <code>appsettings.json</code> path <code>Facebook → AppId</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">18</div>
+    <div class="step-content">
+      <h3>Save and Restart</h3>
+      <ul>
+        <li>Click <strong>Save</strong> at the top of the Configuration page</li>
+        <li>Confirm the restart prompt — the App Service will restart and pick up new values</li>
+        <li>Wait ~60 seconds for the restart to complete</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- A5 -->
+  <div class="section-header">
+    <div class="icon" style="background:#ede9fe;">&#128203;</div>
+    <div>
+      <h2>A5 &nbsp; Submit App for Meta Review</h2>
+      <p>Required before any merchant outside your own account can connect</p>
+    </div>
+  </div>
+
+  <div class="info-box green">
+    <strong>Development mode allows:</strong> Testing with your own Facebook/WhatsApp accounts and any accounts you add as Test Users in the app. This is enough to test the full flow before review.
+  </div>
+
+  <div class="step">
+    <div class="step-num">19</div>
+    <div class="step-content">
+      <h3>Prepare for Review</h3>
+      <ul>
+        <li>In App Dashboard → <strong>App Review</strong> → <strong>Permissions and Features</strong></li>
+        <li>Request these permissions (click <strong>Request</strong> next to each):</li>
+      </ul>
+      <table style="margin-top:8px;">
+        <tr><th>Permission</th><th>Used For</th></tr>
+        <tr><td><code>whatsapp_business_management</code></td><td>Managing WABA accounts on behalf of merchants</td></tr>
+        <tr><td><code>whatsapp_business_messaging</code></td><td>Sending/receiving WhatsApp messages</td></tr>
+        <tr><td><code>pages_messaging</code></td><td>Sending/receiving Facebook Messenger messages</td></tr>
+        <tr><td><code>instagram_manage_messages</code></td><td>Sending/receiving Instagram DMs</td></tr>
+        <tr><td><code>business_management</code></td><td>Reading business info during Embedded Signup</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">20</div>
+    <div class="step-content">
+      <h3>Complete the Review Submission</h3>
+      <ul>
+        <li>Each permission requires a <strong>screencast video</strong> showing how it's used in your app</li>
+        <li>Submit a clear description: "Silarai allows merchants to connect their own WhatsApp Business number and receive customer messages as leads in their dashboard."</li>
+        <li>Make sure your app has a <strong>Privacy Policy URL</strong> and <strong>Terms of Service URL</strong> (required)</li>
+        <li>Typical review time: <strong>3–7 business days</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Silarai — Meta Integration Guide</span>
+    <span>Page 4</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ PAGE 5 ═══ -->
+<div class="page page-break">
+
+  <h2 class="section-title">3 &nbsp; Part B — Per Merchant Setup</h2>
+  <p class="section-subtitle">These are actions each merchant performs on the Silarai dashboard. No developer involvement needed once Part A is done.</p>
+
+  <!-- B1 -->
+  <div class="section-header">
+    <div class="icon" style="background:#dcfce7;">&#128242;</div>
+    <div>
+      <h2>B1 &nbsp; WhatsApp via Embedded Signup</h2>
+      <p>Automatic — available on all plans, takes ~3 minutes</p>
+    </div>
+  </div>
+
+  <div class="info-box green">
+    <strong>This flow is fully automated.</strong> Merchants don't need to create a Meta Developer account or copy any API keys. Silarai captures everything automatically through Meta's Embedded Signup popup.
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h3>Go to Integrations Page</h3>
+      <p>Log in to Silarai dashboard → Settings → <strong>Integrations</strong></p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h3>Click "Connect with Facebook"</h3>
+      <ul>
+        <li>The blue Facebook button appears under the WhatsApp Business card</li>
+        <li>If the button shows "Loading Facebook SDK…" wait 2–3 seconds for it to become active</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h3>Complete Meta's Embedded Signup Popup</h3>
+      <ul>
+        <li><strong>Log in</strong> with a Facebook account that has access to your WhatsApp Business Account</li>
+        <li>Select your <strong>WhatsApp Business Account (WABA)</strong> — or create a new one</li>
+        <li>Select or register your <strong>WhatsApp phone number</strong></li>
+        <li>Grant the requested permissions when prompted</li>
+        <li>Click <strong>Continue</strong> through all steps until the popup closes automatically</li>
+      </ul>
+      <div class="info-box blue">
+        <strong>Don't have a WhatsApp Business number yet?</strong> Meta will let you register a new number during the signup flow. You can use an existing phone number or Meta provides a free test number.
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <h3>Silarai Auto-Captures Your Credentials</h3>
+      <ul>
+        <li>When the popup closes, Silarai automatically receives: <strong>Phone Number ID</strong>, <strong>WABA ID</strong>, and <strong>Access Token</strong></li>
+        <li>These are stored securely in the database, linked to your tenant account</li>
+        <li>The WhatsApp card will show a green <span class="badge green">Connected</span> badge with your number</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content">
+      <h3>Send a Test Message (Optional)</h3>
+      <ul>
+        <li>Enter your phone number in the "Send test message" field (format: <code>919876543210</code> — country code, no +)</li>
+        <li>Click <strong>Test</strong> — you should receive a WhatsApp message within seconds</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box amber" style="margin-top:4px;">
+    <strong>Troubleshooting Embedded Signup:</strong> If the popup closes but the card doesn't show "Connected", try the <strong>Manual Fallback</strong> option (click "Having trouble? Enter your IDs manually" below the Connect button). Get your Phone Number ID from Meta Developer App → WhatsApp → API Setup.
+  </div>
+
+  <hr class="divider" />
+
+  <!-- B2 -->
+  <div class="section-header">
+    <div class="icon" style="background:#fce7f3;">&#128247;</div>
+    <div>
+      <h2>B2 &nbsp; Instagram DMs</h2>
+      <p>Manual setup — Pro plan only</p>
+    </div>
+  </div>
+
+  <div class="info-box blue">
+    <strong>Prerequisite:</strong> You need a Facebook Page connected to your Instagram Business account. Personal Instagram accounts do not support the Messaging API.
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-content">
+      <h3>Get Your Instagram Account ID</h3>
+      <ul>
+        <li>Go to <strong>business.facebook.com</strong> → <strong>Settings</strong> → <strong>Instagram Accounts</strong></li>
+        <li>Your Instagram Business Account ID is shown there</li>
+        <li>Alternatively: Graph API Explorer → run <code>GET /me?fields=instagram_business_account</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-content">
+      <h3>Generate a Never-Expiring Page Access Token</h3>
+      <ul>
+        <li>Go to <strong>business.facebook.com</strong> → <strong>Settings</strong> → <strong>Page Access Tokens</strong></li>
+        <li>Select your Facebook Page (the one connected to your Instagram)</li>
+        <li>Click <strong>Generate Token</strong> — choose <strong>Never expire</strong></li>
+        <li>Copy the token (starts with <code>EAA...</code>)</li>
+      </ul>
+      <div class="info-box amber">
+        <strong>Important:</strong> Instagram messaging uses your <em>Facebook Page's</em> access token — not your Instagram token. This is because Instagram DMs are processed through the connected Facebook Page.
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-content">
+      <h3>Enter Credentials in Silarai</h3>
+      <ul>
+        <li>Silarai dashboard → Settings → <strong>Integrations</strong> → Instagram section</li>
+        <li>Paste your <strong>Instagram Account ID</strong> in the first field</li>
+        <li>Paste your <strong>Page Access Token</strong> in the second field</li>
+        <li>Click <strong>Save All Settings</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Silarai — Meta Integration Guide</span>
+    <span>Page 5</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ PAGE 6 ═══ -->
+<div class="page page-break">
+
+  <!-- B3 -->
+  <div class="section-header">
+    <div class="icon" style="background:#dbeafe;">&#128172;</div>
+    <div>
+      <h2>B3 &nbsp; Facebook Messenger</h2>
+      <p>Manual setup — Pro plan only</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">9</div>
+    <div class="step-content">
+      <h3>Get Your Facebook Page ID</h3>
+      <ul>
+        <li>Go to your <strong>Facebook Page</strong></li>
+        <li>Click <strong>About</strong> → scroll to the bottom → find <strong>Page ID</strong></li>
+        <li>Or: go to the page URL and click on "About" — the Page ID is in the URL for some pages</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">10</div>
+    <div class="step-content">
+      <h3>Generate a Page Access Token</h3>
+      <ul>
+        <li>Go to <strong>business.facebook.com</strong> → <strong>Settings</strong> → <strong>Page Access Tokens</strong></li>
+        <li>Select your Facebook Page → <strong>Generate Token</strong> → <strong>Never expire</strong></li>
+        <li>Make sure the token has <code>pages_messaging</code> permission</li>
+        <li>Copy the token (starts with <code>EAA...</code>)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">11</div>
+    <div class="step-content">
+      <h3>Subscribe Your Page to the App</h3>
+      <ul>
+        <li>In Meta Developer App → <strong>Messenger</strong> → <strong>Settings</strong></li>
+        <li>Under <strong>Access Tokens</strong> → <strong>Add or Remove Pages</strong></li>
+        <li>Select the Facebook Page and grant permissions</li>
+        <li>This links your Page to receive webhook events</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">12</div>
+    <div class="step-content">
+      <h3>Enter Credentials in Silarai</h3>
+      <ul>
+        <li>Silarai dashboard → Settings → <strong>Integrations</strong> → Facebook Messenger section</li>
+        <li>Paste your <strong>Facebook Page ID</strong></li>
+        <li>Paste your <strong>Page Access Token</strong></li>
+        <li>Click <strong>Save All Settings</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Section 4 -->
+  <div class="section-header">
+    <div class="icon" style="background:#dcfce7;">&#9989;</div>
+    <div>
+      <h2>4 &nbsp; Testing &amp; Verification</h2>
+      <p>Verify everything is working end-to-end</p>
+    </div>
+  </div>
+
+  <p style="font-size:13px;font-weight:700;margin:0 0 10px;color:#0f172a;">Test WhatsApp</p>
+
+  <div class="step">
+    <div class="step-num">13</div>
+    <div class="step-content">
+      <h3>Send a Test Message from the Dashboard</h3>
+      <ul>
+        <li>Integrations page → WhatsApp card → "Send test message"</li>
+        <li>Enter your phone number in format <code>919876543210</code> (country code + number, no <code>+</code>)</li>
+        <li>Click <strong>Test</strong> — you should receive a WhatsApp message in seconds</li>
+        <li>If it fails: check Azure App Service logs for error details</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">14</div>
+    <div class="step-content">
+      <h3>Send a Message to Your WhatsApp Number (Inbound Test)</h3>
+      <ul>
+        <li>Send any WhatsApp message TO the connected business number</li>
+        <li>Within seconds, a new <strong>Lead</strong> should appear in Silarai → Leads</li>
+        <li>The lead will show the sender's name and message preview</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size:13px;font-weight:700;margin:16px 0 10px;color:#0f172a;">Test Webhook with Meta's Webhook Tester</p>
+
+  <div class="step">
+    <div class="step-num">15</div>
+    <div class="step-content">
+      <h3>Use Meta's Built-in Webhook Tester</h3>
+      <ul>
+        <li>In Meta Developer App → your app → <strong>WhatsApp</strong> → <strong>Configuration</strong> → Webhooks section</li>
+        <li>Click <strong>Test</strong> next to <code>messages</code> field</li>
+        <li>Meta sends a sample message payload to your webhook</li>
+        <li>Check Azure App Service logs: <strong>App Service → Monitoring → Log Stream</strong> — you should see the request come in</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">16</div>
+    <div class="step-content">
+      <h3>Verify Webhook Endpoint is Accessible</h3>
+      <p>Open these URLs in a browser — they should return JSON (not an error page):</p>
+      <div class="url-code">GET https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1/webhook/whatsapp?hub.mode=subscribe&hub.verify_token=YOUR_TOKEN&hub.challenge=test123</div>
+      <p style="margin-top:6px;">Expected response: <code>test123</code> (the challenge echoed back)</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Silarai — Meta Integration Guide</span>
+    <span>Page 6</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ PAGE 7 ═══ -->
+<div class="page page-break">
+
+  <!-- Section 5 -->
+  <div class="section-header">
+    <div class="icon" style="background:#fef2f2;">&#128293;</div>
+    <div>
+      <h2>5 &nbsp; Troubleshooting</h2>
+      <p>Common issues and how to resolve them</p>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>Issue</th>
+      <th>Likely Cause</th>
+      <th>Fix</th>
+    </tr>
+    <tr>
+      <td><strong>Webhook verification fails</strong><br>"Challenge not received"</td>
+      <td>App Service is down, or Verify Token mismatch</td>
+      <td>1. Check App Service is running<br>2. Ensure <code>Facebook__WebhookVerifyToken</code> in Azure matches what you entered in Meta<br>3. Test URL manually in browser</td>
+    </tr>
+    <tr>
+      <td><strong>Embedded Signup popup closes, no "Connected" status</strong></td>
+      <td>phoneNumberId not captured from Meta events</td>
+      <td>Use the Manual Fallback: copy Phone Number ID from Meta Developer App → WhatsApp → API Setup and paste directly</td>
+    </tr>
+    <tr>
+      <td><strong>WhatsApp messages sent but not received by customer</strong></td>
+      <td>Access token expired or Phone Number not registered</td>
+      <td>Disconnect and reconnect WhatsApp via Embedded Signup to get a fresh token</td>
+    </tr>
+    <tr>
+      <td><strong>Incoming messages not creating leads</strong></td>
+      <td>Webhook subscription missing or App in Development mode</td>
+      <td>1. Check webhook fields are subscribed in Meta app<br>2. In Development mode, only your own FB account generates real webhooks — add others as Test Users</td>
+    </tr>
+    <tr>
+      <td><strong>Instagram DM webhook not firing</strong></td>
+      <td>Instagram not linked to Facebook Page, or wrong token</td>
+      <td>1. Ensure Instagram Business Account is linked to the Facebook Page<br>2. Regenerate the Page Access Token<br>3. Re-subscribe to Instagram webhooks in Meta app</td>
+    </tr>
+    <tr>
+      <td><strong>"App not allowed" error during Embedded Signup</strong></td>
+      <td>App in Development mode + user not added as tester</td>
+      <td>Add the merchant's Facebook account as a <strong>Tester</strong> in Meta App → Roles → Testers (Development mode only)</td>
+    </tr>
+    <tr>
+      <td><strong>Test message button shows "Failed"</strong></td>
+      <td>Backend missing <code>Facebook__AppId</code> env var, or token invalid</td>
+      <td>Check Azure App Service Configuration has all <code>Facebook__*</code> variables set and saved</td>
+    </tr>
+    <tr>
+      <td><strong>Message sent twice / duplicate leads</strong></td>
+      <td>Multiple webhook subscriptions on same phone number</td>
+      <td>Go to Meta Developer App → WhatsApp → Configuration → remove duplicate subscriptions</td>
+    </tr>
+  </table>
+
+  <hr class="divider" />
+
+  <div class="info-box teal">
+    <strong>How to view backend logs:</strong> Azure Portal → App Service <code>silarai-fbahb2bsg4cng3hq</code> → Monitoring → <strong>Log Stream</strong> — real-time logs showing all webhook requests, errors, and responses.
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Webhook info box -->
+  <p style="font-size:13px;font-weight:700;margin:0 0 10px;color:#0f172a;">Get Webhook Info from the Dashboard</p>
+  <p style="font-size:12.5px;color:#475569;margin-bottom:12px;">Merchants can find their exact webhook URL and verify token in the Integrations page without contacting support:</p>
+
+  <div class="step">
+    <div class="step-num" style="background:#64748b;">i</div>
+    <div class="step-content">
+      <h3>Dashboard → Settings → Integrations</h3>
+      <ul>
+        <li>Under the WhatsApp card → click <strong>"Webhook configuration (for Meta Developer App)"</strong> accordion</li>
+        <li>The webhook URL and verify token are shown with one-click copy buttons</li>
+        <li>Same accordion exists under Instagram and Facebook Messenger cards</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Silarai — Meta Integration Guide</span>
+    <span>Page 7</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ PAGE 8 ═══ -->
+<div class="page page-break">
+
+  <!-- Section 6 -->
+  <div class="section-header">
+    <div class="icon" style="background:#f3e8ff;">&#9989;</div>
+    <div>
+      <h2>6 &nbsp; Quick Reference Checklists</h2>
+      <p>Use these before going live</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <p style="font-size:13px;font-weight:700;margin-bottom:10px;color:#0f172a;">Developer Setup Checklist</p>
+      <ul class="checklist">
+        <li>Meta App created (type: Business)</li>
+        <li>WhatsApp product added to Meta app</li>
+        <li>Messenger product added to Meta app</li>
+        <li>Instagram Graph API added to Meta app</li>
+        <li>Embedded Signup Configuration created</li>
+        <li>WhatsApp webhook URL verified in Meta</li>
+        <li>Facebook webhook URL verified in Meta</li>
+        <li>Instagram webhook URL verified in Meta</li>
+        <li>WhatsApp webhook subscribed to <code>messages</code></li>
+        <li>Messenger webhook subscribed to <code>messages</code></li>
+        <li>Instagram webhook subscribed to <code>messages</code></li>
+        <li><code>Facebook__AppId</code> set in Azure</li>
+        <li><code>Facebook__AppSecret</code> set in Azure</li>
+        <li><code>Facebook__WhatsAppConfigId</code> set in Azure</li>
+        <li><code>Facebook__WebhookVerifyToken</code> set in Azure</li>
+        <li>Azure App Service restarted after config change</li>
+        <li>Webhook verification GET test passes</li>
+        <li>App submitted for Meta Review (for production)</li>
+        <li>Privacy Policy URL set on Meta app</li>
+        <li>Terms of Service URL set on Meta app</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-size:13px;font-weight:700;margin-bottom:10px;color:#0f172a;">Per-Merchant Checklist (WhatsApp)</p>
+      <ul class="checklist">
+        <li>Merchant logged into Silarai dashboard</li>
+        <li>Visited Settings → Integrations</li>
+        <li>Clicked "Connect with Facebook"</li>
+        <li>Logged into Facebook in popup</li>
+        <li>Selected or created WABA</li>
+        <li>Selected WhatsApp phone number</li>
+        <li>Popup closed with success</li>
+        <li>WhatsApp card shows "Connected"</li>
+        <li>Test message sent and received</li>
+        <li>Inbound message creates a lead</li>
+      </ul>
+
+      <p style="font-size:13px;font-weight:700;margin:20px 0 10px;color:#0f172a;">Per-Merchant Checklist (Instagram/FB)</p>
+      <ul class="checklist">
+        <li>Merchant is on Pro plan</li>
+        <li>Facebook Page created and linked to Instagram</li>
+        <li>Never-expiring Page Access Token generated</li>
+        <li>Page ID noted</li>
+        <li>Credentials entered in Silarai Integrations</li>
+        <li>Page subscribed to Silarai app in Meta</li>
+        <li>Settings saved successfully</li>
+        <li>Test DM creates a lead</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <p style="font-size:13px;font-weight:700;margin:0 0 12px;color:#0f172a;">Quick Reference — All URLs</p>
+
+  <table>
+    <tr>
+      <th>Purpose</th>
+      <th>URL / Value</th>
+    </tr>
+    <tr>
+      <td>WhatsApp Webhook</td>
+      <td><code>https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1/webhook/whatsapp</code></td>
+    </tr>
+    <tr>
+      <td>Facebook + Instagram Webhook</td>
+      <td><code>https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1/webhook/facebook</code></td>
+    </tr>
+    <tr>
+      <td>Resolve Domain (Custom stores)</td>
+      <td><code>https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1/public/resolve-domain?domain=</code></td>
+    </tr>
+    <tr>
+      <td>Frontend (Dashboard)</td>
+      <td><code>https://www.silarai.com</code></td>
+    </tr>
+    <tr>
+      <td>Meta Developer Portal</td>
+      <td><code>https://developers.facebook.com</code></td>
+    </tr>
+    <tr>
+      <td>Meta Business Suite</td>
+      <td><code>https://business.facebook.com</code></td>
+    </tr>
+    <tr>
+      <td>Graph API Explorer (testing)</td>
+      <td><code>https://developers.facebook.com/tools/explorer</code></td>
+    </tr>
+    <tr>
+      <td>Azure Portal</td>
+      <td><code>https://portal.azure.com</code></td>
+    </tr>
+  </table>
+
+  <hr class="divider" />
+
+  <div class="info-box green">
+    <strong>Need help?</strong> All webhook URLs and verify tokens are available inside the Silarai dashboard (Settings → Integrations → expand the "Webhook configuration" accordion under each channel). No need to ask engineering for these values — they're self-serve.
+  </div>
+
+  <div class="page-footer">
+    <span>Silarai — Meta Integration Guide</span>
+    <span>Page 8 — End of Document</span>
+  </div>
+
+</div>
+
+<!-- Print button (hidden in print) -->
+<div class="no-print" style="position:fixed;bottom:28px;right:28px;">
+  <button onclick="window.print()"
+    style="background:#0d9488;color:white;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(13,148,136,0.4);">
+    &#128438; Save / Print as PDF
+  </button>
+</div>
+
+</body>
+</html>
