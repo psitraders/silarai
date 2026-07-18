@@ -1,9 +1,13 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using ReplyCart.Infrastructure.Persistence;
 
 #nullable disable
 
 namespace ReplyCart.Infrastructure.Persistence.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260529000002_AddChatbotClientChannels")]
     public partial class AddChatbotClientChannels : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
