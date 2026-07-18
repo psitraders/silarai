@@ -32,9 +32,9 @@
          install dialog. Dashboard/auth pages keep the static /manifest.json. -->
     <!-- Preconnect: eliminate DNS + TLS latency for first image/API request -->
     <link rel="preconnect" href="https://res.cloudinary.com" />
-    <link rel="preconnect" href="https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net" crossorigin />
+    <link rel="preconnect" href="%VITE_API_URL%" crossorigin />
     <link rel="dns-prefetch" href="https://res.cloudinary.com" />
-    <link rel="dns-prefetch" href="https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net" />
+    <link rel="dns-prefetch" href="%VITE_API_URL%" />
 
     <link rel="manifest" href="/manifest.json" id="pwa-manifest" crossorigin="anonymous" />
 

@@ -210,7 +210,7 @@ One module per backend feature area (`auth`, `catalog`, `leads`, `orders`, `cust
 
 - Vite build splits vendor and route-based chunks (`vendor-react`, `vendor-router`, `vendor-query`, `vendor-charts`, `chunk-storefront`, `chunk-landing`, `chunk-admin`, `chunk-ai`, `chunk-marketing`, `chunk-analytics`).
 - Dual deploy target: **Azure Static Web Apps** (`staticwebapp.config.json`, matching GitHub Actions workflow at repo root) and **Vercel** (`vercel.json` + `api/manifest/[slug].js` serverless function that proxies per-tenant PWA manifests around a Chrome CORS restriction).
-- Backend URL is hardcoded as a fallback default across many files: `https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1`, overridable via `VITE_API_URL`.
+- Backend URL is always read from `VITE_API_URL` (`.env` locally, injected as a build-time env var in CI/Vercel) — no hardcoded fallback in app code, `vite.config.ts`, or `index.html`'s `%VITE_API_URL%` placeholders. The standalone `public/chatbot-widget.js` embed script is the one exception: it has no bundler/`.env` access (loaded directly by third-party sites), so it still falls back to the production Azure URL when the embedder doesn't pass `apiBase`.
 - No test framework is configured on the frontend.
 
 ### 5.7 Embeddable chatbot widget (`public/chatbot-widget.js`)
