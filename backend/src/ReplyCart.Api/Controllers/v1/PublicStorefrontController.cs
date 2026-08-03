@@ -306,7 +306,16 @@ public class PublicStorefrontController(
                      || p.Status == Domain.Enums.ProductStatus.OutOfStock);
 
         if (categoryId.HasValue)
-            query = query.Where(p => p.CategoryId == categoryId);
+        {
+            // A parent category includes products assigned to any of its subcategories
+            var childIds = await db.Categories
+                .Where(c => c.ParentCategoryId == categoryId)
+                .Select(c => c.Id)
+                .ToListAsync(ct);
+            query = childIds.Count > 0
+                ? query.Where(p => p.CategoryId == categoryId || (p.CategoryId != null && childIds.Contains(p.CategoryId.Value)))
+                : query.Where(p => p.CategoryId == categoryId);
+        }
 
         if (!string.IsNullOrEmpty(search))
             query = query.Where(p => p.Title.Contains(search) || (p.Description != null && p.Description.Contains(search)));
