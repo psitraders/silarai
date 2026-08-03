@@ -139,6 +139,7 @@ function CustomDomainStorefront() {
     <CartProvider storageKey={`cart_${slug}`}>
       <Routes>
         <Route path="/" element={<PublicStorefrontPage overrideSlug={slug} />} />
+        <Route path="/products" element={<PublicStorefrontPage overrideSlug={slug} />} />
         <Route path="/products/:productId" element={<PublicStorefrontPage overrideSlug={slug} />} />
         <Route path="/category/:categorySlug" element={<PublicStorefrontPage overrideSlug={slug} />} />
         <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage overrideSlug={slug} />} />
@@ -358,6 +359,7 @@ export default function App() {
 
             {/* Public storefront routes */}
             <Route path="/:slug"                           element={<SlugCartProvider><PublicStorefrontPage /></SlugCartProvider>} />
+            <Route path="/:slug/products"                  element={<SlugCartProvider><PublicStorefrontPage /></SlugCartProvider>} />
             <Route path="/:slug/products/:productId"       element={<SlugCartProvider><PublicStorefrontPage /></SlugCartProvider>} />
             <Route path="/:slug/category/:categorySlug"    element={<SlugCartProvider><PublicStorefrontPage /></SlugCartProvider>} />
             <Route path="/:slug/order-confirmation/:orderId" element={<SlugCartProvider><OrderConfirmationPage /></SlugCartProvider>} />

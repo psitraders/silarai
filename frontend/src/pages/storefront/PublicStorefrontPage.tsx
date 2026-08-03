@@ -1,4 +1,4 @@
-﻿import { useParams, useNavigate } from 'react-router-dom';
+﻿import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
@@ -1894,6 +1894,18 @@ export function PublicStorefrontPage({ overrideSlug }: { overrideSlug?: string }
 function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | undefined; isCustomDomain: boolean }) {
   const overrideSlug = isCustomDomain ? slug : undefined; // keep isCustomDomain=!!overrideSlug logic intact
   const { productId: paramProductId, categorySlug: paramCategorySlug } = useParams<{ productId?: string; categorySlug?: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // ── Catalog view: dedicated /products and /category/:slug pages ────────────
+  // These render header + product grid + footer only (no hero/landing sections).
+  const catalogBase   = isCustomDomain ? '' : `/${slug}`;
+  const isCatalogView = !!paramCategorySlug
+    || location.pathname.replace(/\/+$/, '') === `${catalogBase}/products`;
+  const slugify = (name: string) => name.toLowerCase().replace(/\s+/g, '-');
+  const goToAllProducts = () => navigate(`${catalogBase}/products`);
+  const goToCategory = (cat: { name: string }, sub?: { name: string }) =>
+    navigate(`${catalogBase}/category/${slugify(cat.name)}${sub ? `?sub=${slugify(sub.name)}` : ''}`);
   const { totalItems, addItem } = useCart();
   const { customer, isAuthenticated } = useStorefrontAuth();
   const [showAuthModal, setShowAuthModal]         = useState(false);
@@ -2196,7 +2208,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
       if (canonical) canonical.href = window.location.origin + productPath;
     } else {
-      const basePath = isCustomDomain ? '/' : `/${slug}`;
+      // Restore the URL of the view we're on (catalog page or landing)
+      const basePath = isCatalogView
+        ? (paramCategorySlug ? `${catalogBase}/category/${paramCategorySlug}` : `${catalogBase}/products`)
+        : (isCustomDomain ? '/' : `/${slug}`);
       window.history.replaceState({}, '', basePath);
       const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
       if (canonical) canonical.href = window.location.origin + basePath;
@@ -2365,25 +2380,29 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       .catch(() => setProductReviews(null));
   }, [selectedProduct?.id, slug]);
 
-  // ── Auto-select category from URL /category/:categorySlug ─────────────────
+  // ── Auto-select category from URL /category/:categorySlug (+ ?sub=) ───────
   useEffect(() => {
     if (!paramCategorySlug || !categories?.length) return;
-    const cat = (categories as Array<{ id: string; name: string }>).find(
-      c => c.name.toLowerCase().replace(/\s+/g, '-') === paramCategorySlug
-    );
-    if (cat) setSelectedCategory(cat.id);
-  }, [paramCategorySlug, categories]);
+    const cat = categories.find(c => slugify(c.name) === paramCategorySlug);
+    if (!cat) return;
+    setSelectedCategory(cat.id);
+    const subSlug = new URLSearchParams(location.search).get('sub');
+    if (subSlug) {
+      const sub = cat.subCategories?.find(s => slugify(s.name) === subSlug);
+      if (sub) setSelectedSubCategory(sub.id);
+    }
+  }, [paramCategorySlug, categories, location.search]);
 
   // ── Update URL when category filter changes ───────────────────────────────
   useEffect(() => {
     if (!slug || selectedProduct) return; // product URL takes priority
     if (selectedCategory) {
       const cat = (categories as Array<{ id: string; name: string }>)?.find(c => c.id === selectedCategory);
-      const catSlug = cat ? cat.name.toLowerCase().replace(/\s+/g, '-') : selectedCategory;
-      const catPath = isCustomDomain ? `/category/${catSlug}` : `/${slug}/category/${catSlug}`;
-      window.history.replaceState({ categoryId: selectedCategory }, '', catPath);
+      const catSlug = cat ? slugify(cat.name) : selectedCategory;
+      window.history.replaceState({ categoryId: selectedCategory }, '', `${catalogBase}/category/${catSlug}`);
     } else if (!paramProductId) {
-      const basePath = isCustomDomain ? '/' : `/${slug}`;
+      // No category: catalog view stays on /products, landing goes back to base
+      const basePath = isCatalogView ? `${catalogBase}/products` : (isCustomDomain ? '/' : `/${slug}`);
       window.history.replaceState({}, '', basePath);
     }
   }, [selectedCategory, slug, isCustomDomain, selectedProduct, paramProductId]);
@@ -2510,9 +2529,15 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const scrollToContact = () => scrollToEl(footerRef.current as HTMLElement | null, 16);
 
   const handleNavClick = (item: string) => {
-    if (item === 'Home') scrollToTop();
-    else if (item === 'Categories') scrollToCategories();
-    else if (item === 'All Products') scrollToProducts();
+    if (item === 'Home') {
+      if (isCatalogView) navigate(catalogBase || '/');
+      else scrollToTop();
+    }
+    else if (item === 'Categories') {
+      if (isCatalogView) navigate(catalogBase || '/');
+      else scrollToCategories();
+    }
+    else if (item === 'All Products') goToAllProducts();
     else if (item === 'About Us') scrollToContact();
   };
 
@@ -2571,7 +2596,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             {categories.filter(c => c.isFeatured).map(cat => (
               <div key={cat.id} className="relative group">
                 <button
-                  onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
+                  onClick={() => goToCategory(cat)}
                   className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
                   style={{ color: selectedCategory === cat.id ? tc : undefined }}
                 >
@@ -2585,7 +2610,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 {(cat.subCategories?.length ?? 0) > 0 && (
                   <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
                     <button
-                      onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
+                      onClick={() => goToCategory(cat)}
                       className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 font-medium"
                     >
                       All {cat.name}
@@ -2594,7 +2619,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                       {cat.subCategories!.map(sub => (
                         <button
                           key={sub.id}
-                          onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(sub.id); setPage(1); scrollToProducts(); }}
+                          onClick={() => goToCategory(cat, sub)}
                           className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                           style={{ color: selectedSubCategory === sub.id ? tc : undefined }}
                         >
@@ -2722,7 +2747,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             {categories.filter(c => c.isFeatured).map(cat => (
               <div key={cat.id}>
                 <button
-                  onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); setMobileMenuOpen(false); }}
+                  onClick={() => { goToCategory(cat); setMobileMenuOpen(false); }}
                   className="block w-full text-left text-sm py-2 px-3 rounded-xl font-semibold hover:bg-slate-50"
                   style={{ color: tc }}
                 >
@@ -2733,7 +2758,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                     {cat.subCategories!.map(sub => (
                       <button
                         key={sub.id}
-                        onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(sub.id); setPage(1); scrollToProducts(); setMobileMenuOpen(false); }}
+                        onClick={() => { goToCategory(cat, sub); setMobileMenuOpen(false); }}
                         className="block w-full text-left text-sm py-1.5 px-3 rounded-xl text-slate-600 hover:bg-slate-50"
                       >
                         {sub.name}
@@ -2758,8 +2783,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         )}
       </header>
 
-      {/* ── Hero ── */}
-      {store.bannerUrl ? (
+      {/* ── Hero ── (landing only) */}
+      {!isCatalogView && (store.bannerUrl ? (
         <div className="relative h-64 md:h-96 overflow-hidden">
           <img
             src={optimizeImage(store.bannerUrl, 800)}
@@ -2888,9 +2913,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             </div>
           );
         })()
-      }
+      )}
 
-      {/* ── Trust ribbon ── */}
+      {/* ── Trust ribbon ── (landing only) */}
+      {!isCatalogView && (
       <div className="bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-center gap-5 md:gap-8 flex-wrap">
           {([
@@ -2909,9 +2935,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           ))}
         </div>
       </div>
+      )}
 
-      {/* ── Category Icon Rail ── */}
-      {categories.length > 0 && (
+      {/* ── Category Icon Rail ── (landing only) */}
+      {!isCatalogView && categories.length > 0 && (
         <div ref={categoriesRef} className="pt-8 pb-4" style={{ background: `linear-gradient(180deg, #f8fafb 0%, #fff 100%)` }}>
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
@@ -2938,7 +2965,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
               <div className="flex gap-4 overflow-x-auto pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
                 {/* All */}
                 <button
-                  onClick={() => { setSelectedCategory(null); setSelectedSubCategory(null); setPage(1); }}
+                  onClick={goToAllProducts}
                   className="flex-shrink-0 flex flex-col items-center gap-2.5 group"
                 >
                   <div
@@ -2955,7 +2982,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 {categories.map(cat => (
                   <button
                     key={cat.id}
-                    onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
+                    onClick={() => goToCategory(cat)}
                     className="flex-shrink-0 flex flex-col items-center gap-2.5 group"
                   >
                     <div
@@ -2987,8 +3014,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         </div>
       )}
 
-      {/* ── Featured Products — Trending Now ── */}
-      {allProducts.filter(p => p.isFeatured).length > 0 && !selectedCategory && !debouncedSearch && (
+      {/* ── Featured Products — Trending Now ── (landing only) */}
+      {!isCatalogView && allProducts.filter(p => p.isFeatured).length > 0 && !selectedCategory && !debouncedSearch && (
         <div className="mt-2 py-10" style={{ background: `linear-gradient(160deg, ${tc}08 0%, ${sc}12 100%)` }}>
           <div className="max-w-6xl mx-auto px-4">
             {/* Header */}
@@ -3002,7 +3029,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 <p className="text-sm text-slate-500 mt-0.5">Loved by our customers this week</p>
               </div>
               <button
-                onClick={scrollToProducts}
+                onClick={goToAllProducts}
                 className="hidden sm:flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl transition-all hover:shadow-md"
                 style={{ color: tc, background: tc + '12', border: `1.5px solid ${tc}30` }}
               >
@@ -3079,7 +3106,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             {/* Mobile view-all */}
             <div className="flex justify-center mt-5 sm:hidden">
               <button
-                onClick={scrollToProducts}
+                onClick={goToAllProducts}
                 className="flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-xl"
                 style={{ color: tc, background: tc + '12', border: `1.5px solid ${tc}30` }}
               >
@@ -3164,6 +3191,29 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
 
       {/* ── Products section ── */}
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-5">
+
+        {/* Breadcrumb — catalog pages only */}
+        {isCatalogView && (
+          <nav className="flex items-center gap-1.5 text-xs text-slate-400 font-medium" aria-label="Breadcrumb">
+            <button onClick={() => navigate(catalogBase || '/')} className="hover:text-slate-700 transition-colors">
+              Home
+            </button>
+            <ChevronRight className="w-3 h-3" />
+            {selectedCategory ? (
+              <>
+                <button onClick={goToAllProducts} className="hover:text-slate-700 transition-colors">
+                  All Products
+                </button>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-slate-600 font-semibold">
+                  {categories.find(c => c.id === selectedCategory)?.name ?? 'Category'}
+                </span>
+              </>
+            ) : (
+              <span className="text-slate-600 font-semibold">All Products</span>
+            )}
+          </nav>
+        )}
 
         {/* ── Toolbar ─── */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -3409,8 +3459,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         )}
       </div>
 
-      {/* ── WhatsApp CTA Banner ── */}
-      {store.whatsAppNumber && (
+      {/* ── WhatsApp CTA Banner ── (landing only) */}
+      {!isCatalogView && store.whatsAppNumber && (
         <div className="max-w-6xl mx-auto px-4 py-10">
           <div
             className="rounded-3xl p-8 md:p-10 text-white relative overflow-hidden"
@@ -3508,11 +3558,11 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           <div>
             <h4 className="font-semibold mb-3 text-slate-300">Quick Links</h4>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><button onClick={scrollToProducts} className="hover:text-white transition-colors">All Products</button></li>
+              <li><button onClick={goToAllProducts} className="hover:text-white transition-colors">All Products</button></li>
               {categories.slice(0, 4).map(c => (
                 <li key={c.id}>
                   <button
-                    onClick={() => { setSelectedCategory(c.id); scrollToProducts(); }}
+                    onClick={() => goToCategory(c)}
                     className="hover:text-white transition-colors"
                   >
                     {c.name}
