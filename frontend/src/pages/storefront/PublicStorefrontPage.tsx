@@ -1926,7 +1926,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const [sort, setSort] = useState('');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 36;  // products per page — pager appears automatically beyond this
 
   // Review aggregate for JSON-LD (fetched when a product modal opens)
   const [productReviews, setProductReviews] = useState<{ averageRating: number; totalCount: number } | null>(null);
