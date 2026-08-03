@@ -1903,9 +1903,15 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const isCatalogView = !!paramCategorySlug
     || location.pathname.replace(/\/+$/, '') === `${catalogBase}/products`;
   const slugify = (name: string) => name.toLowerCase().replace(/\s+/g, '-');
-  const goToAllProducts = () => navigate(`${catalogBase}/products`);
+  // From the landing page catalog links open in a NEW TAB; once inside the
+  // catalog view, navigation stays in the same tab (breadcrumbs, tab switches).
+  const openCatalog = (path: string) => {
+    if (isCatalogView) navigate(path);
+    else window.open(path, '_blank', 'noopener');
+  };
+  const goToAllProducts = () => openCatalog(`${catalogBase}/products`);
   const goToCategory = (cat: { name: string }, sub?: { name: string }) =>
-    navigate(`${catalogBase}/category/${slugify(cat.name)}${sub ? `?sub=${slugify(sub.name)}` : ''}`);
+    openCatalog(`${catalogBase}/category/${slugify(cat.name)}${sub ? `?sub=${slugify(sub.name)}` : ''}`);
   const { totalItems, addItem } = useCart();
   const { customer, isAuthenticated } = useStorefrontAuth();
   const [showAuthModal, setShowAuthModal]         = useState(false);
