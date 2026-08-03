@@ -1,10 +1,38 @@
-﻿using ReplyCart.Application.Common.Interfaces;
+﻿using System.Text.Json;
+using ReplyCart.Application.Common.Interfaces;
 
 namespace ReplyCart.Infrastructure.Ai;
 
-public class MockAiProvider : IAiProvider
+public class MockAiProvider : IAiProvider, IAgentAiProvider
 {
     public string ProviderName => "Mock";
+
+    /// <summary>
+    /// Deterministic stand-in for the agent loop. Calls search_catalog once on the
+    /// first pass so the tool plumbing, thinking events and carousel are exercised
+    /// end-to-end without an API key, then answers in prose on the second pass.
+    /// </summary>
+    public Task<AgentStepResult> RunAgentStepAsync(
+        IReadOnlyList<AgentMessage> messages,
+        IReadOnlyList<AgentTool>    tools,
+        CancellationToken           ct = default)
+    {
+        var lastUser = messages.LastOrDefault(m => m.Role == "user")?.Content ?? "";
+        var alreadySearched = messages.Any(m => m.Role == "tool");
+        var canSearch = tools.Any(t => t.Name == "search_catalog");
+
+        if (canSearch && !alreadySearched && lastUser.Length > 2)
+        {
+            var args = JsonSerializer.Serialize(new { query = lastUser });
+            return Task.FromResult(new AgentStepResult(
+                null,
+                [new AgentToolCall("mock_call_1", "search_catalog", args)],
+                PromptTokens: 0, CompletionTokens: 0));
+        }
+
+        return Task.FromResult(AgentStepResult.Reply(
+            "Here's what I found for you — let me know which one you'd like and I'll add it to your cart."));
+    }
 
     public Task<string> GetReplySuggestionAsync(AiSuggestionRequest request, CancellationToken cancellationToken = default)
     {

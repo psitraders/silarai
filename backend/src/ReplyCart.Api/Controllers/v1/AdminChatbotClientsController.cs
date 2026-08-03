@@ -24,9 +24,18 @@ public class AdminChatbotClientsController(
     AppDbContext db,
     ITenantContext tenantContext,
     IHttpClientFactory httpClientFactory,
+    IChatbotContextCache chatbotCache,
     ILogger<AdminChatbotClientsController> logger) : ControllerBase
 {
     private bool IsSuperAdmin => User.IsInRole("SuperAdmin");
+
+    /// <summary>
+    /// Drop the cached catalogue / knowledge base for a client after any write.
+    /// Without this the live chatbot would keep serving the previous catalogue for up
+    /// to CatalogCacheSeconds — acceptable for a price tweak, not for a delete.
+    /// </summary>
+    private Task InvalidateContextAsync(Guid clientId, CancellationToken ct) =>
+        chatbotCache.InvalidateAsync(clientId, ct);
 
     // Null when the tenant middleware couldn't resolve a tenant (e.g. platform admin token).
     private Guid? CallerTenantId => tenantContext.IsResolved ? tenantContext.CurrentTenantId : null;
@@ -255,6 +264,7 @@ public class AdminChatbotClientsController(
         db.ChatbotProducts.RemoveRange(existing);
         db.ChatbotProducts.AddRange(products);
         await db.SaveChangesAsync(ct);
+        await InvalidateContextAsync(id, ct);
 
         return Ok(new { imported = products.Count });
     }
@@ -336,6 +346,7 @@ public class AdminChatbotClientsController(
             db.ChatbotProducts.AddRange(products);
             client.LastShopifySync = DateTime.UtcNow;
             await db.SaveChangesAsync(ct);
+            await InvalidateContextAsync(id, ct);
 
             return Ok(new { synced = products.Count, syncedAt = client.LastShopifySync });
         }
@@ -429,6 +440,7 @@ public class AdminChatbotClientsController(
 
         db.ChatbotClients.Remove(client);
         await db.SaveChangesAsync(ct);
+        await InvalidateContextAsync(id, ct);
         return NoContent();
     }
 
@@ -466,6 +478,7 @@ public class AdminChatbotClientsController(
         }
 
         await db.SaveChangesAsync(ct);
+        await InvalidateContextAsync(id, ct);
         return Ok(new { count = products.Count });
     }
 
@@ -496,6 +509,7 @@ public class AdminChatbotClientsController(
 
         db.ChatbotProducts.Add(product);
         await db.SaveChangesAsync(ct);
+        await InvalidateContextAsync(id, ct);
         return Ok(new { product.Id });
     }
 
@@ -511,6 +525,7 @@ public class AdminChatbotClientsController(
 
         db.ChatbotProducts.Remove(product);
         await db.SaveChangesAsync(ct);
+        await InvalidateContextAsync(id, ct);
         return NoContent();
     }
 
@@ -614,6 +629,7 @@ public class AdminChatbotClientsController(
         };
         db.ChatbotDocuments.Add(doc);
         await db.SaveChangesAsync(ct);
+        await InvalidateContextAsync(id, ct);
 
         return Ok(new { doc.Id, doc.FileName, doc.CharCount });
     }
@@ -629,6 +645,7 @@ public class AdminChatbotClientsController(
 
         db.ChatbotDocuments.Remove(doc);
         await db.SaveChangesAsync(ct);
+        await InvalidateContextAsync(id, ct);
         return NoContent();
     }
 }

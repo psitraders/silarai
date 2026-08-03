@@ -92,6 +92,7 @@ export function AdminChatbotClientDetailPage() {
   const [copied, setCopied] = useState('');
   const [testMsg, setTestMsg] = useState('');
   const [testReply, setTestReply] = useState('');
+  const [testSteps, setTestSteps] = useState<string[]>([]);
 
   const { data: client, isLoading } = useQuery<ChatbotClientDetail>({
     queryKey: ['admin-chatbot-client', id],
@@ -110,9 +111,15 @@ export function AdminChatbotClientDetailPage() {
     setTimeout(() => setCopied(''), 2000);
   };
 
+  // Non-streaming call on purpose: axios can't read an NDJSON body incrementally, and
+  // for a test panel the steps are more useful listed after the fact than animated.
+  // The server returns the same `thinking` lines either way.
   const testMutation = useMutation({
     mutationFn: () => apiClient.post(`/chatbot/${client?.apiKey}/message`, { sessionId: 'admin-test', message: testMsg }),
-    onSuccess: (res) => setTestReply(res.data.reply),
+    onSuccess: (res) => {
+      setTestReply(res.data.reply);
+      setTestSteps(res.data.thinking ?? []);
+    },
   });
 
   if (isLoading) return <PageLoader />;
@@ -242,6 +249,16 @@ export function AdminChatbotClientDetailPage() {
                 <Send className="w-4 h-4" />
               </Button>
             </div>
+            {testSteps.length > 0 && (
+              <div className="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p className="text-xs font-semibold text-slate-400 mb-1">Agent steps</p>
+                <ul className="space-y-0.5">
+                  {testSteps.map((s, i) => (
+                    <li key={i} className="text-xs text-slate-500 italic">{s}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {testReply && (
               <div className="mt-3 bg-teal-50 border border-teal-100 rounded-xl p-3 text-sm text-teal-800">
                 <p className="text-xs font-semibold text-teal-500 mb-1">AI Reply</p>

@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ReplyCart.Application.Chatbot;
+using ReplyCart.Application.Chatbot.Agent;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Chatbot;
 using ReplyCart.Infrastructure.Persistence;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ReplyCart.Api.Controllers.v1;
 
@@ -14,17 +17,42 @@ namespace ReplyCart.Api.Controllers.v1;
 /// Public chatbot endpoint for external clients.
 /// No auth required — protected by API key in the URL.
 /// Uses AllowWidget CORS policy (any origin) because this is embedded on external websites.
+///
+/// Session state (history, cart, collected fields) lives in <see cref="IChatSessionStore"/>
+/// — Redis-backed, so it survives restarts, deploys and scale-out. The catalogue and
+/// knowledge base come from <see cref="IChatbotContextCache"/> rather than being re-read
+/// and re-chunked out of SQL on every turn.
 /// </summary>
 [ApiController]
 [Route("api/v1/chatbot")]
 [EnableCors("AllowWidget")]
 public class ChatbotController(
-    AppDbContext db,
-    IAiProvider aiProvider,
-    IConversationMemoryService chatMemory,
-    IHttpClientFactory httpClientFactory,
+    AppDbContext          db,
+    ChatbotAgent          agent,
+    IChatSessionStore     sessions,
+    IChatbotContextCache  context,
+    IHttpClientFactory    httpClientFactory,
     ILogger<ChatbotController> logger) : ControllerBase
 {
+    /// <summary>Content type that opts a caller into streamed thinking events.</summary>
+    private const string NdJson = "application/x-ndjson";
+
+    /// <summary>
+    /// One buyer turn, run through the tool-calling agent.
+    ///
+    /// TWO RESPONSE SHAPES, chosen by the Accept header:
+    ///
+    ///   Accept: application/x-ndjson  → newline-delimited events. A {"type":"thinking"}
+    ///                                   line per tool call as it runs, then one
+    ///                                   {"type":"final"} line carrying the same payload
+    ///                                   the non-streaming shape returns.
+    ///   anything else                 → the exact single JSON object this endpoint has
+    ///                                   always returned.
+    ///
+    /// The fallback is not politeness: chatbot-widget.js is loaded directly by third-party
+    /// sites with no bundler hash, so older copies stay cached in the wild indefinitely.
+    /// They must keep working untouched after this deploys.
+    /// </summary>
     [HttpPost("{apiKey}/message")]
     public async Task<IActionResult> Chat(
         string apiKey,
@@ -42,255 +70,196 @@ public class ChatbotController(
         if (string.IsNullOrWhiteSpace(request.Message))
             return BadRequest(new { error = "Message is required." });
 
-        var sessionId = $"bot_{client.Id}_{request.SessionId?.Trim() ?? Guid.NewGuid().ToString()}";
+        // Mint a session id when the caller did not supply one, and ALWAYS echo back
+        // the id we actually used. Previously a caller that omitted sessionId got a
+        // fresh GUID minted per request, so its conversation could never accumulate.
+        var sessionId = string.IsNullOrWhiteSpace(request.SessionId)
+            ? $"s_{Guid.NewGuid():N}"
+            : request.SessionId.Trim();
 
-        // ── Load products ─────────────────────────────────────────────────────
-        var products = await db.ChatbotProducts
-            .Where(p => p.ClientId == client.Id && p.IsAvailable)
-            .OrderBy(p => p.Category).ThenBy(p => p.Title)
-            .ToListAsync(ct);
+        if (sessionId.Length > 128) sessionId = sessionId[..128];
 
-        // ── Resolve focused product (single-product conversation mode) ────────
-        ChatbotProduct? focused = null;
-        if (request.FocusedProductId is Guid fid)
-            focused = products.FirstOrDefault(p => p.Id == fid);
+        var streaming = Request.Headers.Accept.Any(
+            v => v != null && v.Contains(NdJson, StringComparison.OrdinalIgnoreCase));
 
-        // ── Knowledge base (uploaded policy / compliance / FAQ docs) ──────────
-        var docs = await db.ChatbotDocuments
-            .Where(d => d.ClientId == client.Id)
-            .Select(d => new { d.FileName, d.ExtractedText })
-            .ToListAsync(ct);
-        var knowledge = BuildKnowledgeContext(
-            docs.Select(d => (d.FileName, d.ExtractedText)).ToList(), request.Message);
+        if (!streaming)
+            return Ok(await RunTurnAsync(client, sessionId, request, null, ct));
 
-        // ── Build system prompt (focused or full catalogue) ───────────────────
-        var systemPrompt = BuildSystemPrompt(client, products, focused, knowledge);
+        // Streamed: headers must be flushed before the first thinking line, or the
+        // widget sees nothing until the whole turn completes.
+        Response.StatusCode  = StatusCodes.Status200OK;
+        Response.ContentType = NdJson;
+        Response.Headers.CacheControl = "no-cache";
+        await Response.Body.FlushAsync(ct);
 
-        // ── Get conversation history ──────────────────────────────────────────
-        var history = chatMemory.GetHistory(sessionId);
+        async Task EmitThinking(string text, CancellationToken token) =>
+            await WriteEventAsync(new { type = "thinking", text }, token);
 
-        // ── Call AI ───────────────────────────────────────────────────────────
-        var aiReply = await aiProvider.HandleConversationAsync(
-            new ConversationRequest(systemPrompt, history, request.Message), ct);
-
-        var replyText = aiReply.ReplyText;
-
-        // ── Record token consumption (tenant + admin usage reports) ───────────
-        if (aiReply.PromptTokens > 0 || aiReply.CompletionTokens > 0)
+        try
         {
-            db.ChatbotTokenUsages.Add(new ChatbotTokenUsage
-            {
-                Id               = Guid.NewGuid(),
-                ClientId         = client.Id,
-                TenantId         = client.TenantId,
-                Channel          = "web",
-                PromptTokens     = aiReply.PromptTokens,
-                CompletionTokens = aiReply.CompletionTokens,
-                CreatedAt        = DateTime.UtcNow,
-            });
-            await db.SaveChangesAsync(ct);
+            var payload = await RunTurnAsync(client, sessionId, request, EmitThinking, ct);
+            await WriteEventAsync(new { type = "final", payload }, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            // Buyer closed the tab mid-turn. Nothing to report.
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Chatbot streamed turn failed for client {ClientId}", client.Id);
+            await WriteEventAsync(new { type = "error", message = "Something went wrong. Please try again." }, ct);
         }
 
-        // ── Handle order_ready state → persist order + payment ────────────────
+        return new EmptyResult();
+    }
+
+    /// <summary>
+    /// MUST mirror the MVC pipeline's JSON settings (see Program.cs AddJsonOptions).
+    ///
+    /// The streamed path serialises by hand instead of going through <c>Ok(...)</c>, and
+    /// <see cref="JsonSerializer"/>'s defaults are PascalCase where MVC's are camelCase.
+    /// Getting this wrong ships `Title`/`ImageUrl` to a widget reading `title`/`imageUrl`,
+    /// which renders a carousel of "undefined" — the two shapes must stay identical.
+    /// </summary>
+    private static readonly JsonSerializerOptions StreamJson = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() },
+    };
+
+    private async Task WriteEventAsync(object payload, CancellationToken ct)
+    {
+        await Response.WriteAsync(JsonSerializer.Serialize(payload, StreamJson) + "\n", ct);
+        await Response.Body.FlushAsync(ct);
+    }
+
+    /// <summary>
+    /// The turn itself. Transport-agnostic: <paramref name="onThinking"/> is null for the
+    /// legacy single-JSON path and set for the streamed one, and nothing else differs.
+    /// </summary>
+    private async Task<object> RunTurnAsync(
+        ChatbotClient                          client,
+        string                                 sessionId,
+        ChatbotMessageRequest                  request,
+        Func<string, CancellationToken, Task>? onThinking,
+        CancellationToken                      ct)
+    {
+        var key = new ChatSessionKey(client.Id, sessionId, "web");
+
+        // ── Cached per-client context ─────────────────────────────────────────
+        var catalogue = await context.GetCatalogAsync(client.Id, ct);
+
+        var focused = request.FocusedProductId is Guid fid
+            ? catalogue.FirstOrDefault(p => p.Id == fid)
+            : null;
+
+        var knowledgeChunks = await context.GetKnowledgeAsync(client.Id, ct);
+        var knowledge       = ChatbotKnowledgeSelector.Select(knowledgeChunks, request.Message);
+
+        // ── Session state (history + cart + collected fields) ─────────────────
+        var snapshot = await sessions.GetAsync(key, ct);
+
+        // Re-price the stored cart against the live catalogue every turn, so a price
+        // change or a delisted product can never be carried into an order.
+        var cart = ChatbotCartResolver.Reprice(snapshot.Cart, catalogue, focused);
+
+        // ── Prompt: static cacheable prefix + per-turn suffix ─────────────────
+        var systemPrompt = ChatbotAgentPromptBuilder.Build(new ChatbotAgentPromptInput(
+            ClientName:    client.Name,
+            BusinessDesc:  client.BusinessDesc,
+            Currency:      client.Currency,
+            CodEnabled:    client.CodEnabled,
+            OnlineEnabled: client.OnlineEnabled && !string.IsNullOrWhiteSpace(client.RazorpayKeyId),
+            Catalogue:     catalogue,
+            Cart:          cart,
+            Profile:       snapshot.Profile,
+            Focused:       focused,
+            KnowledgeBase: knowledge,
+            Channel:       "web",
+            CanPlaceOrders: true));
+
+        // ── Agent loop ────────────────────────────────────────────────────────
+        var result = await agent.RunAsync(
+            systemPrompt,
+            new ChatbotAgentRequest(
+                UserMessage:    request.Message,
+                History:        snapshot.History,
+                Catalogue:      catalogue,
+                Cart:           cart,
+                Profile:        snapshot.Profile,
+                Currency:       client.Currency,
+                Focused:        focused,
+                CanPlaceOrders: true),
+            onThinking,
+            ct);
+
+        cart = result.Cart;
+        var replyText = result.ReplyText;
+
+        await RecordTokenUsageAsync(client, result.PromptTokens, result.CompletionTokens, "web", ct);
+
+        if (!ReferenceEquals(cart, snapshot.Cart))
+            await sessions.SetCartAsync(key, cart, ct);
+
+        logger.LogDebug("Chatbot turn {Client}/{Session}: {Cards} card(s), {Tools} tool call(s), state={State}",
+            client.Id, sessionId, result.Cards.Count, result.ThinkingLines.Count, result.StateSignal);
+
+        // ── Persist what the agent collected ──────────────────────────────────
+        // LastShownProductIds is kept ONLY so a follow-up like "add the second one" can
+        // still resolve an id. It is deliberately never fed back into prompt selection —
+        // doing so is what previously starved each turn of its own search results.
+        var patch = result.ProfilePatch ?? new ChatProfilePatch();
+        await sessions.PatchProfileAsync(key, patch with
+        {
+            State               = result.StateSignal,
+            FocusedProductId    = focused?.Id,
+            LastShownProductIds = result.Cards.Count > 0 ? result.Cards.Select(p => p.Id).ToList() : null,
+        }, ct);
+
+        // ── Order ─────────────────────────────────────────────────────────────
+        // The agent only ever reports INTENT. Order creation, the order number and the
+        // total all happen here, from the server-side cart.
         object? orderData = null;
-        if (aiReply.StateSignal?.ToLower() == "order_ready"
-            && !string.IsNullOrWhiteSpace(aiReply.ExtractedCartJson))
+
+        if (result.OrderIntent is { } intent)
         {
-            List<ChatbotCartItem>? cart = null;
-            try
+            if (cart.IsEmpty)
             {
-                cart = JsonSerializer.Deserialize<List<ChatbotCartItem>>(
-                    aiReply.ExtractedCartJson,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                logger.LogWarning("Chatbot client {ClientId} called place_order with an empty cart (session {Session}).",
+                    client.Id, sessionId);
+                replyText = "I don't have anything in your cart yet — which product would you like to order?";
             }
-            catch { /* ignore malformed */ }
-
-            if (cart != null && cart.Count > 0)
+            else
             {
-                // Resolve real price + image from OUR catalogue — never trust the AI's unit_price.
-                ChatbotProduct? ResolveProduct(string? title)
-                {
-                    if (focused != null) return focused;          // single-product mode
-                    var t = (title ?? "").Trim();
-                    if (t.Length == 0) return null;
-                    return products.FirstOrDefault(p => string.Equals(p.Title, t, StringComparison.OrdinalIgnoreCase))
-                        ?? products.FirstOrDefault(p =>
-                               p.Title.Contains(t, StringComparison.OrdinalIgnoreCase)
-                            || t.Contains(p.Title, StringComparison.OrdinalIgnoreCase));
-                }
+                (orderData, replyText) = await PlaceOrderAsync(
+                    client, sessionId, cart,
+                    Blank(intent.Name)          ?? snapshot.Profile.Name,
+                    Blank(intent.Phone)         ?? snapshot.Profile.Phone,
+                    Blank(intent.Address)       ?? snapshot.Profile.Address,
+                    Blank(intent.PaymentMethod) ?? snapshot.Profile.PaymentMethod,
+                    ct);
 
-                var lineItems = cart.Select(i =>
-                {
-                    var prod = ResolveProduct(i.Title);
-                    var unit = prod != null ? (prod.SalePrice ?? prod.Price)
-                             : (i.UnitPrice > 0 ? i.UnitPrice : 0);
-                    return new
-                    {
-                        title     = prod?.Title ?? i.Title,
-                        qty       = i.Qty < 1 ? 1 : i.Qty,
-                        unitPrice = unit,
-                        variant   = i.VariantInfo,
-                        imageUrl  = prod?.ImageUrl,
-                    };
-                }).ToList();
-
-                var total = lineItems.Sum(i => i.qty * i.unitPrice);
-
-                // Decide payment method — honour what's actually enabled for the client.
-                var wantsOnline = (aiReply.ExtractedPaymentMethod ?? "cod").ToLower() == "online";
-                var canOnline   = wantsOnline && client.OnlineEnabled
-                                  && !string.IsNullOrWhiteSpace(client.RazorpayKeyId)
-                                  && !string.IsNullOrWhiteSpace(client.RazorpayKeySecret);
-                var method = canOnline ? "online" : "cod";
-
-                var order = new ChatbotOrder
-                {
-                    Id              = Guid.NewGuid(),
-                    ClientId        = client.Id,
-                    OrderNumber     = GenerateOrderNumber(),
-                    SessionId       = request.SessionId,
-                    CustomerName    = aiReply.ExtractedName,
-                    CustomerPhone   = aiReply.ExtractedPhone,
-                    DeliveryAddress = aiReply.ExtractedAddress,
-                    ItemsJson       = JsonSerializer.Serialize(lineItems),
-                    Total           = total,
-                    Currency        = client.Currency,
-                    PaymentMethod   = method,
-                    PaymentStatus   = "pending",
-                    OrderStatus     = "placed",
-                    CreatedAt       = DateTime.UtcNow,
-                };
-
-                // ── Create Razorpay order for online payment ──────────────────
-                object? razorpay = null;
-                if (method == "online")
-                {
-                    var rzpOrderId = await CreateRazorpayOrderAsync(client, total, order.OrderNumber, ct);
-                    if (rzpOrderId != null)
-                    {
-                        order.RazorpayOrderId = rzpOrderId;
-                        razorpay = new
-                        {
-                            keyId    = client.RazorpayKeyId,
-                            orderId  = rzpOrderId,
-                            amount   = (long)Math.Round(total * 100), // paise
-                            currency = client.Currency,
-                        };
-                        replyText = $"Almost there! Please complete the secure payment of {client.Currency} {total:F0} to confirm your order.";
-                    }
-                    else
-                    {
-                        // Razorpay failed → gracefully fall back to COD
-                        order.PaymentMethod = method = "cod";
-                        replyText = $"Order placed! Your order ID is {order.OrderNumber}. (Online payment is temporarily unavailable, so this is set to Cash on Delivery.)";
-                    }
-                }
-
-                if (method == "cod")
-                    replyText = $"Order confirmed! Your order ID is {order.OrderNumber}. We'll deliver it and collect {client.Currency} {total:F0} as Cash on Delivery.";
-
-                db.ChatbotOrders.Add(order);
-                await db.SaveChangesAsync(ct);
-
-                orderData = new
-                {
-                    id            = order.Id,
-                    orderNumber   = order.OrderNumber,
-                    customerName  = order.CustomerName,
-                    customerPhone = order.CustomerPhone,
-                    deliveryAddress = order.DeliveryAddress,
-                    paymentMethod = order.PaymentMethod,
-                    paymentStatus = order.PaymentStatus,
-                    currency      = order.Currency,
-                    total,
-                    items         = lineItems,
-                    razorpay,
-                };
-
-                // ── Fire webhook to client's system if configured ─────────────
-                if (!string.IsNullOrWhiteSpace(client.WebhookUrl))
-                {
-                    var webhookUrl = client.WebhookUrl;
-                    var capturedOrder = orderData;
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            var http = httpClientFactory.CreateClient();
-                            var payload = JsonSerializer.Serialize(new
-                            {
-                                clientId  = client.Id,
-                                sessionId = request.SessionId,
-                                order     = capturedOrder,
-                            });
-                            await http.PostAsync(webhookUrl,
-                                new StringContent(payload, Encoding.UTF8, "application/json"));
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogWarning(ex, "Chatbot webhook delivery failed for client {Id}", client.Id);
-                        }
-                    }, CancellationToken.None);
-                }
+                // Order closed — drop the cart so a follow-up message doesn't re-order it.
+                cart = ChatCart.Empty;
+                await sessions.SetCartAsync(key, cart, ct);
+                await sessions.PatchProfileAsync(key, new ChatProfilePatch(State: "ordered"), ct);
             }
         }
 
-        // ── Product cards to return ───────────────────────────────────────────
-        // In focused mode: only ever return the focused product.
-        List<ChatbotProduct> topMatches;
-        if (focused != null)
-        {
-            topMatches = [focused];
-        }
-        else
-        {
-            var msgLower = request.Message.ToLowerInvariant();
-            var allWords = msgLower.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            var scored = products.Select(p =>
-            {
-                var searchable = ((p.Category ?? "") + " " + p.Title + " " + (p.Description ?? "")).ToLowerInvariant();
-                var score = allWords.Count(w => w.Length >= 3 && searchable.Contains(w));
-                return (product: p, score);
-            }).ToList();
-
-            topMatches = scored.Where(x => x.score > 0)
-                               .OrderByDescending(x => x.score)
-                               .Take(6)
-                               .Select(x => x.product)
-                               .ToList();
-
-            // If nothing matched, return a spread across categories (always show cards)
-            if (topMatches.Count == 0 && products.Count > 0)
-            {
-                topMatches = products
-                    .GroupBy(p => p.Category ?? "Other")
-                    .OrderBy(g => g.Key)
-                    .SelectMany(g => g.Take(1))   // 1 per category
-                    .Take(6)
-                    .ToList();
-            }
-        }
-
-        // NOTE: do NOT cast to (object) — System.Text.Json loses all properties on object-typed lists
-        var mentionedProducts = topMatches.Select(p => new {
-            p.Id, p.Title, p.Description, p.Price, p.SalePrice,
-            p.Variants, p.ImageUrl, p.Category,
-        }).ToList();
-
-        // ── Save to memory ────────────────────────────────────────────────────
-        chatMemory.AddMessages(sessionId,
+        // ── Save the turn ─────────────────────────────────────────────────────
+        await sessions.AppendMessagesAsync(key,
             new ConversationMessage("user",      request.Message),
-            new ConversationMessage("assistant", replyText));
+            new ConversationMessage("assistant", replyText), ct);
 
-        return Ok(new
+        return new
         {
-            sessionId        = request.SessionId,
-            reply            = replyText,
-            mentionedProducts,
+            sessionId,
+            reply             = replyText,
+            mentionedProducts = result.Cards,
+            cart              = CartDto(cart, client.Currency),
             orderData,
-            isOrderReady     = orderData != null,
-        });
+            isOrderReady      = orderData != null,
+            thinking          = result.ThinkingLines,
+        };
     }
 
     // ── Verify Razorpay payment (called by widget after checkout success) ─────
@@ -355,11 +324,7 @@ public class ChatbotController(
             return StatusCode(403, new { error = "This chatbot is currently inactive." });
         }
 
-        var products = await db.ChatbotProducts
-            .Where(p => p.ClientId == row.Id && p.IsAvailable)
-            .OrderBy(p => p.Category).ThenBy(p => p.Title)
-            .Select(p => new { p.Id, p.Title, p.Description, p.Price, p.SalePrice, p.Variants, p.ImageUrl, p.Category })
-            .ToListAsync(ct);
+        var products = await context.GetCatalogAsync(row.Id, ct);
 
         return Ok(new
         {
@@ -382,27 +347,247 @@ public class ChatbotController(
     [HttpGet("{apiKey}/products")]
     public async Task<IActionResult> GetProducts(string apiKey, CancellationToken ct)
     {
+        var clientId = await db.ChatbotClients
+            .Where(c => c.ApiKey == apiKey && c.IsActive)
+            .Select(c => (Guid?)c.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (clientId == null) return NotFound(new { error = "Invalid API key." });
+
+        return Ok(await context.GetCatalogAsync(clientId.Value, ct));
+    }
+
+    // ── Current cart for a session (widget rehydrates on page load) ───────────
+    [HttpGet("{apiKey}/cart")]
+    public async Task<IActionResult> GetCart(string apiKey, [FromQuery] string sessionId, CancellationToken ct)
+    {
         var client = await db.ChatbotClients
             .Where(c => c.ApiKey == apiKey && c.IsActive)
+            .Select(c => new { c.Id, c.Currency })
             .FirstOrDefaultAsync(ct);
 
         if (client == null) return NotFound(new { error = "Invalid API key." });
+        if (string.IsNullOrWhiteSpace(sessionId)) return Ok(CartDto(ChatCart.Empty, client.Currency));
 
-        var products = await db.ChatbotProducts
-            .Where(p => p.ClientId == client.Id && p.IsAvailable)
-            .OrderBy(p => p.Category).ThenBy(p => p.Title)
-            .Select(p => new {
-                p.Id, p.Title, p.Description, p.Price, p.SalePrice,
-                p.Variants, p.ImageUrl, p.Category,
-            })
-            .ToListAsync(ct);
+        var snapshot  = await sessions.GetAsync(new ChatSessionKey(client.Id, sessionId.Trim(), "web"), ct);
+        var catalogue = await context.GetCatalogAsync(client.Id, ct);
 
-        return Ok(products);
+        // Re-price on read too — a cart shown to the buyer is never a stale price.
+        return Ok(CartDto(ChatbotCartResolver.Reprice(snapshot.Cart, catalogue), client.Currency));
     }
+
+    /// <summary>
+    /// Direct cart mutation from the widget's own controls ("Add to cart", qty +/-).
+    ///
+    /// Deliberately does NOT go through the AI: a button press is unambiguous, so
+    /// spending an AI round-trip (and the buyer's tokens) to interpret it would be
+    /// both slower and less reliable. The same resolver runs either way, so prices
+    /// still come from the live catalogue and never from the client.
+    /// </summary>
+    [HttpPost("{apiKey}/cart")]
+    public async Task<IActionResult> UpdateCart(
+        string apiKey,
+        [FromBody] ChatbotCartUpdateRequest request,
+        CancellationToken ct)
+    {
+        var client = await db.ChatbotClients
+            .Where(c => c.ApiKey == apiKey && c.IsActive)
+            .Select(c => new { c.Id, c.Currency })
+            .FirstOrDefaultAsync(ct);
+
+        if (client == null) return NotFound(new { error = "Invalid API key." });
+        if (string.IsNullOrWhiteSpace(request.SessionId))
+            return BadRequest(new { error = "sessionId is required." });
+        if (request.Ops == null || request.Ops.Count == 0)
+            return BadRequest(new { error = "At least one cart operation is required." });
+
+        var key       = new ChatSessionKey(client.Id, request.SessionId.Trim(), "web");
+        var catalogue = await context.GetCatalogAsync(client.Id, ct);
+        var snapshot  = await sessions.GetAsync(key, ct);
+
+        var cart = ChatbotCartResolver.Apply(
+            ChatbotCartResolver.Reprice(snapshot.Cart, catalogue), request.Ops, catalogue);
+
+        await sessions.SetCartAsync(key, cart, ct);
+
+        return Ok(CartDto(cart, client.Currency));
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Order placement
+    // ──────────────────────────────────────────────────────────────────────────
+    private async Task<(object OrderData, string Reply)> PlaceOrderAsync(
+        ChatbotClient client,
+        string        sessionId,
+        ChatCart      cart,
+        string?       name,
+        string?       phone,
+        string?       address,
+        string?       paymentMethod,
+        CancellationToken ct)
+    {
+        // Totals come from the server-side cart, which was priced from the live
+        // catalogue. Nothing the AI stated about price reaches this point.
+        var total = cart.Total;
+
+        var wantsOnline = string.Equals(paymentMethod, "online", StringComparison.OrdinalIgnoreCase);
+        var canOnline   = wantsOnline && client.OnlineEnabled
+                          && !string.IsNullOrWhiteSpace(client.RazorpayKeyId)
+                          && !string.IsNullOrWhiteSpace(client.RazorpayKeySecret);
+        var method = canOnline ? "online" : "cod";
+
+        var lineItems = cart.Lines.Select(l => new
+        {
+            productId = l.ProductId,
+            title     = l.Title,
+            qty       = l.Qty,
+            unitPrice = l.UnitPrice,
+            variant   = l.Variant,
+            imageUrl  = l.ImageUrl,
+        }).ToList();
+
+        var order = new ChatbotOrder
+        {
+            Id              = Guid.NewGuid(),
+            ClientId        = client.Id,
+            OrderNumber     = GenerateOrderNumber(),
+            SessionId       = sessionId,
+            CustomerName    = name,
+            CustomerPhone   = phone,
+            DeliveryAddress = address,
+            ItemsJson       = JsonSerializer.Serialize(lineItems),
+            Total           = total,
+            Currency        = client.Currency,
+            PaymentMethod   = method,
+            PaymentStatus   = "pending",
+            OrderStatus     = "placed",
+            CreatedAt       = DateTime.UtcNow,
+        };
+
+        string reply;
+        object? razorpay = null;
+
+        if (method == "online")
+        {
+            var rzpOrderId = await CreateRazorpayOrderAsync(client, total, order.OrderNumber, ct);
+            if (rzpOrderId != null)
+            {
+                order.RazorpayOrderId = rzpOrderId;
+                razorpay = new
+                {
+                    keyId    = client.RazorpayKeyId,
+                    orderId  = rzpOrderId,
+                    amount   = (long)Math.Round(total * 100), // paise
+                    currency = client.Currency,
+                };
+                reply = $"Almost there! Please complete the secure payment of {client.Currency} {total:F0} to confirm your order.";
+            }
+            else
+            {
+                // Razorpay failed → gracefully fall back to COD
+                order.PaymentMethod = method = "cod";
+                reply = $"Order placed! Your order ID is {order.OrderNumber}. (Online payment is temporarily unavailable, so this is set to Cash on Delivery.)";
+            }
+        }
+        else
+        {
+            reply = $"Order confirmed! Your order ID is {order.OrderNumber}. We'll deliver it and collect {client.Currency} {total:F0} as Cash on Delivery.";
+        }
+
+        db.ChatbotOrders.Add(order);
+        await db.SaveChangesAsync(ct);
+
+        var orderData = new
+        {
+            id              = order.Id,
+            orderNumber     = order.OrderNumber,
+            customerName    = order.CustomerName,
+            customerPhone   = order.CustomerPhone,
+            deliveryAddress = order.DeliveryAddress,
+            paymentMethod   = order.PaymentMethod,
+            paymentStatus   = order.PaymentStatus,
+            currency        = order.Currency,
+            total,
+            items           = lineItems,
+            razorpay,
+        };
+
+        FireWebhook(client, sessionId, orderData);
+
+        return (orderData, reply);
+    }
+
+    private void FireWebhook(ChatbotClient client, string sessionId, object orderData)
+    {
+        if (string.IsNullOrWhiteSpace(client.WebhookUrl)) return;
+
+        var webhookUrl = client.WebhookUrl;
+        var clientId   = client.Id;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var http    = httpClientFactory.CreateClient();
+                var payload = JsonSerializer.Serialize(new { clientId, sessionId, order = orderData });
+                await http.PostAsync(webhookUrl, new StringContent(payload, Encoding.UTF8, "application/json"));
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Chatbot webhook delivery failed for client {Id}", clientId);
+            }
+        }, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Logs one row per TURN, not per model call — the agent may make several calls
+    /// internally, and the client is billed for the turn.
+    /// </summary>
+    private async Task RecordTokenUsageAsync(
+        ChatbotClient client, int promptTokens, int completionTokens, string channel, CancellationToken ct)
+    {
+        if (promptTokens <= 0 && completionTokens <= 0) return;
+
+        db.ChatbotTokenUsages.Add(new ChatbotTokenUsage
+        {
+            Id               = Guid.NewGuid(),
+            ClientId         = client.Id,
+            TenantId         = client.TenantId,
+            Channel          = channel,
+            PromptTokens     = promptTokens,
+            CompletionTokens = completionTokens,
+            CreatedAt        = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync(ct);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ──────────────────────────────────────────────────────────────────────────
+
+    private static object CartDto(ChatCart cart, string currency) => new
+    {
+        items = cart.Lines.Select(l => new
+        {
+            productId = l.ProductId,
+            title     = l.Title,
+            qty       = l.Qty,
+            unitPrice = l.UnitPrice,
+            variant   = l.Variant,
+            imageUrl  = l.ImageUrl,
+            lineTotal = l.Qty * l.UnitPrice,
+        }),
+        total = cart.Total,
+        count = cart.Count,
+        currency,
+    };
+
+    private static string? Blank(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     // ── Razorpay order creation ───────────────────────────────────────────────
     private async Task<string?> CreateRazorpayOrderAsync(
-        Domain.Chatbot.ChatbotClient client, decimal total, string receipt, CancellationToken ct)
+        ChatbotClient client, decimal total, string receipt, CancellationToken ct)
     {
         try
         {
@@ -451,142 +636,6 @@ public class ChatbotController(
             suffix[i] = chars[RandomNumberGenerator.GetInt32(chars.Length)];
         return $"RC-{DateTime.UtcNow:yyMMdd}-{new string(suffix)}";
     }
-
-    // ── Knowledge-base retrieval (keyword-ranked passages) ────────────────────
-    private static string? BuildKnowledgeContext(
-        List<(string FileName, string Text)> docs, string message, int maxChars = 3000)
-    {
-        if (docs == null || docs.Count == 0) return null;
-
-        var chunks = new List<(string Doc, string Text)>();
-        foreach (var (file, text) in docs)
-        {
-            if (string.IsNullOrWhiteSpace(text)) continue;
-            for (int i = 0; i < text.Length; i += 600)
-                chunks.Add((file, text.Substring(i, Math.Min(600, text.Length - i))));
-        }
-        if (chunks.Count == 0) return null;
-
-        var words = message.ToLowerInvariant()
-            .Split([' ', ',', '.', '?', '!', '\n', '\t', ';', ':'], StringSplitOptions.RemoveEmptyEntries)
-            .Where(w => w.Length >= 3).Distinct().ToList();
-
-        var scored = chunks
-            .Select(c => (chunk: c, score: words.Count(w => c.Text.ToLowerInvariant().Contains(w))))
-            .ToList();
-
-        var picked = scored.Any(x => x.score > 0)
-            ? scored.Where(x => x.score > 0).OrderByDescending(x => x.score).Select(x => x.chunk)
-            : chunks.Take(6);   // no keyword hit → include the opening passages
-
-        var sb = new StringBuilder();
-        int used = 0;
-        foreach (var (doc, text) in picked)
-        {
-            var t = text.Trim();
-            if (used + t.Length > maxChars) break;
-            sb.AppendLine($"[{doc}] {t}");
-            used += t.Length;
-        }
-        return sb.Length > 0 ? sb.ToString() : null;
-    }
-
-    // ── System prompt builder ─────────────────────────────────────────────────
-    private static string BuildSystemPrompt(
-        Domain.Chatbot.ChatbotClient client,
-        List<Domain.Chatbot.ChatbotProduct> products,
-        Domain.Chatbot.ChatbotProduct? focused,
-        string? knowledgeBase = null)
-    {
-        var sb = new StringBuilder();
-
-        sb.AppendLine($"You are a smart sales assistant for {client.Name}.");
-        if (!string.IsNullOrWhiteSpace(client.BusinessDesc))
-            sb.AppendLine($"About the business: {client.BusinessDesc}");
-        sb.AppendLine($"Currency: {client.Currency}");
-        sb.AppendLine();
-
-        // Which payment options are actually available
-        var pays = new List<string>();
-        if (client.CodEnabled) pays.Add("Cash on Delivery");
-        if (client.OnlineEnabled && !string.IsNullOrWhiteSpace(client.RazorpayKeyId)) pays.Add("Online Payment");
-        if (pays.Count == 0) pays.Add("Cash on Delivery");
-
-        if (focused != null)
-        {
-            // ── Single-product focused conversation ───────────────────────────
-            var priceStr = focused.SalePrice.HasValue
-                ? $"{focused.Price:F0} (sale: {focused.SalePrice.Value:F0})"
-                : $"{focused.Price:F0}";
-            sb.AppendLine("=== THE CUSTOMER IS VIEWING THIS SPECIFIC PRODUCT ===");
-            sb.AppendLine($"• {focused.Title} — {client.Currency} {priceStr}");
-            if (!string.IsNullOrWhiteSpace(focused.Category))   sb.AppendLine($"  Category: {focused.Category}");
-            if (!string.IsNullOrWhiteSpace(focused.Description)) sb.AppendLine($"  Details: {focused.Description.Replace("\n", " ")}");
-            if (!string.IsNullOrWhiteSpace(focused.Variants))   sb.AppendLine($"  Variants: {focused.Variants}");
-            sb.AppendLine();
-            sb.AppendLine("=== RULES ===");
-            sb.AppendLine("• Keep every reply to 1-2 short sentences. Be warm and helpful.");
-            sb.AppendLine("• NEVER use markdown — plain text only.");
-            sb.AppendLine("• ONLY discuss the product above. Do NOT mention, suggest, or list any other products.");
-            sb.AppendLine("• If the customer asks for something else, tell them they can tap 'Browse all products' to see more.");
-            sb.AppendLine("• To order: confirm variant/size, then collect name, phone, delivery address.");
-            sb.AppendLine($"• Available payment options: {string.Join(", ", pays)}. Ask which they prefer.");
-        }
-        else
-        {
-            // ── Full catalogue conversation ───────────────────────────────────
-            sb.AppendLine("=== PRODUCT CATALOGUE ===");
-            if (products.Count == 0)
-            {
-                sb.AppendLine("(No products available at this time.)");
-            }
-            else
-            {
-                foreach (var p in products)
-                {
-                    var priceStr = p.SalePrice.HasValue
-                        ? $"{p.Price:F0} (sale: {p.SalePrice.Value:F0})"
-                        : $"{p.Price:F0}";
-                    var cat = string.IsNullOrWhiteSpace(p.Category) ? "" : $"[{p.Category}] ";
-                    sb.Append($"• {cat}{p.Title} — {client.Currency} {priceStr}");
-                    if (!string.IsNullOrWhiteSpace(p.Description))
-                        sb.Append($" | {p.Description.Replace("\n", " ")}");
-                    sb.AppendLine();
-                    if (!string.IsNullOrWhiteSpace(p.Variants))
-                        sb.AppendLine($"  Variants: {p.Variants}");
-                }
-            }
-
-            var categories = products.Select(p => p.Category).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
-            if (categories.Count > 0)
-                sb.AppendLine($"Categories available: {string.Join(", ", categories)}");
-
-            sb.AppendLine();
-            sb.AppendLine("=== RULES ===");
-            sb.AppendLine("• Keep every reply to 1-2 short sentences. Be warm and helpful.");
-            sb.AppendLine("• NEVER use markdown — no **bold**, no *italic*, no - bullet lists. Plain text only.");
-            sb.AppendLine("• On first message / greeting: welcome the customer and list the categories available. Ask which they are interested in.");
-            sb.AppendLine("• When customer picks a category or mentions a product type: name 2-3 specific products with prices.");
-            sb.AppendLine("• NEVER say 'I can't show' — just describe products in plain text.");
-            sb.AppendLine("• When customer wants to order: ask for size/variant, then name, phone, delivery address.");
-            sb.AppendLine($"• Available payment options: {string.Join(", ", pays)}. Ask which they prefer.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(knowledgeBase))
-        {
-            sb.AppendLine();
-            sb.AppendLine("=== KNOWLEDGE BASE (store policies & documents) ===");
-            sb.AppendLine("Use the passages below to answer questions about policies, privacy, shipping, returns, warranty, compliance, etc. Answer faithfully from this content. If the answer isn't here, say you'll connect them with the team — do NOT invent policy details.");
-            sb.AppendLine(knowledgeBase);
-            sb.AppendLine();
-        }
-
-        sb.AppendLine("• Once confirmed, output ONLY this JSON:");
-        sb.AppendLine("  {\"reply\":\"Order confirmed!\",\"state\":\"order_ready\",\"name\":\"<n>\",\"phone\":\"<p>\",\"address\":\"<a>\",\"payment_method\":\"cod\",\"cart\":[{\"title\":\"<t>\",\"qty\":1,\"unit_price\":100,\"variant_info\":\"<size>\"}]}");
-        sb.AppendLine("• payment_method = 'online' for UPI/card, 'cod' for cash.");
-
-        return sb.ToString();
-    }
 }
 
 public record ChatbotMessageRequest(string? SessionId, string Message, Guid? FocusedProductId = null);
@@ -596,10 +645,5 @@ public record VerifyChatbotPaymentRequest(
     string RazorpayPaymentId,
     string RazorpaySignature);
 
-public class ChatbotCartItem
-{
-    public string  Title       { get; set; } = string.Empty;
-    public int     Qty         { get; set; } = 1;
-    public decimal UnitPrice   { get; set; }
-    public string? VariantInfo { get; set; }
-}
+/// <summary>Widget-initiated cart change. Ops are validated and priced server-side.</summary>
+public record ChatbotCartUpdateRequest(string? SessionId, List<ChatbotCartOp> Ops);

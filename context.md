@@ -78,6 +78,7 @@ A multi-tenant SaaS platform for boutique/small-business sellers (clothing, jewe
 | Frontend host | Dual: Azure Static Web Apps **and** Vercel (both configs present) |
 | File storage | Cloudinary (current), Local disk (`wwwroot/uploads/`) as fallback provider |
 | AI provider | OpenAI (`gpt-4o-mini`, current default) or Mock provider, swappable via config |
+| Cache / session store | Azure Managed Redis (StackExchange.Redis) — chatbot-client session memory, cart and catalogue cache only (§4.8). Optional: `Redis:Enabled=false` falls back to in-process + SQL. Everything else still uses `IMemoryCache`. |
 | Payments | Razorpay (primary, India), Stripe, PayPal — all per-tenant credentials stored on the `Business` entity |
 | Edge/CDN | Cloudflare Worker in front of custom domains + canonical domain (bot rendering, custom-domain routing) |
 
@@ -114,7 +115,7 @@ Public/anonymous endpoints (webhooks, public storefront, chatbot widget, health 
 - **AI**: `AiSuggestion` (logged reply suggestions), `AiUsageLog` (token usage per user), `ReplyTemplate` (canned replies).
 - **Marketing**: `Campaign`/`CampaignRecipient` (WhatsApp/Email/Instagram blast campaigns), `AbandonedCart`, `WaTemplate` (WhatsApp template — supports both legacy AiSensy and current Meta Cloud API template submission flow), `AutoCampaign` (AI-generated social post auto-triggered when a product is published, per-channel results + status).
 - **Storefront (B2C/B2B)**: `StorefrontCustomer` (separate login system from the internal `User`, with B2B fields — company name, GST, loyalty points, optional link to CRM `Customer`), `StorefrontWishlistItem`, `ProductWholesaleTier` (quantity-break B2B pricing), `QuoteRequest` (B2B quote inbox), `StorefrontPage` (custom CMS pages like About/FAQ).
-- **Chatbot-as-a-Service** (separate product line, `TenantId` nullable): `ChatbotClient` (own WhatsApp/FB/IG/Shopify/Razorpay credentials, `ApiKey` auth), `ChatbotProduct`, `ChatbotOrder`, `ChatbotDocument` (uploaded KB doc, `ExtractedText` feeds RAG), `ChatbotTokenUsage`.
+- **Chatbot-as-a-Service** (separate product line, `TenantId` nullable): `ChatbotClient` (own WhatsApp/FB/IG/Shopify/Razorpay credentials, `ApiKey` auth), `ChatbotProduct`, `ChatbotOrder`, `ChatbotDocument` (uploaded KB doc, `ExtractedText` feeds RAG), `ChatbotTokenUsage`, `ChatbotSession` + `ChatbotSessionMessage` (durable transcript + cart behind the Redis session store, see §4.8).
 - **Admin/Config** (platform-level, not tenant-scoped): `SystemAnnouncement`, `TenantNote`, `LandingPageConfig` (marketing site content as JSON blob), `PlatformLead` (marketing-site signup leads, with UTM tracking), `PlatformSetting` (key-value store).
 
 ### 4.4 API surface (`Controllers/v1/`)
@@ -127,7 +128,7 @@ Grouped by area — see the backend for exact `[Route]` attributes:
 - **B2B/Storefront config**: `B2BController`, `PagesController` (custom CMS pages), `IntegrationsController`, `SubscriptionsController`, `PlansController`, `CustomDomainController` (Cloudflare custom domain setup).
 - **Public/anonymous**: `PublicDomainController` (custom-domain → tenant slug resolution), `PublicStorefrontController` (`/public/{slug}`), `StorefrontCustomerController` (+ nested `StorefrontQuoteController`, `PublicWholesaleTiersController`), `PaymentController` (`/public/{slug}/payment` — Razorpay/Stripe/PayPal), `HealthController`.
 - **Channel webhooks**: `WhatsAppWebhookController`, `FacebookWebhookController`, `InstagramWebhookController` (`/webhooks/...` — inbound message entry points feeding `HandleInboundMessageCommand`).
-- **Chatbot-as-a-Service**: `ChatbotController` (`/chatbot/{apiKey}/...`, public, `AllowWidget` CORS policy), `ChatbotOnboardController`, `ChatbotSimulatorController`, `ChatbotUsageController`.
+- **Chatbot-as-a-Service**: `ChatbotController` (`/chatbot/{apiKey}/...` — `message`, `config`, `products`, `cart` (GET+POST), `orders/{id}/verify-payment`; public, `AllowWidget` CORS policy), `ChatbotOnboardController`, `ChatbotSimulatorController`, `ChatbotUsageController`.
 - **SuperAdmin**: `AdminTenantsController`, `AdminPlatformSettingsController`, `AdminChatbotClientsController`, `LandingController`, `PlatformLeadsController`/`AdminPlatformLeadsController`.
 
 ### 4.5 Middleware pipeline (`Program.cs`, in order)
@@ -136,7 +137,19 @@ Grouped by area — see the backend for exact `[Route]` attributes:
 
 CORS has two policies: `AllowWidget` (fully open, for the public embeddable chatbot) and `AllowFrontend` (allows localhost, configured origins, wildcard `*.replycart.app`, **and any `https://` origin outright** with `AllowCredentials()` — intentionally permissive to support arbitrary tenant custom domains).
 
-**Known operational gaps** (flag before changing deploy/DB behavior): DB auto-migration and `DataSeeder` seeding on startup are both commented out in `Program.cs` — schema changes require manually running `dotnet ef database update` or applying the generated `ReplyCart_Database.sql`. `appsettings.json` currently has real secrets committed (Azure SQL password, Cloudinary secret, Meta app secret, Cloudflare token, Google service-account key) — treat this file as sensitive.
+**Known operational gaps** (flag before changing deploy/DB behavior): DB auto-migration and `DataSeeder` seeding on startup are both commented out in `Program.cs` — schema changes require manually running `dotnet ef database update` or applying the generated `ReplyCart_Database.sql`.
+
+### 4.5.1 Secrets / configuration
+
+**`appsettings.json` holds no credentials. Keep it that way.** Every secret value is an empty string in the committed file and is supplied at runtime instead. The 13 keys treated as secret:
+
+`ConnectionStrings:DefaultConnection`, `Jwt:Secret`, `AI:OpenAI:ApiKey`, `Storage:Cloudinary:ApiKey`, `Storage:Cloudinary:ApiSecret`, `Razorpay:KeyId`, `Razorpay:KeySecret`, `WhatsApp:AccessToken`, `WhatsApp:VerifyToken`, `Meta:AppSecret`, `GoogleAnalytics:ServiceAccountPrivateKey`, `GoogleAnalytics:ServiceAccountPrivateKeyId`, `Cloudflare:ApiToken`, `Redis:AccessKey`.
+
+- **Local dev**: values live in `backend/src/ReplyCart.Api/appsettings.Development.json`, which is gitignored (`.gitignore:9`). `appsettings.Development.example.json` is the tracked template — copy it and fill in. `dotnet run` defaults to the Development environment, so this layer loads automatically.
+- **Azure App Service**: set them as application settings, replacing `:` with `__` (e.g. `AI__OpenAI__ApiKey`). Environment variables outrank both JSON layers.
+- `Jwt:Secret` must be ≥32 characters or token signing throws at startup. An empty value fails fast and loudly — that is intentional, not a bug.
+
+**History caveat:** these secrets were committed and pushed before this change and remain in git history on `main` and several feature branches. Blanking the file does not un-leak them — anything that was in there must be rotated at the provider, and was. Do not treat the current clean file as evidence that an old key is safe.
 
 ### 4.6 Migrations
 
@@ -154,11 +167,11 @@ EF Core discovers migrations across both folders/namespaces fine as long as each
 **Migrations intentionally left without attributes (fully superseded — do not attribute these without also stripping the duplicate work from the migration that supersedes them):**
 `20260509000000_AddPlatformSettings`, `20260512000000_AddCustomerBirthday`, `20260512100000_AddWhatsAppCatalogId`, `20260512130000_AddPaymentGatewayFields`, `20260517000000_AddAutonomousAi` (all fully re-implemented inside the trimmed `AddFaviconAndLoaderToStorefrontSettings`), and `20260522000000_AddB2CB2BFeatures` (fully re-implemented inside `20260523025922_AddLeadCreatedAtIndex`). Known gap: `AddPlatformSettings`'s seed-data `INSERT` (2Factor.in OTP API key into `PlatformSettings`) is lost since that migration never runs — the table gets created (by the trimmed Favicon migration) but the seed row does not. Add it back via a small new migration or manual insert if OTP relies on it.
 
-**Known gap — `AppDbContextModelSnapshot.cs` is stale.** It doesn't reflect `BrandColors`, `AutonomousAi`, `MetaWhatsApp`, `ChatbotClients`/`ChatbotClientChannels`, `StorefrontPages`, `ChatbotOrders`/`ChatbotDocuments`/`ChatbotTokenUsage` changes (all applied via raw-SQL or now-attributed migrations that never went through `dotnet ef migrations add`, so the snapshot was never regenerated). This doesn't block `dotnet ef database update` (the snapshot isn't consulted for applying migrations), but running `dotnet ef migrations add` next will produce a large diff reflecting all of that — review carefully before accepting it, since some of it (things added via idempotent raw SQL in `AddChatbotClients`/`AddChatbotClientChannels`/etc.) will already exist in the real DB and re-adding them via a normal (non-idempotent) EF migration would break a *second* fresh install.
+**Known gap — `AppDbContextModelSnapshot.cs` is stale.** It doesn't reflect `BrandColors`, `AutonomousAi`, `MetaWhatsApp`, `ChatbotClients`/`ChatbotClientChannels`, `StorefrontPages`, `ChatbotOrders`/`ChatbotDocuments`/`ChatbotTokenUsage`/`ChatbotSessions`/`ChatbotSessionMessages` changes (all applied via raw-SQL or now-attributed migrations that never went through `dotnet ef migrations add`, so the snapshot was never regenerated). This doesn't block `dotnet ef database update` (the snapshot isn't consulted for applying migrations), but running `dotnet ef migrations add` next will produce a large diff reflecting all of that — review carefully before accepting it, since some of it (things added via idempotent raw SQL in `AddChatbotClients`/`AddChatbotClientChannels`/etc.) will already exist in the real DB and re-adding them via a normal (non-idempotent) EF migration would break a *second* fresh install.
 
 **Production caveat**: if this schema was ever deployed to the production Azure SQL instance (§3), verify its `__EFMigrationsHistory` table before applying these changes there — specifically check whether `20260521115712_AddFaviconAndLoaderToStorefrontSettings` is already marked applied, since its trimmed content differs from what may have originally run.
 
-`dotnet ef` commands (e.g. `dotnet ef database update`) don't go through `Program.cs`/DI — they use `Infrastructure/Persistence/AppDbContextFactory.cs` (`IDesignTimeDbContextFactory<AppDbContext>`), which has its own hardcoded connection string (defaults to the Dockerized SQL Server on `localhost,1433`, matching `appsettings.Development.json`; override via `ConnectionStrings__DefaultConnection` env var). If this factory's connection string ever drifts from the real DB target, `dotnet ef` commands fail even though the app itself connects fine.
+`dotnet ef` commands (e.g. `dotnet ef database update`) don't go through `Program.cs`/DI — they use `Infrastructure/Persistence/AppDbContextFactory.cs` (`IDesignTimeDbContextFactory<AppDbContext>`), which has its own hardcoded connection string (defaults to the Dockerized SQL Server on `localhost,1433`, matching `appsettings.json`; override via `ConnectionStrings__DefaultConnection` env var). Run them from `backend/` as `dotnet ef database update --project src/ReplyCart.Infrastructure --startup-project src/ReplyCart.Api` — `backend/` itself holds only the solution. If this factory's connection string ever drifts from the real DB target, `dotnet ef` commands fail even though the app itself connects fine.
 
 ### 4.7 The autonomous AI conversation flow ("Rag" module)
 
@@ -170,6 +183,73 @@ Not vector-embedding RAG — a structured-context approach:
 4. `ConversationSystemPromptBuilder` turns that into a system prompt.
 5. `IAiProvider.HandleConversationAsync` (OpenAI or Mock) generates the reply, potentially advancing `ConversationSession.State` and populating collected fields (name/phone/address/cart).
 6. When the state reaches `Ordered`, an `Order` (and/or `Lead`) is created; the server always recomputes prices from the live catalog rather than trusting AI-stated prices (price-authority safeguard, see `changes.md` history).
+
+**This flow is the TENANT chatbot only.** The Chatbot-as-a-Service product line has its own, separate pipeline — see §4.8. Do not conflate them: they share `IAiProvider` and nothing else.
+
+### 4.8 Chatbot-as-a-Service conversation flow (external clients)
+
+Entry points: `ChatbotController` (`POST /api/v1/chatbot/{apiKey}/message`, web widget — **runs the tool-calling agent**) and `ChatbotClientWebhookHelper` (WhatsApp / Messenger / Instagram, called from the three webhook controllers when the inbound identity matches a `ChatbotClient` rather than a tenant — **still single-shot**, see Phasing below).
+
+**Session state — `IChatSessionStore` (three tiers).** Distinct from `IConversationMemoryService`, which is still the in-process store for the tenant chatbot and tenant webhooks. Do not merge them; this one is async and carries cart + collected fields.
+
+| Tier | Implementation | Role |
+|---|---|---|
+| Hot | `RedisChatSessionStore` | Azure Managed Redis. `{prefix}:{clientId}:{sessionId}:msgs` LIST (RPUSH + LTRIM), `:cart` STRING (JSON), `:profile` HASH. Sliding TTL refreshed on read and write. |
+| Warm | `InMemoryChatSessionStore` | Per-process. Written on every turn even when Redis is healthy, so a Redis outage degrades to "this instance still remembers you". Timer-swept. |
+| Cold | `SqlChatSessionArchive` → `ChatbotSessions` / `ChatbotSessionMessages` | Durable transcript + cart. Written write-behind by `ChatSessionArchiveWorker` (bounded `Channel`, `DropOldest`), never on the request path. Read **only** on a Redis-down + cold-instance double miss. |
+
+`ResilientChatSessionStore` is the registered `IChatSessionStore` and owns the failure policy: it tries Redis, and after `Redis:CircuitFailureThreshold` consecutive failures opens a circuit for `Redis:CircuitOpenSeconds` so every turn stops paying the timeout. **A Redis outage degrades the chatbot; it never fails a buyer's message.** `/api/v1/health` reports Redis status but never 503s on it.
+
+Config lives in the `Redis` section of `appsettings.json`. `Enabled=false` means no Redis is registered at all and the module runs on the in-process store + SQL archive — that is the supported way to run without a Redis instance. Override per environment with `Redis__Enabled` / `Redis__Endpoint` / `Redis__AccessKey` App Service settings.
+
+**The web widget path runs a tool-calling AGENT (`Application/Chatbot/Agent/`).** The WhatsApp / Messenger / Instagram path still runs the older single-shot builder — see "Phasing" at the end of this section. Do not assume the two are the same.
+
+**Per-turn flow (`ChatbotController` → `ChatbotAgent`):**
+
+1. Resolve `ChatbotClient` by API key from SQL. Deliberately *not* cached — the row carries `RazorpayKeySecret`.
+2. `IChatbotContextCache` supplies the catalogue (`ChatbotCatalogItem` projections) and the **pre-chunked** knowledge base, from Redis + `IMemoryCache`. Invalidated by every product/document/Shopify/client write in `AdminChatbotClientsController`.
+3. `IChatSessionStore.GetAsync` returns history + cart + profile in one round-trip.
+4. `ChatbotCartResolver.Reprice` re-resolves every stored cart line against the live catalogue — stale prices and delisted products can never reach an order.
+5. `ChatbotAgentPromptBuilder` builds the system prompt (below). The catalogue is **never inlined** — the model gets a category index and searches for the rest.
+6. `ChatbotAgent.RunAsync` drives the loop: call the model with tools → execute any tool calls server-side → feed results back → repeat until it answers in prose. Bounded at 4 model calls and 8 tool calls per turn; the final iteration is made with **no tools at all**, which forces prose, so a model that loops on `search_catalog` costs a fixed ceiling and can never hang a buyer's message. Token usage is summed across the whole turn and recorded once to `ChatbotTokenUsages`.
+7. `place_order` is **terminal**: the loop stops and returns a `ChatbotOrderIntent`. The controller creates the order from the **server cart** — order number, total and Razorpay handoff are all server-generated, so the model can never announce an order that was not written. An empty cart at `place_order` is refused. Cart is then cleared and state set to `ordered`.
+
+**Prompt structure — the split is load-bearing.** `ChatbotAgentPromptBuilder` emits a static prefix (identity, catalogue index, rules) that is byte-identical per client on every turn, so the provider's automatic prompt cache hits; then a dynamic suffix (focused product, `CURRENT CART`, already-collected fields, KB passages). **Moving any per-turn content above the prefix silently destroys the cache hit on every turn.** Measured: the prompt is ~570 tokens at 50 products and ~570 tokens at 2,000 — prompt cost does not scale with catalogue size.
+
+**Tools (`ChatbotAgentTools`).** In focused (single-product) mode the two catalogue tools are withheld entirely, so "only discuss this product" is enforced by absence rather than by instruction. `place_order` is withheld when `CanPlaceOrders` is false.
+
+| Tool | Server behaviour |
+|---|---|
+| `search_catalog(query, category?, min_price?, max_price?)` | Filter + keyword rank over the cached catalogue, max 8. Falls back to the filtered set if ranking finds nothing, and to a "we don't stock it" instruction if the store genuinely has no match. |
+| `get_product_details(product_ids[])` | Full description + variants, max 6, ids validated against the catalogue. |
+| `update_cart(ops[])` | Same `ChatbotCartResolver.Apply` as before. Unresolvable ops are dropped, and an unchanged cart after a mutating op is reported back as an explicit failure so the model cannot claim it added something it didn't. |
+| `save_customer_details(name?, phone?, address?, payment_method?)` | Persists to `ChatProfile`, sets state `collecting_info`. Replaces the old JSON-envelope field scraping. |
+| `place_order(name, phone, address, payment_method?)` | Terminal — not executed here. See step 7. |
+
+**Product carousel.** Cards are whatever the model actually looked up this turn (`search_catalog` / `get_product_details` results, deduped, max 6), so the cards and the words cannot disagree. Suppressed entirely in focused mode (the widget pins the product in its header) and during the order flow (`collecting_info` / `confirming` / `order_ready` / `ordered`). The widget renders `mentionedProducts` and has **no fallback of its own**.
+
+> **Why this replaced the old design.** Previously the reply hung on a 12-product shortlist built by `ChatbotCatalogSelector.BuildPromptSet`, seeded with `ChatProfile.LastShownProductIds` — which was itself set to the *previous* turn's shortlist. From turn two onward those carried-over ids consumed the entire budget before the current query's matches were considered, so the model answered from stale products while the carousel, which re-ranked from scratch, showed the correct ones. `LastShownProductIds` is now kept **only** so a follow-up like "add the second one" can resolve an id; it is never fed back into prompt selection.
+
+**Price authority (extends §6):** in this module the AI cannot state a price it did not receive from a tool this conversation — it names product ids, and the server prices them from `SalePrice ?? Price`. Any change here must preserve that.
+
+**Transport — two response shapes on the same endpoint.** `POST /chatbot/{apiKey}/message` returns NDJSON when the caller sends `Accept: application/x-ndjson`, and the original single JSON object otherwise:
+
+```
+{"type":"thinking","text":"Searching for gold earrings under INR 5,000…"}
+{"type":"final","payload":{ …the exact legacy response object… }}
+```
+
+The legacy shape is **not** optional politeness: `chatbot-widget.js` is loaded directly by third-party sites with no bundler hash, so older copies stay cached in the wild indefinitely and must keep working after this deploys. The non-streaming payload also carries a `thinking` string array, which the admin test panel renders after the fact.
+
+Thinking one-liners are generated **server-side from the tool call itself** (`ChatbotAgentTools.Describe`) — not asked of the model. They therefore cost no tokens, add no latency, and cannot be skipped when the model is under instruction pressure.
+
+**`IAgentAiProvider`** (`Application/Common/Interfaces/IAgentAiProvider.cs`) is the tool-calling contract, deliberately separate from `IAiProvider.HandleConversationAsync` (the single-shot JSON-envelope contract the tenant RAG pipeline still uses). `OpenAiProvider` and `MockAiProvider` each implement both and are registered against both interfaces. `MockAiProvider.RunAgentStepAsync` deterministically calls `search_catalog` once then answers, so the tool plumbing, thinking events and carousel are exercised end-to-end without an API key.
+
+**Phasing — what is NOT yet on the agent.** Phase 1 covered the web widget and the admin test panel only. `ChatbotClientWebhookHelper` (WhatsApp / Messenger / Instagram) still uses `ChatbotPromptBuilder` + `ChatbotCatalogSelector.BuildPromptSet` + `ChatbotCardPolicy` and therefore **still has the stale-shortlist behaviour described above** — those three classes are live and must not be deleted. Phase 2 moves the channels onto `ChatbotAgent` with `CanPlaceOrders: false`; phase 3 migrates the tenant storefront chatbot (§4.7).
+
+**The widget can mutate the cart directly** via `POST /chatbot/{apiKey}/cart`, bypassing the AI entirely — a button press is unambiguous, so spending a token round-trip to interpret it would be slower and less reliable. Same resolver, same pricing rules.
+
+**Known gap:** the WhatsApp / Messenger / Instagram path replies only — there is no order-placement step. `ChatbotPromptInput.CanPlaceOrders` is therefore `false` for those channels, so the prompt hands off to the team rather than telling the buyer their order is confirmed. Adding real order creation there is open follow-up work.
 
 ## 5. Frontend architecture
 
@@ -215,7 +295,26 @@ One module per backend feature area (`auth`, `catalog`, `leads`, `orders`, `cust
 
 ### 5.7 Embeddable chatbot widget (`public/chatbot-widget.js`)
 
-A dependency-free vanilla-JS widget (~700 lines) that external site owners embed via `<script>` + `window.RCChatbotConfig = { apiKey, apiBase, ... }`. Talks directly to `GET/POST /api/v1/chatbot/{apiKey}/...` (config, message, order verify-payment), identified purely by API key — no relation to the dashboard's JWT auth. Supports product carousels, Razorpay checkout, and COD, essentially a framework-free clone of the in-app public storefront's chat/checkout experience for use on third-party (non-Silarai-hosted) sites.
+A dependency-free vanilla-JS widget that external site owners embed via `<script>` + `window.RCChatbotConfig = { apiKey, apiBase, ... }`. Talks directly to `GET/POST /api/v1/chatbot/{apiKey}/...` (config, message, cart, products, order verify-payment), identified purely by API key — no relation to the dashboard's JWT auth. Supports product carousels, a cart, Razorpay checkout, and COD — essentially a framework-free clone of the in-app public storefront's chat/checkout experience for use on third-party (non-Silarai-hosted) sites.
+
+**Everything renders inside a Shadow DOM.** The widget mounts one host `<div>` on `document.body` and attaches an open shadow root; all markup and CSS live inside it. The host page's styles cannot reach in and the widget's cannot leak out, which removes the `!important` arms race with arbitrary embedder CSS. Consequences to remember when editing:
+
+- Use `root.getElementById` / `root.querySelector` — `document.getElementById` finds nothing inside the shadow tree.
+- The host is a full-viewport `position:fixed` overlay with `pointer-events:none`; only the launcher, teaser and panel re-enable pointer events. Do not give the host a `transform`, or `position:fixed` descendants will start resolving against it.
+- Brand colours are CSS custom properties set on the host from config (`--rc-primary` plus precomputed `--rc-primary-a08/15/40/55`). Alpha variants are computed in JS rather than with `color-mix()`, which older Android WebViews do not support. There is **no external font request** — an embedded widget should not add a render-blocking third-party fetch to someone else's page.
+
+**Layout.** Single-row header (avatar, name, cart button with count, close). The **cart is a bottom sheet** over the message area, so it no longer competes with the composer. The **product detail is a full in-panel overlay** (`.detail`, `inset:0` inside the panel, sticky Back bar) — a hero image plus a variant grid needs the whole panel, and this matches the long-standing behaviour. Optional focused-product strip sits below the header. Composer is an auto-growing `<textarea>` (Enter sends, Shift+Enter newlines). Consecutive same-sender messages are grouped under one avatar.
+
+**Two layout traps this file has already fallen into — do not re-introduce:**
+
+1. `.msgs` is a column flex container, so every child needs `flex:0 0 auto` (there is a `.msgs > *` rule). Scroll containers are the dangerous case: their automatic minimum size is `0`, not `min-content`, so the product rail collapses to nothing but its scrollbar without it.
+2. The carousel's drag-to-scroll must **not** call `setPointerCapture` on `pointerdown`. While a pointer is captured the browser retargets the following `click` to the capturing element, which silently kills every button inside a card. Capture is taken only after the drag threshold is crossed.
+
+**Testing.** `frontend/test/chatbot-widget.test.mjs` renders the widget in jsdom against a mocked API and asserts shadow-root isolation, NDJSON streaming, the thinking line, card values, cart flow and Escape handling — plus the non-streaming fallback. Run with `npm install --no-save jsdom && node test/chatbot-widget.test.mjs`. This file is the only automated coverage the widget has: it is plain vanilla JS in `public/`, so it is outside the Vite build and never type-checked.
+
+The cart is a **read-only mirror of the server cart** (§4.8): every mutation round-trips to `POST /chatbot/{apiKey}/cart` and the widget re-renders whatever comes back, so it can never disagree with what the AI sees or what gets ordered. `sessionId` lives in `localStorage["rc_s_" + apiKey]` and is re-synced from the server response if the server assigned one.
+
+**Deploying a change to this file requires cache-busting the embed URL on third-party sites** — they load it directly and there is no bundler hash. Keep the API backward-compatible (an older widget must tolerate the `cart` key being present or absent).
 
 ### 5.8 Cloudflare Worker (`cloudflare-worker/storefront-proxy.js`)
 
@@ -224,7 +323,8 @@ Sits in front of both the canonical domain and merchant custom domains. Three re
 ## 6. Business logic highlights worth knowing before changing things
 
 - **Multi-tenancy is enforced by three cooperating mechanisms** (DB query filter + request middleware + plan filter) — changing tenant-scoping logic requires touching all three consistently; see §4.2.
-- **Order pricing must always be recomputed server-side from the live catalog**, never trusted from AI-provided or client-provided prices — this was fixed as a bug (see git history: "server is the price authority") and any change to order/checkout flows must preserve it.
+- **Order pricing must always be recomputed server-side from the live catalog**, never trusted from AI-provided or client-provided prices — this was fixed as a bug (see git history: "server is the price authority") and any change to order/checkout flows must preserve it. In the Chatbot-as-a-Service module this is stronger still: the AI cannot state a price at all, only product ids (§4.8).
+- **Two independent chatbot pipelines exist.** The tenant chatbot (§4.7: `RagContextBuilder` → `ConversationSession` → `IConversationMemoryService`, in-process) and the Chatbot-as-a-Service module (§4.8: `ChatbotPromptBuilder` → `IChatSessionStore`, Redis-backed). They share only `IAiProvider`. Changing one does not change the other, and merging them is not a small refactor.
 - **Two independent customer identities exist per tenant**: the internal `Customer` (CRM contact tracked by staff) and `StorefrontCustomer` (self-service public storefront login), optionally linked via `LinkedCrmCustomerId`. Don't conflate the two when working on customer-related features.
 - **Two independent auth systems on the frontend**: merchant dashboard auth (Zustand `auth.store`, JWT) and storefront customer auth (`StorefrontAuthContext`, separate token/session storage) — they use different axios paths and never share state.
 - **`ReplyCart.Shared.Constants.PlanLimits`** (Free/Starter/Growth/Pro) looks superseded by the DB-driven `SubscriptionPlan` table and the newer `"basic"` (chatbot-only) plan tier enforced by `BasicPlanAccessFilter` — don't assume the hardcoded constants reflect current plan behavior; check `SubscriptionPlan` rows and `BasicPlanAccessFilter` instead.

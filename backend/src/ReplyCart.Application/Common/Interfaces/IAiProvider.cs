@@ -139,7 +139,16 @@ public record ConversationReply(
     /// <summary>Prompt (input) tokens billed by the AI provider for this call. 0 if unknown.</summary>
     int PromptTokens = 0,
     /// <summary>Completion (output) tokens billed by the AI provider for this call. 0 if unknown.</summary>
-    int CompletionTokens = 0
+    int CompletionTokens = 0,
+    /// <summary>
+    /// JSON array of cart mutations the AI proposes this turn, e.g.
+    /// [{"op":"add","product_id":"...","qty":1,"variant":"M"}].
+    /// Used by the chatbot-client module to maintain a server-authoritative cart —
+    /// the ops are resolved against the live catalogue and priced server-side, so
+    /// nothing the AI says about price or product identity is trusted.
+    /// Null when the AI proposed no cart change.
+    /// </summary>
+    string? ExtractedCartOpsJson = null
 );
 
 /// <summary>AI-generated content for an auto-campaign post.</summary>

@@ -9,7 +9,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     public AppDbContext CreateDbContext(string[] args)
     {
         // dotnet ef ignores Program.cs/DI, so the connection string has to be supplied here.
-        // Default matches appsettings.Development.json (Dockerized SQL Server on localhost:1433);
+        // Default matches appsettings.json (Dockerized SQL Server on localhost:1433);
         // override with ConnectionStrings__DefaultConnection if your local setup differs.
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
             ?? "Server=localhost,1433;Database=ReplyCart;User Id=sa;Password=Homecbe@74;TrustServerCertificate=True;MultipleActiveResultSets=true;";
