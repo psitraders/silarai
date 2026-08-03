@@ -1,0 +1,72 @@
+[
+  {
+    "name": "ConnectionStrings__DefaultConnection",
+    "value": "<AZURE_SQL_CONNECTION_STRING>",
+    "slotSetting": false
+  },
+  {
+    "name": "Jwt__Secret",
+    "value": "<JWT_SIGNING_KEY_MIN_32_CHARS>",
+    "slotSetting": false
+  },
+  {
+    "name": "AI__OpenAI__ApiKey",
+    "value": "<OPENAI_API_KEY>",
+    "slotSetting": false
+  },
+  {
+    "name": "Storage__Cloudinary__ApiKey",
+    "value": "<CLOUDINARY_API_KEY>",
+    "slotSetting": false
+  },
+  {
+    "name": "Storage__Cloudinary__ApiSecret",
+    "value": "<CLOUDINARY_API_SECRET>",
+    "slotSetting": false
+  },
+  {
+    "name": "Razorpay__KeyId",
+    "value": "<RAZORPAY_KEY_ID>",
+    "slotSetting": false
+  },
+  {
+    "name": "Razorpay__KeySecret",
+    "value": "<RAZORPAY_KEY_SECRET>",
+    "slotSetting": false
+  },
+  {
+    "name": "WhatsApp__AccessToken",
+    "value": "<META_WHATSAPP_ACCESS_TOKEN>",
+    "slotSetting": false
+  },
+  {
+    "name": "WhatsApp__VerifyToken",
+    "value": "<WHATSAPP_WEBHOOK_VERIFY_TOKEN>",
+    "slotSetting": false
+  },
+  {
+    "name": "Meta__AppSecret",
+    "value": "<META_APP_SECRET>",
+    "slotSetting": false
+  },
+  {
+    "name": "GoogleAnalytics__ServiceAccountPrivateKey",
+    "value": "-----BEGIN PRIVATE KEY-----\n<BASE64_LINES>\n-----END PRIVATE KEY-----\n",
+    "slotSetting": false
+  },
+  {
+    "name": "GoogleAnalytics__ServiceAccountPrivateKeyId",
+    "value": "<GOOGLE_SA_PRIVATE_KEY_ID>",
+    "slotSetting": false
+  },
+  {
+    "name": "Cloudflare__ApiToken",
+    "value": "<CLOUDFLARE_API_TOKEN>",
+    "slotSetting": false
+  },
+  {
+    "name": "Redis__AccessKey",
+    "value": "<AZURE_MANAGED_REDIS_ACCESS_KEY>",
+    "slotSetting": false
+  }
+]

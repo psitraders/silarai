@@ -22,12 +22,13 @@ public class WhatsAppWebhookController : ControllerBase
 
     private readonly AppDbContext _db;
     private readonly IAiProvider _ai;
-    private readonly IConversationMemoryService _memory;
+    private readonly IChatSessionStore _sessions;
+    private readonly IChatbotContextCache _chatbotContext;
     private readonly IHttpClientFactory _httpClientFactory;
 
     public WhatsAppWebhookController(IMediator mediator, IConfiguration configuration, IWhatsAppService whatsApp,
         ILogger<WhatsAppWebhookController> logger, AppDbContext db, IAiProvider ai,
-        IConversationMemoryService memory, IHttpClientFactory httpClientFactory)
+        IChatSessionStore sessions, IChatbotContextCache chatbotContext, IHttpClientFactory httpClientFactory)
     {
         _mediator = mediator;
         _configuration = configuration;
@@ -35,9 +36,14 @@ public class WhatsAppWebhookController : ControllerBase
         _logger = logger;
         _db = db;
         _ai = ai;
-        _memory = memory;
+        _sessions = sessions;
+        _chatbotContext = chatbotContext;
         _httpClientFactory = httpClientFactory;
     }
+
+    /// <summary>Dependencies for the Chatbot-as-a-Service (external client) message path.</summary>
+    private ChatbotClientWebhookHelper.Deps ChatbotDeps =>
+        new(_db, _ai, _sessions, _chatbotContext, _httpClientFactory, _logger);
 
     // ── Step 1: Meta verification challenge ──────────────────────────────────
     [HttpGet]
@@ -95,8 +101,7 @@ public class WhatsAppWebhookController : ControllerBase
                                 var text = message.Text?.Body ?? string.Empty;
                                 if (string.IsNullOrWhiteSpace(text)) continue;
                                 await ChatbotClientWebhookHelper.HandleWhatsAppAsync(
-                                    extClient, message.From, text,
-                                    _db, _ai, _memory, _httpClientFactory, _logger, ct);
+                                    extClient, message.From, text, ChatbotDeps, ct);
                             }
                             continue;
                         }

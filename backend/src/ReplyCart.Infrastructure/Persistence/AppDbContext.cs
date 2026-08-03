@@ -93,6 +93,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<ChatbotOrder>    ChatbotOrders    => Set<ChatbotOrder>();
     public DbSet<ChatbotDocument> ChatbotDocuments => Set<ChatbotDocument>();
     public DbSet<ChatbotTokenUsage> ChatbotTokenUsages => Set<ChatbotTokenUsage>();
+    public DbSet<ChatbotSession>        ChatbotSessions        => Set<ChatbotSession>();
+    public DbSet<ChatbotSessionMessage> ChatbotSessionMessages => Set<ChatbotSessionMessage>();
 
     // Custom pages (tenant storefront)
     public DbSet<StorefrontPage> StorefrontPages => Set<StorefrontPage>();

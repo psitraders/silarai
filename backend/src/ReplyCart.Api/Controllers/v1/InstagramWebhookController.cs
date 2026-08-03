@@ -18,7 +18,8 @@ public class InstagramWebhookController : ControllerBase
     private readonly ILogger<InstagramWebhookController> _logger;
     private readonly AppDbContext _db;
     private readonly IAiProvider _ai;
-    private readonly IConversationMemoryService _memory;
+    private readonly IChatSessionStore _sessions;
+    private readonly IChatbotContextCache _chatbotContext;
     private readonly IHttpClientFactory _httpClientFactory;
 
     public InstagramWebhookController(
@@ -28,7 +29,8 @@ public class InstagramWebhookController : ControllerBase
         ILogger<InstagramWebhookController> logger,
         AppDbContext db,
         IAiProvider ai,
-        IConversationMemoryService memory,
+        IChatSessionStore sessions,
+        IChatbotContextCache chatbotContext,
         IHttpClientFactory httpClientFactory)
     {
         _mediator = mediator;
@@ -37,9 +39,14 @@ public class InstagramWebhookController : ControllerBase
         _logger = logger;
         _db = db;
         _ai = ai;
-        _memory = memory;
+        _sessions = sessions;
+        _chatbotContext = chatbotContext;
         _httpClientFactory = httpClientFactory;
     }
+
+    /// <summary>Dependencies for the Chatbot-as-a-Service (external client) message path.</summary>
+    private ChatbotClientWebhookHelper.Deps ChatbotDeps =>
+        new(_db, _ai, _sessions, _chatbotContext, _httpClientFactory, _logger);
 
     [HttpGet]
     public IActionResult Verify(
@@ -86,8 +93,7 @@ public class InstagramWebhookController : ControllerBase
                             if (messaging.Message?.IsEcho == true) continue;
 
                             await ChatbotClientWebhookHelper.HandleInstagramAsync(
-                                extClient, sid, text,
-                                _db, _ai, _memory, _httpClientFactory, _logger, ct);
+                                extClient, sid, text, ChatbotDeps, ct);
                         }
                         continue;
                     }

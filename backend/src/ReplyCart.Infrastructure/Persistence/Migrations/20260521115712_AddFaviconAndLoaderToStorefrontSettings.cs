@@ -11,19 +11,8 @@ namespace ReplyCart.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsTwoFactorEnabled",
-                table: "Users",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-
-            migrationBuilder.AddColumn<string>(
-                name: "TotpSecret",
-                table: "Users",
-                type: "nvarchar(max)",
-                nullable: true);
-
+            // NOTE: Users.IsTwoFactorEnabled / Users.TotpSecret are already added by
+            // 20260508120000_AddAuthProductionFlows — removed here to avoid a duplicate-column error.
             migrationBuilder.AddColumn<string>(
                 name: "CloudflareHostnameId",
                 table: "Tenants",
@@ -222,33 +211,8 @@ namespace ReplyCart.Infrastructure.Persistence.Migrations
                 type: "nvarchar(max)",
                 nullable: true);
 
-            migrationBuilder.CreateTable(
-                name: "AbandonedCarts",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CustomerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CustomerPhone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CustomerEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CartItemsJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CartTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ItemCount = table.Column<int>(type: "int", nullable: false),
-                    StoreSlug = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsRecovered = table.Column<bool>(type: "bit", nullable: false),
-                    LastReminderSentAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbandonedCarts", x => x.Id);
-                });
+            // NOTE: AbandonedCarts is already created by 20260507120000_AddCouponsReviewsAbandonedCarts —
+            // removed here to avoid a duplicate-table error.
 
             migrationBuilder.CreateTable(
                 name: "AutoCampaigns",
@@ -318,51 +282,9 @@ namespace ReplyCart.Infrastructure.Persistence.Migrations
                     table.PrimaryKey("PK_ConversationSessions", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Coupons",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    Value = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MinOrderAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    MaxUses = table.Column<int>(type: "int", nullable: true),
-                    UsedCount = table.Column<int>(type: "int", nullable: false),
-                    ValidFrom = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ValidTo = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    BuyQuantity = table.Column<int>(type: "int", nullable: true),
-                    GetQuantity = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Coupons", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "LandingPageConfigs",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ContentJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LandingPageConfigs", x => x.Id);
-                });
+            // NOTE: Coupons is already created by 20260507120000_AddCouponsReviewsAbandonedCarts and
+            // LandingPageConfigs by 20260508000000_AddLandingPageConfig — removed here to avoid
+            // duplicate-table errors.
 
             migrationBuilder.CreateTable(
                 name: "PlatformSettings",
@@ -381,80 +303,14 @@ namespace ReplyCart.Infrastructure.Persistence.Migrations
                     table.PrimaryKey("PK_PlatformSettings", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "ProductReviews",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReviewerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReviewerEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsApproved = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductReviews", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProductReviews_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserTokens",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    TokenHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserTokens", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserTokens_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProductReviews_ProductId",
-                table: "ProductReviews",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserTokens_UserId",
-                table: "UserTokens",
-                column: "UserId");
+            // NOTE: ProductReviews is already created by 20260507120000_AddCouponsReviewsAbandonedCarts
+            // and UserTokens by 20260508120000_AddAuthProductionFlows (including their indexes/FKs) —
+            // removed here to avoid duplicate-table errors.
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "AbandonedCarts");
-
             migrationBuilder.DropTable(
                 name: "AutoCampaigns");
 
@@ -462,27 +318,7 @@ namespace ReplyCart.Infrastructure.Persistence.Migrations
                 name: "ConversationSessions");
 
             migrationBuilder.DropTable(
-                name: "Coupons");
-
-            migrationBuilder.DropTable(
-                name: "LandingPageConfigs");
-
-            migrationBuilder.DropTable(
                 name: "PlatformSettings");
-
-            migrationBuilder.DropTable(
-                name: "ProductReviews");
-
-            migrationBuilder.DropTable(
-                name: "UserTokens");
-
-            migrationBuilder.DropColumn(
-                name: "IsTwoFactorEnabled",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "TotpSecret",
-                table: "Users");
 
             migrationBuilder.DropColumn(
                 name: "CloudflareHostnameId",
