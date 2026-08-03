@@ -31,3 +31,10 @@ secrets/
 All_Project_Special_Keys.txt
 
 frontend/.env
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
