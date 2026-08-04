@@ -44,6 +44,7 @@ export interface StorefrontSettingsDto {
   // Branding / UX
   faviconUrl?: string;
   loaderEnabled?: boolean;
+  b2bEnabled?: boolean;
 }
 
 export interface IntegrationSettingsDto {

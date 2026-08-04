@@ -31,6 +31,13 @@ public class StorefrontSettings : TenantEntity
     /// Defaults to false — opt-in per tenant.
     /// </summary>
     public bool SubCategoriesEnabled { get; set; }
+
+    /// <summary>
+    /// When true (default) the storefront offers B2B features: business-buyer
+    /// registration, wholesale tier pricing and bulk quote requests.
+    /// B2C-only sellers can switch this off to hide all B2B UI.
+    /// </summary>
+    public bool B2BEnabled { get; set; } = true;
     public string? CustomCss { get; set; }
 
     /// <summary>

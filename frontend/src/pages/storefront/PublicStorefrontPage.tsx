@@ -98,6 +98,7 @@ interface StoreData {
   faviconUrl?: string;             // dedicated favicon (falls back to logoUrl)
   loaderEnabled?: boolean;         // show branded 2-second loading screen
   allowPublicInquiries?: boolean;  // allow inquiry button on public store
+  b2bEnabled?: boolean;            // tenant offers B2B (signup, tiers, quotes)
 }
 
 interface SubCategory {
@@ -430,11 +431,12 @@ function ProductModal({
     staleTime: 5 * 60 * 1000,
   });
 
-  // Wholesale tiers — only fetched for approved B2B customers
+  // Wholesale tiers — only fetched for approved B2B customers on B2B-enabled stores
+  const b2bOn = store.b2bEnabled !== false;
   const { data: wholesaleTiers } = useQuery({
     queryKey: ['public-tiers', slug, product.id],
     queryFn: () => axios.get(`${BASE_URL}/public/${slug}/products/${product.id}/wholesale-tiers`).then(r => r.data as any[]),
-    enabled: !!customer?.isB2BApproved,
+    enabled: b2bOn && !!customer?.isB2BApproved,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -797,7 +799,7 @@ function ProductModal({
           </div>
 
           {/* Wholesale tier table — approved B2B customers only */}
-          {customer?.isB2BApproved && (wholesaleTiers?.length ?? 0) > 0 && (
+          {b2bOn && customer?.isB2BApproved && (wholesaleTiers?.length ?? 0) > 0 && (
             <div className="rounded-xl border-2 overflow-hidden" style={{ borderColor: themeColor + '40' }}>
               <div className="px-3 py-2 text-xs font-bold text-white flex items-center gap-1.5"
                 style={{ backgroundColor: themeColor }}>
@@ -912,7 +914,7 @@ function ProductModal({
               )}
 
               {/* B2B: request a wholesale quote for this product */}
-              {customer?.isB2BCustomer && (
+              {b2bOn && customer?.isB2BCustomer && (
                 <button
                   onClick={() => setShowQuoteModal(true)}
                   className="flex items-center justify-center gap-2 py-3 rounded-2xl border-2 font-semibold text-sm hover:bg-slate-50 transition-colors"
@@ -3777,6 +3779,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             razorpayEnabled: store.razorpayEnabled,
             whatsAppNumber: store.whatsAppNumber,
             whatsAppCtaLabel: store.whatsAppCtaLabel,
+            b2bEnabled: store.b2bEnabled,
           }}
           slug={slug ?? ''}
           isCustomDomain={!!overrideSlug}
@@ -3791,6 +3794,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           <CustomerAuthModal
             slug={slug}
             themeColor={tc}
+            b2bEnabled={store.b2bEnabled !== false}
             onClose={() => setShowAuthModal(false)}
           />
         </React.Suspense>
@@ -3803,6 +3807,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             slug={slug}
             themeColor={tc}
             currency={store.currency}
+            b2bEnabled={store.b2bEnabled !== false}
             onClose={() => setShowAccountPanel(false)}
             onAddToCart={(productId, title, price, imageUrl) => {
               addItem({ productId, productTitle: title, unitPrice: price, primaryImage: imageUrl });

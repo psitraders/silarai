@@ -13,6 +13,8 @@ interface Props {
   currency?: string;
   onClose: () => void;
   onAddToCart?: (productId: string, title: string, price: number, imageUrl?: string) => void;
+  /** When false the store is B2C-only — hide the Quotes tab. */
+  b2bEnabled?: boolean;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -23,7 +25,7 @@ const STATUS_COLOR: Record<string, string> = {
   Cancelled:   'bg-red-100 text-red-700',
 };
 
-export function MyAccountPanel({ slug, themeColor, currency = 'INR', onClose, onAddToCart }: Props) {
+export function MyAccountPanel({ slug, themeColor, currency = 'INR', onClose, onAddToCart, b2bEnabled = true }: Props) {
   const [activeTab, setActiveTab] = useState<'orders' | 'wishlist' | 'quotes' | 'profile'>('orders');
   const { customer, logout }       = useStorefrontAuth();
   const api                        = useCustomerApi(slug);
@@ -81,8 +83,8 @@ export function MyAccountPanel({ slug, themeColor, currency = 'INR', onClose, on
           {[
             { id: 'orders', label: 'Orders', icon: ShoppingBag },
             { id: 'wishlist', label: 'Wishlist', icon: Heart },
-            // Quote history only exists for business buyers
-            ...(customer?.isB2BCustomer ? [{ id: 'quotes', label: 'Quotes', icon: FileText }] : []),
+            // Quote history only exists for business buyers on B2B-enabled stores
+            ...(b2bEnabled && customer?.isB2BCustomer ? [{ id: 'quotes', label: 'Quotes', icon: FileText }] : []),
             { id: 'profile', label: 'Profile', icon: User },
           ].map(({ id, label, icon: Icon }) => (
             <button

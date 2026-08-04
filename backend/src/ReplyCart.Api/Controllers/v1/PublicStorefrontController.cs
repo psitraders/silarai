@@ -172,6 +172,7 @@ public class PublicStorefrontController(
             FaviconUrl    = AbsoluteImageUrl(business.StorefrontSettings?.FaviconUrl),
             LoaderEnabled = business.StorefrontSettings?.LoaderEnabled ?? true,
             AllowPublicInquiries = business.StorefrontSettings?.AllowPublicInquiries ?? true,
+            B2BEnabled    = business.StorefrontSettings?.B2BEnabled ?? true,
         });
     }
 
@@ -1195,6 +1196,13 @@ public class PublicStorefrontController(
             return null;
         if (!Guid.TryParse(User.FindFirst("sub")?.Value, out var customerId))
             return null;
+
+        // Respect the tenant's B2B toggle — retail pricing when disabled
+        var b2bEnabled = await db.StorefrontSettings.AsNoTracking()
+            .Where(s => s.TenantId == tenantId)
+            .Select(s => (bool?)s.B2BEnabled)
+            .FirstOrDefaultAsync(ct) ?? true;
+        if (!b2bEnabled) return null;
 
         var approved = await db.StorefrontCustomers.AsNoTracking()
             .AnyAsync(c => c.Id == customerId && c.TenantId == tenantId

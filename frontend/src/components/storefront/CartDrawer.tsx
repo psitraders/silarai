@@ -17,6 +17,7 @@ interface StoreData {
   razorpayKeyId?: string;
   whatsAppNumber?: string;
   whatsAppCtaLabel?: string;
+  b2bEnabled?: boolean;
 }
 
 interface CartDrawerProps {
@@ -76,7 +77,8 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
   // The server independently re-verifies B2B approval and recomputes tier
   // prices on COD orders — this is display + payload consistency, not authority.
   interface Tier { minQuantity: number; maxQuantity?: number | null; pricePerUnit: number; label?: string | null }
-  const isWholesale = !!customer?.isB2BCustomer && !!customer?.isB2BApproved;
+  const b2bOn = store.b2bEnabled !== false;
+  const isWholesale = b2bOn && !!customer?.isB2BCustomer && !!customer?.isB2BApproved;
   const productIdsKey = items.map(i => i.productId).sort().join(',');
   const { data: tiersByProduct } = useQuery({
     queryKey: ['sf-cart-tiers', slug, productIdsKey],
@@ -475,7 +477,7 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
                 </button>
 
                 {/* B2B: request a bulk/wholesale quote instead of checking out */}
-                {customer?.isB2BCustomer && items.length > 0 && (
+                {b2bOn && customer?.isB2BCustomer && items.length > 0 && (
                   <button
                     onClick={() => setShowQuoteModal(true)}
                     className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-colors hover:bg-slate-50"

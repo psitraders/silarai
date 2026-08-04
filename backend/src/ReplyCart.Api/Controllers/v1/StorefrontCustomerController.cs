@@ -150,6 +150,14 @@ public class StorefrontQuoteController(
             .FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null) return NotFound(new { error = "Store not found." });
 
+        // Respect the tenant's B2B toggle — no quote submissions when disabled
+        var b2bEnabled = await db.StorefrontSettings.AsNoTracking()
+            .Where(s => s.TenantId == tenant.Id)
+            .Select(s => (bool?)s.B2BEnabled)
+            .FirstOrDefaultAsync(ct) ?? true;
+        if (!b2bEnabled)
+            return BadRequest(new { error = "This store does not accept quote requests." });
+
         Guid? customerId = null;
         if (User.Identity?.IsAuthenticated == true && User.IsInRole("StorefrontCustomer"))
             customerId = Guid.Parse(User.FindFirstValue("sub")!);
