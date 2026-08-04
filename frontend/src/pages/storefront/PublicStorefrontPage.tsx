@@ -430,6 +430,14 @@ function ProductModal({
     staleTime: 5 * 60 * 1000,
   });
 
+  // Wholesale tiers — only fetched for approved B2B customers
+  const { data: wholesaleTiers } = useQuery({
+    queryKey: ['public-tiers', slug, product.id],
+    queryFn: () => axios.get(`${BASE_URL}/public/${slug}/products/${product.id}/wholesale-tiers`).then(r => r.data as any[]),
+    enabled: !!customer?.isB2BApproved,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Fetch approved reviews for this product
   const { data: reviewsData } = useQuery({
     queryKey: ['public-reviews', slug, product.id],
@@ -787,6 +795,30 @@ function ProductModal({
               <span className="text-base text-slate-400 line-through">{formatCurrency(product.basePrice, currency)}</span>
             )}
           </div>
+
+          {/* Wholesale tier table — approved B2B customers only */}
+          {customer?.isB2BApproved && (wholesaleTiers?.length ?? 0) > 0 && (
+            <div className="rounded-xl border-2 overflow-hidden" style={{ borderColor: themeColor + '40' }}>
+              <div className="px-3 py-2 text-xs font-bold text-white flex items-center gap-1.5"
+                style={{ backgroundColor: themeColor }}>
+                <FileText className="w-3.5 h-3.5" /> Wholesale Pricing (B2B)
+              </div>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-slate-100">
+                  {wholesaleTiers!.map((t: any) => (
+                    <tr key={t.id}>
+                      <td className="px-3 py-1.5 text-slate-600">
+                        {t.label || (t.maxQuantity ? `${t.minQuantity}–${t.maxQuantity} pcs` : `${t.minQuantity}+ pcs`)}
+                      </td>
+                      <td className="px-3 py-1.5 text-right font-bold" style={{ color: themeColor }}>
+                        {formatCurrency(t.pricePerUnit, currency)}<span className="text-xs font-normal text-slate-400">/pc</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {product.description && (
             <p className="text-sm text-slate-600 leading-relaxed">{product.description}</p>
