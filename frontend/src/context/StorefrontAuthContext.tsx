@@ -128,6 +128,10 @@ export function useCustomerApi(slug: string) {
       axios.get(`${BASE_URL}/public/${slug}/products/${productId}/wholesale-tiers`)
         .then(r => r.data as any[]),
 
+    getMyQuotes: () =>
+      axios.get(`${BASE_URL}/public/${slug}/customer/quotes`, { headers: authHeaders })
+        .then(r => r.data as any[]),
+
     submitQuote: (payload: any) =>
       axios.post(`${BASE_URL}/public/${slug}/quotes`, payload, { headers: authHeaders })
         .then(r => r.data),

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   X, ShoppingBag, Heart, User, Star, Package, LogOut,
-  Loader2, RotateCcw, Trash2
+  Loader2, RotateCcw, Trash2, FileText
 } from 'lucide-react';
 import { useStorefrontAuth, useCustomerApi } from '../../context/StorefrontAuthContext';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -24,13 +24,14 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export function MyAccountPanel({ slug, themeColor, currency = 'INR', onClose, onAddToCart }: Props) {
-  const [activeTab, setActiveTab] = useState<'orders' | 'wishlist' | 'profile'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'wishlist' | 'quotes' | 'profile'>('orders');
   const { customer, logout }       = useStorefrontAuth();
   const api                        = useCustomerApi(slug);
   const qc                         = useQueryClient();
 
   const ordersQ   = useQuery({ queryKey: ['sf-orders', slug], queryFn: api.getOrders,   enabled: activeTab === 'orders' });
   const wishlistQ = useQuery({ queryKey: ['sf-wishlist', slug], queryFn: api.getWishlist, enabled: activeTab === 'wishlist' });
+  const quotesQ   = useQuery({ queryKey: ['sf-quotes', slug], queryFn: api.getMyQuotes, enabled: activeTab === 'quotes' });
 
   const removeWishlist = useMutation({
     mutationFn: (pid: string) => api.toggleWishlist(pid),
@@ -80,6 +81,8 @@ export function MyAccountPanel({ slug, themeColor, currency = 'INR', onClose, on
           {[
             { id: 'orders', label: 'Orders', icon: ShoppingBag },
             { id: 'wishlist', label: 'Wishlist', icon: Heart },
+            // Quote history only exists for business buyers
+            ...(customer?.isB2BCustomer ? [{ id: 'quotes', label: 'Quotes', icon: FileText }] : []),
             { id: 'profile', label: 'Profile', icon: User },
           ].map(({ id, label, icon: Icon }) => (
             <button
@@ -183,6 +186,55 @@ export function MyAccountPanel({ slug, themeColor, currency = 'INR', onClose, on
                 </div>
               </div>
             ))
+          )}
+
+          {/* QUOTES (B2B) */}
+          {activeTab === 'quotes' && (
+            quotesQ.isLoading ? <Spinner /> :
+            !quotesQ.data?.length ? <Empty icon={FileText} text="No quote requests yet" /> :
+            quotesQ.data.map((quote: any) => {
+              let quoteItems: { title: string; qty: number; unitPrice: number }[] = [];
+              try { quoteItems = JSON.parse(quote.itemsJson ?? '[]'); } catch { /* ignore */ }
+              return (
+                <div key={quote.id} className="bg-slate-50 rounded-xl p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-500">
+                      {new Date(quote.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      quote.status === 'Replied' ? 'bg-green-100 text-green-700'
+                      : quote.status === 'Closed' ? 'bg-slate-200 text-slate-600'
+                      : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {quote.status === 'Pending' ? 'Awaiting reply' : quote.status}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    {quoteItems.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600">{item.title} × {item.qty}</span>
+                        <span className="text-slate-500">{formatCurrency(item.unitPrice * item.qty, currency)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {quote.notes && (
+                    <p className="text-xs text-slate-500 italic">"{quote.notes}"</p>
+                  )}
+                  {quote.merchantReply && (
+                    <div className="rounded-lg px-3 py-2 text-xs bg-white border-l-4"
+                      style={{ borderLeftColor: themeColor }}>
+                      <p className="font-semibold text-slate-700 mb-0.5">Seller's reply</p>
+                      <p className="text-slate-600 whitespace-pre-wrap">{quote.merchantReply}</p>
+                      {quote.repliedAt && (
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          {new Date(quote.repliedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
 
           {/* PROFILE */}

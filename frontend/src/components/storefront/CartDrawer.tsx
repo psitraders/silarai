@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, AlertCircle, CreditCard, Truck } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, AlertCircle, CreditCard, Truck, FileText } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useStorefrontAuth } from '../../context/StorefrontAuthContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { paymentApi } from '../../api/payment.api';
+import { QuoteRequestModal } from './QuoteRequestModal';
 
 interface StoreData {
   name: string;
@@ -42,6 +44,8 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'https://silarai-fbahb2bsg4cng3
 
 export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartDrawerProps) {
   const { items, totalItems, totalAmount, removeItem, updateQty, clearCart } = useCart();
+  const { customer } = useStorefrontAuth();
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const navigate  = useNavigate();
   const currency  = store.currency ?? 'INR';
   const tc        = store.themeColor;
@@ -413,6 +417,17 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
                   Proceed to Checkout <ArrowRight className="w-4 h-4" />
                 </button>
 
+                {/* B2B: request a bulk/wholesale quote instead of checking out */}
+                {customer?.isB2BCustomer && items.length > 0 && (
+                  <button
+                    onClick={() => setShowQuoteModal(true)}
+                    className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-colors hover:bg-slate-50"
+                    style={{ color: tc, borderColor: tc }}
+                  >
+                    <FileText className="w-4 h-4" /> Request Bulk Quote
+                  </button>
+                )}
+
                 <p className="text-[10px] text-slate-400 text-center">
                   {store.razorpayEnabled ? '🔒 Secured by Razorpay' : ''}
                 </p>
@@ -605,6 +620,22 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
           </>
         )}
       </div>
+
+      {/* B2B quote request — pre-filled with the cart contents */}
+      {showQuoteModal && (
+        <QuoteRequestModal
+          slug={slug}
+          themeColor={tc}
+          currency={currency}
+          items={items.map(i => ({
+            productId: i.productId,
+            title:     i.productTitle,
+            qty:       i.quantity,
+            unitPrice: i.unitPrice,
+          }))}
+          onClose={() => setShowQuoteModal(false)}
+        />
+      )}
     </>
   );
 }

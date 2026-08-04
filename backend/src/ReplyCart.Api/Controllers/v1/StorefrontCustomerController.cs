@@ -119,6 +119,17 @@ public class StorefrontCustomerController(
             new ToggleWishlistCommand(CallerCustomerId, CallerTenantId, productId), ct);
         return Ok(result);
     }
+
+    // ── My quote requests ─────────────────────────────────────────────────────
+
+    [HttpGet("quotes")]
+    [Authorize(Roles = "StorefrontCustomer")]
+    public async Task<IActionResult> GetMyQuotes(string slug, CancellationToken ct)
+    {
+        var quotes = await mediator.Send(
+            new GetMyQuotesQuery(CallerCustomerId, CallerTenantId), ct);
+        return Ok(quotes);
+    }
 }
 
 // ── Quote (no auth required) ──────────────────────────────────────────────────

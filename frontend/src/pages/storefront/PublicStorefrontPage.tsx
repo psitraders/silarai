@@ -7,7 +7,7 @@ import {
   Mail, Package, Sparkles, ChevronLeft, ChevronRight,
   Menu, Heart, Shield, Zap, Users, Flame,
   CheckCircle, BadgeCheck, Download,
-  Truck, Lock, RotateCcw, ShieldCheck, UserCircle,
+  Truck, Lock, RotateCcw, ShieldCheck, UserCircle, FileText,
 } from 'lucide-react';
 import { StorefrontAuthProvider, useStorefrontAuth } from '../../context/StorefrontAuthContext';
 
@@ -17,6 +17,9 @@ const CustomerAuthModal = React.lazy(() =>
 );
 const MyAccountPanel = React.lazy(() =>
   import('../../components/storefront/MyAccountPanel').then(m => ({ default: m.MyAccountPanel }))
+);
+const QuoteRequestModal = React.lazy(() =>
+  import('../../components/storefront/QuoteRequestModal').then(m => ({ default: m.QuoteRequestModal }))
 );
 
 /** Instagram brand icon — lucide-react v1.x doesn't include it */
@@ -373,6 +376,8 @@ function ProductModal({
   product, store, themeColor, onClose, slug, isCustomDomain,
 }: { product: Product; store: StoreData; themeColor: string; onClose: () => void; slug: string; isCustomDomain: boolean }) {
   const navigate = useNavigate();
+  const { customer } = useStorefrontAuth();
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const [showInquiry, setShowInquiry] = useState(false);
@@ -874,6 +879,18 @@ function ProductModal({
                 </a>
               )}
 
+              {/* B2B: request a wholesale quote for this product */}
+              {customer?.isB2BCustomer && (
+                <button
+                  onClick={() => setShowQuoteModal(true)}
+                  className="flex items-center justify-center gap-2 py-3 rounded-2xl border-2 font-semibold text-sm hover:bg-slate-50 transition-colors"
+                  style={{ borderColor: themeColor, color: themeColor }}
+                >
+                  <FileText className="w-4 h-4" />
+                  Request Bulk Quote
+                </button>
+              )}
+
               <button
                 onClick={() => { setShowInquiry(s => !s); setShowCheckout(false); }}
                 className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 text-slate-700 font-medium text-sm hover:bg-slate-50"
@@ -1132,6 +1149,24 @@ function ProductModal({
           </div>
         </div>
       </div>
+
+      {/* B2B quote request for this product */}
+      {showQuoteModal && (
+        <React.Suspense fallback={null}>
+          <QuoteRequestModal
+            slug={slug}
+            themeColor={themeColor}
+            currency={currency}
+            items={[{
+              productId: product.id,
+              title:     product.title,
+              qty:       1,
+              unitPrice: product.discountedPrice ?? product.basePrice,
+            }]}
+            onClose={() => setShowQuoteModal(false)}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 }
