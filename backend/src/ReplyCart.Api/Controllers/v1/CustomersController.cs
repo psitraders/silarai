@@ -14,7 +14,13 @@ namespace ReplyCart.Api.Controllers.v1;
 [Authorize]
 [ApiController]
 [Route("api/v1/customers")]
-public class CustomersController(IMediator mediator, IAppDbContext db, ITenantContext tenantContext) : ControllerBase
+public class CustomersController(
+    IMediator mediator,
+    IAppDbContext db,
+    ITenantContext tenantContext,
+    IEmailService emailService,
+    IConfiguration configuration,
+    ILogger<CustomersController> logger) : ControllerBase
 {
     // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -96,7 +102,33 @@ public class CustomersController(IMediator mediator, IAppDbContext db, ITenantCo
     {
         try
         {
-            await mediator.Send(new ApproveB2BCustomerCommand(crmCustomerId, approve), ct);
+            var result = await mediator.Send(new ApproveB2BCustomerCommand(crmCustomerId, approve), ct);
+
+            // ── Congratulate the buyer on approval (fire-and-forget) ──────────
+            if (result.Approved && !string.IsNullOrWhiteSpace(result.Email))
+            {
+                var tenant = await db.Tenants.AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Id == tenantContext.CurrentTenantId, ct);
+                if (tenant != null)
+                {
+                    var frontendUrl = (configuration["FrontendUrl"] ?? "https://silarai.com").TrimEnd('/');
+                    var storeUrl    = $"{frontendUrl}/{tenant.Slug}";
+                    var storeName   = tenant.Name;
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await emailService.SendB2BApprovedAsync(
+                                result.Email, result.Name, storeName, storeUrl, CancellationToken.None);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogWarning(ex, "B2B approval email failed for {Email}", result.Email);
+                        }
+                    }, CancellationToken.None);
+                }
+            }
+
             return NoContent();
         }
         catch (NotFoundException)

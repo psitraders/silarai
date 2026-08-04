@@ -117,6 +117,40 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger, I
 
     // â”€â”€ Core SMTP sender â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+    // ── B2B: new quote request → store owner ─────────────────────────────────
+
+    public async Task SendNewQuoteNotificationAsync(
+        string toEmail, string ownerName, string storeName,
+        string contactName, string? companyName, string contactEmail, string? contactPhone,
+        IEnumerable<string> itemLines, string? notes, CancellationToken ct = default)
+    {
+        var subject = $"📄 New quote request — {contactName}{(string.IsNullOrWhiteSpace(companyName) ? "" : $" ({companyName})")} · {storeName}";
+        var html    = BuildNewQuoteHtml(ownerName, storeName, contactName, companyName,
+                          contactEmail, contactPhone, itemLines, notes, $"{_dashboardUrl}/b2b/quotes");
+        await SendAsync(toEmail, ownerName, subject, html, ct);
+    }
+
+    // ── B2B: merchant replied → buyer ────────────────────────────────────────
+
+    public async Task SendQuoteReplyAsync(
+        string toEmail, string toName, string storeName,
+        string replyText, string status, string storeUrl, CancellationToken ct = default)
+    {
+        var subject = $"💬 {storeName} replied to your quote request";
+        var html    = BuildQuoteReplyHtml(toName, storeName, replyText, status, storeUrl);
+        await SendAsync(toEmail, toName, subject, html, ct);
+    }
+
+    // ── B2B: account approved → buyer ────────────────────────────────────────
+
+    public async Task SendB2BApprovedAsync(
+        string toEmail, string toName, string storeName, string storeUrl, CancellationToken ct = default)
+    {
+        var subject = $"✅ Your business account at {storeName} is approved";
+        var html    = BuildB2BApprovedHtml(toName, storeName, storeUrl);
+        await SendAsync(toEmail, toName, subject, html, ct);
+    }
+
     private async Task SendAsync(string toEmail, string toName, string subject, string html, CancellationToken ct)
     {
         var apiKey = config["Resend:ApiKey"];
@@ -759,6 +793,156 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger, I
         <p style="margin:0;font-size:12px;color:#94a3b8;">ReplyCart Platform Â· This is an automated admin notification</p>
       </td></tr>
 
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
+""";
+
+    // ── B2B templates ─────────────────────────────────────────────────────────
+
+    private static string BuildNewQuoteHtml(
+        string ownerName, string storeName, string contactName, string? companyName,
+        string contactEmail, string? contactPhone, IEnumerable<string> itemLines, string? notes, string quotesUrl)
+    {
+        var itemsHtml = string.Join("", itemLines.Select(l =>
+            $"<tr><td style=\"padding:6px 0;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;\">{System.Net.WebUtility.HtmlEncode(l)}</td></tr>"));
+        var companyHtml = string.IsNullOrWhiteSpace(companyName) ? "" :
+            $"<p style=\"margin:0;font-size:13px;color:#64748b;\">{System.Net.WebUtility.HtmlEncode(companyName)}</p>";
+        var phoneHtml = string.IsNullOrWhiteSpace(contactPhone) ? "" :
+            $" · {System.Net.WebUtility.HtmlEncode(contactPhone)}";
+        var notesHtml = string.IsNullOrWhiteSpace(notes) ? "" :
+            $"<p style=\"margin:16px 0 0;font-size:13px;color:#64748b;font-style:italic;\">“{System.Net.WebUtility.HtmlEncode(notes)}”</p>";
+
+        return $$"""
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>New Quote Request</title></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.06);max-width:560px;width:100%;">
+      <tr><td style="background:linear-gradient(135deg,#0f766e,#14b8a6);padding:28px 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="color:#fff;font-size:20px;font-weight:800;letter-spacing:-.5px;">{{storeName}}</td>
+            <td align="right"><span style="background:rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:999px;">Quote Request 📄</span></td>
+          </tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:32px 32px 24px;">
+        <p style="margin:0 0 6px;font-size:16px;font-weight:600;color:#1e293b;">Hi {{ownerName}},</p>
+        <p style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.6;">A business buyer just requested a bulk quote:</p>
+        <div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:20px;margin-bottom:20px;">
+          <p style="margin:0 0 2px;font-size:16px;font-weight:700;color:#1e293b;">{{contactName}}</p>
+          {{companyHtml}}
+          <p style="margin:6px 0 0;font-size:13px;color:#0f766e;font-weight:600;">{{contactEmail}}{{phoneHtml}}</p>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:4px;">
+          {{itemsHtml}}
+        </table>
+        {{notesHtml}}
+        <div style="text-align:center;margin-top:24px;">
+          <a href="{{quotesUrl}}" style="display:inline-block;background:#0f766e;color:#fff;font-size:14px;font-weight:700;padding:12px 28px;border-radius:10px;text-decoration:none;">Open Quote Inbox →</a>
+        </div>
+      </td></tr>
+      <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
+        <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
+          Powered by <strong style="color:#0f766e;">Silarai</strong>
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
+""";
+    }
+
+    private static string BuildQuoteReplyHtml(
+        string toName, string storeName, string replyText, string status, string storeUrl)
+    {
+        var statusBadge = status == "Closed" ? "Closed" : "Replied 💬";
+        var replyHtml   = System.Net.WebUtility.HtmlEncode(replyText).Replace("\n", "<br/>");
+
+        return $$"""
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Quote Reply</title></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.06);max-width:560px;width:100%;">
+      <tr><td style="background:linear-gradient(135deg,#0f766e,#14b8a6);padding:28px 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="color:#fff;font-size:20px;font-weight:800;letter-spacing:-.5px;">{{storeName}}</td>
+            <td align="right"><span style="background:rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:999px;">{{statusBadge}}</span></td>
+          </tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:32px 32px 24px;">
+        <p style="margin:0 0 6px;font-size:16px;font-weight:600;color:#1e293b;">Hi {{toName}},</p>
+        <p style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.6;">{{storeName}} has replied to your quote request:</p>
+        <div style="background:#f8fafc;border-left:4px solid #0f766e;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+          <p style="margin:0;font-size:14px;color:#334155;line-height:1.7;">{{replyHtml}}</p>
+        </div>
+        <p style="margin:0 0 24px;font-size:13px;color:#64748b;text-align:center;">You can also see this reply anytime in <strong>My Account → Quotes</strong> on the store.</p>
+        <div style="text-align:center;">
+          <a href="{{storeUrl}}" style="display:inline-block;background:#0f766e;color:#fff;font-size:14px;font-weight:700;padding:12px 28px;border-radius:10px;text-decoration:none;">Visit Store →</a>
+        </div>
+      </td></tr>
+      <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
+        <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
+          Powered by <strong style="color:#0f766e;">Silarai</strong>
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
+""";
+    }
+
+    private static string BuildB2BApprovedHtml(string toName, string storeName, string storeUrl)
+        => $$"""
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>B2B Approved</title></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.06);max-width:560px;width:100%;">
+      <tr><td style="background:linear-gradient(135deg,#15803d,#22c55e);padding:28px 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="color:#fff;font-size:20px;font-weight:800;letter-spacing:-.5px;">{{storeName}}</td>
+            <td align="right"><span style="background:rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:999px;">Approved ✅</span></td>
+          </tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:32px 32px 24px;">
+        <p style="margin:0 0 6px;font-size:16px;font-weight:600;color:#1e293b;">Hi {{toName}},</p>
+        <p style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.6;">
+          Great news — your business (B2B) account at <strong>{{storeName}}</strong> has been approved!
+          You now have access to:
+        </p>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;margin-bottom:24px;">
+          <p style="margin:0 0 8px;font-size:14px;color:#166534;">✓ Wholesale pricing on eligible products</p>
+          <p style="margin:0 0 8px;font-size:14px;color:#166534;">✓ Automatic bulk discounts in your cart</p>
+          <p style="margin:0;font-size:14px;color:#166534;">✓ Bulk quote requests with direct seller replies</p>
+        </div>
+        <div style="text-align:center;">
+          <a href="{{storeUrl}}" style="display:inline-block;background:#15803d;color:#fff;font-size:14px;font-weight:700;padding:12px 28px;border-radius:10px;text-decoration:none;">Start Shopping →</a>
+        </div>
+      </td></tr>
+      <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
+        <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
+          Powered by <strong style="color:#0f766e;">Silarai</strong>
+        </p>
+      </td></tr>
     </table>
   </td></tr>
 </table>
