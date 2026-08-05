@@ -421,8 +421,10 @@ function ProductModal({
   const [reviewSubmitted, setReviewSubmitted]   = useState(false);
   const [reviewError, setReviewError]           = useState<string | null>(null);
 
-  // Cart items (for abandoned cart tracking on inquiry)
-  const { items: cartItems } = useCart();
+  // Cart items (for abandoned cart tracking on inquiry) + bulk add for B2B
+  const { items: cartItems, addItem } = useCart();
+  const [bulkQty, setBulkQty] = useState('');
+  const [bulkAdded, setBulkAdded] = useState(false);
 
   // Fetch full product detail (includes variants) from public endpoint
   const { data: productDetail } = useQuery({
@@ -821,6 +823,66 @@ function ProductModal({
               </table>
             </div>
           )}
+
+          {/* B2B bulk order — stock visibility + quantity input */}
+          {b2bOn && customer?.isB2BApproved && !outOfStock && (() => {
+            const stock   = product.stockQuantity;
+            const qtyNum  = Math.max(0, Math.floor(Number(bulkQty) || 0));
+            const capped  = stock != null ? Math.min(qtyNum, stock) : qtyNum;
+            const retail  = product.discountedPrice ?? product.basePrice;
+            const tier    = (wholesaleTiers ?? [])
+              .filter((t: any) => capped >= t.minQuantity && (t.maxQuantity == null || capped <= t.maxQuantity))
+              .sort((a: any, b: any) => b.minQuantity - a.minQuantity)[0];
+            const unit    = tier ? Math.min(retail, tier.pricePerUnit) : retail;
+            return (
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wide">Bulk Order (B2B)</p>
+                  <span className="text-xs font-semibold" style={{ color: themeColor }}>
+                    {stock != null ? `${stock} units in stock` : 'Stock available'}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={stock ?? undefined}
+                    placeholder="Qty"
+                    value={bulkQty}
+                    onChange={e => { setBulkQty(e.target.value); setBulkAdded(false); }}
+                    className="w-24 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
+                  />
+                  <button
+                    onClick={() => {
+                      if (capped < 1) return;
+                      addItem({
+                        productId: product.id,
+                        productTitle: product.title,
+                        unitPrice: retail,
+                        primaryImage: product.primaryImage,
+                        categoryName: product.categoryName,
+                        stockQuantity: product.stockQuantity,
+                      }, capped);
+                      setBulkAdded(true);
+                    }}
+                    disabled={capped < 1}
+                    className="flex-1 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    {bulkAdded ? '✓ Added to cart' : capped >= 1
+                      ? `Add ${capped} — ${formatCurrency(unit * capped, currency)}${tier ? ' (wholesale)' : ''}`
+                      : 'Add to cart'}
+                  </button>
+                </div>
+                {tier && capped >= 1 && (
+                  <p className="text-[11px] text-slate-500">
+                    Wholesale rate applied: {formatCurrency(unit, currency)}/pc
+                    {stock != null && qtyNum > stock ? ` · capped at ${stock} available` : ''}
+                  </p>
+                )}
+              </div>
+            );
+          })()}
 
           {product.description && (
             <p className="text-sm text-slate-600 leading-relaxed">{product.description}</p>

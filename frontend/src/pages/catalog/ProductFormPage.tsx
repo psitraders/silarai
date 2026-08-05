@@ -375,6 +375,20 @@ export function ProductFormPage() {
               orders within the specified quantity range on your storefront.
             </p>
           </div>
+          {/* Current inventory — reference while planning tier quantities */}
+          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3">
+            <span className="text-sm font-medium text-slate-700">Current stock</span>
+            <span className={`text-sm font-bold ${
+              watchedStock === '' || watchedStock == null ? 'text-slate-400'
+              : Number(watchedStock) <= 0 ? 'text-red-600'
+              : Number(watchedStock) <= 5 ? 'text-amber-600'
+              : 'text-teal-700'
+            }`}>
+              {watchedStock === '' || watchedStock == null
+                ? 'Not tracked'
+                : `${watchedStock} units available`}
+            </span>
+          </div>
           <WholesaleTiersEditor productId={id} />
         </div>
       )}
