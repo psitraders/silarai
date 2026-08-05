@@ -520,6 +520,17 @@ function ProductModal({
     .map(([k, v]) => `${k}: ${v}`)
     .join(', ') || undefined;
 
+  // Buy Now is a quantity-1 purchase: for approved B2B buyers apply a min-qty-1
+  // wholesale tier when one exists (mirrors the server's tier resolution — tier
+  // replaces base price, variant adjustment on top, never above retail).
+  const buyNowUnit = (() => {
+    if (!b2bOn || !customer?.isB2BApproved) return price;
+    const tier = ((wholesaleTiers ?? []) as any[])
+      .filter(t => t.minQuantity <= 1 && (t.maxQuantity == null || t.maxQuantity >= 1))
+      .sort((a, b) => b.minQuantity - a.minQuantity)[0];
+    return tier ? Math.min(price, tier.pricePerUnit + priceAdjustment) : price;
+  })();
+
   const handleRazorpayCheckout = async () => {
     if (!name.trim()) { setPayError('Please enter your name.'); return; }
     if (!phone.trim()) { setPayError('Please enter your phone number.'); return; }
@@ -529,7 +540,7 @@ function ProductModal({
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) throw new Error('Could not load Razorpay. Check your internet connection.');
 
-      const order = await paymentApi.createOrder(slug, price, name, phone);
+      const order = await paymentApi.createOrder(slug, buyNowUnit, name, phone);
 
       const options = {
         key: order.keyId,
@@ -551,11 +562,11 @@ function ProductModal({
               customerPhone: phone,
               customerEmail: email || undefined,
               deliveryAddress: address || undefined,
-              items: [{ productId: product.id, productTitle: product.title, variantInfo, quantity: 1, unitPrice: price }],
+              items: [{ productId: product.id, productTitle: product.title, variantInfo, quantity: 1, unitPrice: buyNowUnit }],
             });
             gtagEvent('purchase', {
               transaction_id: result.orderId,
-              value: price,
+              value: buyNowUnit,
               currency: store.currency ?? 'INR',
               payment_type: 'online',
               items: [{ item_id: product.id, item_name: product.title, price, quantity: 1 }],
@@ -609,7 +620,11 @@ function ProductModal({
     try {
       const res = await fetch(`${BASE_URL}/public/${slug}/cod-order`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          // B2B: lets the server verify approval and apply wholesale tier prices
+          ...(customer?.accessToken ? { Authorization: `Bearer ${customer.accessToken}` } : {}),
+        },
         body: JSON.stringify({
           customerName: name.trim(),
           customerPhone: phone.trim(),
@@ -617,7 +632,7 @@ function ProductModal({
           emailOtp: otpCode.trim(),
           deliveryAddress: address.trim() || null,
           notes: null,
-          items: [{ productId: product.id, productTitle: product.title, variantInfo: variantInfo || null, quantity: 1, unitPrice: price }],
+          items: [{ productId: product.id, productTitle: product.title, variantInfo: variantInfo || null, quantity: 1, unitPrice: buyNowUnit }],
         }),
       });
       const text = await res.text();
@@ -634,10 +649,10 @@ function ProductModal({
       }
       gtagEvent('purchase', {
         transaction_id: data.orderId,
-        value: price,
+        value: buyNowUnit,
         currency: store.currency ?? 'INR',
         payment_type: 'cod',
-        items: [{ item_id: product.id, item_name: product.title, price, quantity: 1 }],
+        items: [{ item_id: product.id, item_name: product.title, price: buyNowUnit, quantity: 1 }],
       });
       goToConfirmation(data.orderId);
       onClose();
@@ -955,7 +970,7 @@ function ProductModal({
                   className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-semibold text-sm transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: themeColor }}
                 >
-                  💳 Buy Now — {formatCurrency(price, currency)}{variantInfo ? ` · ${variantInfo}` : ''}
+                  💳 Buy Now — {formatCurrency(buyNowUnit, currency)}{buyNowUnit < price ? ' (wholesale)' : ''}{variantInfo ? ` · ${variantInfo}` : ''}
                 </button>
               )}
 
@@ -2016,7 +2031,7 @@ export function PublicStorefrontPage({ overrideSlug }: { overrideSlug?: string }
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = overrideSlug ?? paramSlug;
   return (
-    <StorefrontAuthProvider>
+    <StorefrontAuthProvider slug={slug}>
       <PublicStorefrontPageInner slug={slug} isCustomDomain={!!overrideSlug} />
     </StorefrontAuthProvider>
   );

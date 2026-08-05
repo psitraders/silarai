@@ -37,22 +37,30 @@ export interface RegisterPayload {
 
 const StorefrontAuthContext = createContext<StorefrontAuthCtx | null>(null);
 
-const STORAGE_KEY = 'sf_customer';
+// localStorage (not sessionStorage) so the login survives new tabs — catalog
+// links open in new tabs. Keyed per store slug so logins don't bleed between
+// different storefronts on the same origin.
+const storageKey = (slug?: string) => `sf_customer_${slug ?? 'store'}`;
 
-function loadFromStorage(): StorefrontCustomer | null {
+function loadFromStorage(slug?: string): StorefrontCustomer | null {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(slug))
+      // One-time migration: pick up a login saved under the old sessionStorage key
+      ?? sessionStorage.getItem('sf_customer');
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }
 
-export function StorefrontAuthProvider({ children }: { children: React.ReactNode }) {
-  const [customer, setCustomer] = useState<StorefrontCustomer | null>(loadFromStorage);
+export function StorefrontAuthProvider({ slug, children }: { slug?: string; children: React.ReactNode }) {
+  const [customer, setCustomer] = useState<StorefrontCustomer | null>(() => loadFromStorage(slug));
 
   const persist = (c: StorefrontCustomer | null) => {
     setCustomer(c);
-    if (c) sessionStorage.setItem(STORAGE_KEY, JSON.stringify(c));
-    else sessionStorage.removeItem(STORAGE_KEY);
+    try {
+      if (c) localStorage.setItem(storageKey(slug), JSON.stringify(c));
+      else localStorage.removeItem(storageKey(slug));
+      sessionStorage.removeItem('sf_customer'); // clear legacy key
+    } catch { /* storage blocked — stay in-memory */ }
   };
 
   const login = useCallback(async (slug: string, email: string, password: string) => {
