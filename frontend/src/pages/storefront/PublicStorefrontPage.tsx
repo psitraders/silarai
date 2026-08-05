@@ -1,5 +1,5 @@
 ﻿import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   ShoppingBag, Search, MessageCircle, X, Star,
@@ -9,7 +9,7 @@ import {
   CheckCircle, BadgeCheck, Download,
   Truck, Lock, RotateCcw, ShieldCheck, UserCircle, FileText,
 } from 'lucide-react';
-import { StorefrontAuthProvider, useStorefrontAuth } from '../../context/StorefrontAuthContext';
+import { StorefrontAuthProvider, useStorefrontAuth, useCustomerApi } from '../../context/StorefrontAuthContext';
 
 // Lazy-load heavy overlay panels — not needed for first paint
 const CustomerAuthModal = React.lazy(() =>
@@ -183,16 +183,37 @@ function getProductBadge(product: Product): { label: string; bg: string } | null
 // ── Product Card ──────────────────────────────────────────────────────────────
 
 function ProductCard({
-  product, themeColor, store, onSelect, onAddToCart,
+  product, themeColor, store, onSelect, onAddToCart, slug, wishlisted = false, onRequireLogin,
 }: {
   product: Product;
   themeColor: string;
   store: StoreData;
   onSelect: (p: Product) => void;
   onAddToCart: (p: Product) => void;
+  slug?: string;
+  wishlisted?: boolean;
+  onRequireLogin?: () => void;
 }) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(wishlisted);
   const [addedFlash, setAddedFlash] = useState(false);
+  const { customer } = useStorefrontAuth();
+  const api = useCustomerApi(slug ?? '');
+  const qc = useQueryClient();
+  // Sync with the server-loaded wishlist when it arrives
+  useEffect(() => { setLiked(wishlisted); }, [wishlisted]);
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!customer) { onRequireLogin?.(); return; }
+    setLiked(l => !l); // optimistic
+    api.toggleWishlist(product.id)
+      .then(res => {
+        setLiked(res.isNowWishlisted);
+        qc.invalidateQueries({ queryKey: ['sf-wishlist', slug] });
+        qc.invalidateQueries({ queryKey: ['sf-wishlist-ids', slug] });
+      })
+      .catch(() => setLiked(l => !l)); // revert on failure
+  };
   const currency = store.currency ?? 'INR';
   const hasVariants = product.minVariantPrice != null;
   const price = hasVariants ? product.minVariantPrice! : (product.discountedPrice ?? product.basePrice);
@@ -276,9 +297,9 @@ function ProductCard({
           )}
         </div>
 
-        {/* Wishlist */}
+        {/* Wishlist — persists to the customer's account (prompts login when signed out) */}
         <button
-          onClick={e => { e.stopPropagation(); setLiked(l => !l); }}
+          onClick={handleWishlist}
           className="absolute top-2 right-2 z-10 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 opacity-0 group-hover:opacity-100"
           style={liked ? { opacity: 1 } : {}}
         >
@@ -286,7 +307,7 @@ function ProductCard({
         </button>
         {/* Mobile wishlist — always visible */}
         <button
-          onClick={e => { e.stopPropagation(); setLiked(l => !l); }}
+          onClick={handleWishlist}
           className="sm:hidden absolute top-2 right-2 z-10 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-md"
         >
           <Heart className={`w-3.5 h-3.5 ${liked ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
@@ -2506,6 +2527,15 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const totalCount: number = productsData?.totalCount ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
+  // Logged-in customer's wishlist product ids — so hearts reflect saved state
+  const customerApi = useCustomerApi(slug ?? '');
+  const { data: wishlistIds } = useQuery({
+    queryKey: ['sf-wishlist-ids', slug],
+    queryFn: () => customerApi.getWishlist().then(items => new Set(items.map((i: any) => i.productId as string))),
+    enabled: !!slug && isAuthenticated,
+    staleTime: 60 * 1000,
+  });
+
   // ── Auto-open product modal when URL contains /products/:slugOrId ──
   useEffect(() => {
     if (!paramProductId || !slug) return;
@@ -3557,6 +3587,9 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                   store={store}
                   onSelect={setSelectedProduct}
                   onAddToCart={handleAddToCart}
+                  slug={slug}
+                  wishlisted={wishlistIds?.has(p.id) ?? false}
+                  onRequireLogin={() => setShowAuthModal(true)}
                 />
               </div>
             ))}
