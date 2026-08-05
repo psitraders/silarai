@@ -16,7 +16,9 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger, I
 {
     private readonly string _appUrl       = config["AppUrl"]           ?? "https://www.silarai.com";
     private readonly string _dashboardUrl = (config["FrontendUrl"]     ?? "https://silarai.com").TrimEnd('/');
-    private readonly string _fromEmail    = config["Resend:FromEmail"] ?? "support@silarai.com";
+    // Must be an address on a Resend-VERIFIED domain (app.silarai.com since Aug 2026 —
+    // the root silarai.com lost its Resend DNS records in the Zauca nameserver move)
+    private readonly string _fromEmail    = config["Resend:FromEmail"] ?? "support@app.silarai.com";
     private readonly string _fromName     = "Silarai";
 
     // â”€â”€ Email verification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
