@@ -87,6 +87,39 @@ public interface IEmailService
         string customerPhone,
         CancellationToken ct = default);
 
+    // ── B2B notifications ──────────────────────────────────────────────────────
+
+    /// <summary>Notifies the store owner when a B2B buyer submits a quote request.</summary>
+    Task SendNewQuoteNotificationAsync(
+        string toEmail,
+        string ownerName,
+        string storeName,
+        string contactName,
+        string? companyName,
+        string contactEmail,
+        string? contactPhone,
+        IEnumerable<string> itemLines,
+        string? notes,
+        CancellationToken ct = default);
+
+    /// <summary>Notifies the buyer when the merchant replies to their quote request.</summary>
+    Task SendQuoteReplyAsync(
+        string toEmail,
+        string toName,
+        string storeName,
+        string replyText,
+        string status,
+        string storeUrl,
+        CancellationToken ct = default);
+
+    /// <summary>Notifies the buyer when their B2B account is approved.</summary>
+    Task SendB2BApprovedAsync(
+        string toEmail,
+        string toName,
+        string storeName,
+        string storeUrl,
+        CancellationToken ct = default);
+
     // ── Platform admin notifications ───────────────────────────────────────────
 
     /// <summary>

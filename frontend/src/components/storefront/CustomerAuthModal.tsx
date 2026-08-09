@@ -7,9 +7,11 @@ interface Props {
   themeColor: string;
   onClose: () => void;
   defaultTab?: 'login' | 'register';
+  /** When false the store is B2C-only — hide the business-buyer option. */
+  b2bEnabled?: boolean;
 }
 
-export function CustomerAuthModal({ slug, themeColor, onClose, defaultTab = 'login' }: Props) {
+export function CustomerAuthModal({ slug, themeColor, onClose, defaultTab = 'login', b2bEnabled = true }: Props) {
   const [tab, setTab]         = useState<'login' | 'register'>(defaultTab);
   const [isB2B, setIsB2B]     = useState(false);
   const [loading, setLoading] = useState(false);
@@ -127,17 +129,19 @@ export function CustomerAuthModal({ slug, themeColor, onClose, defaultTab = 'log
               <Field icon={Phone} label="Phone (optional)" type="tel" value={regPhone}
                 onChange={e => setRegPhone(e.target.value)} />
 
-              {/* B2B toggle */}
-              <label className="flex items-center gap-2.5 cursor-pointer py-1">
-                <input type="checkbox" checked={isB2B}
-                  onChange={e => setIsB2B(e.target.checked)}
-                  className="w-4 h-4 rounded" />
-                <span className="text-sm font-medium text-slate-700">
-                  I'm a business buyer (B2B)
-                </span>
-              </label>
+              {/* B2B toggle — hidden on B2C-only stores */}
+              {b2bEnabled && (
+                <label className="flex items-center gap-2.5 cursor-pointer py-1">
+                  <input type="checkbox" checked={isB2B}
+                    onChange={e => setIsB2B(e.target.checked)}
+                    className="w-4 h-4 rounded" />
+                  <span className="text-sm font-medium text-slate-700">
+                    I'm a business buyer (B2B)
+                  </span>
+                </label>
+              )}
 
-              {isB2B && (
+              {b2bEnabled && isB2B && (
                 <>
                   <Field icon={Building2} label="Company Name" value={regCompany}
                     onChange={e => setRegCompany(e.target.value)} required />
@@ -151,7 +155,7 @@ export function CustomerAuthModal({ slug, themeColor, onClose, defaultTab = 'log
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 Create Account
               </button>
-              {isB2B && (
+              {b2bEnabled && isB2B && (
                 <p className="text-xs text-slate-500 text-center">
                   B2B accounts may require approval before accessing wholesale pricing.
                 </p>

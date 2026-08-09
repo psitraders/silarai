@@ -119,37 +119,89 @@ public class StorefrontCustomerController(
             new ToggleWishlistCommand(CallerCustomerId, CallerTenantId, productId), ct);
         return Ok(result);
     }
+
+    // ── My quote requests ─────────────────────────────────────────────────────
+
+    [HttpGet("quotes")]
+    [Authorize(Roles = "StorefrontCustomer")]
+    public async Task<IActionResult> GetMyQuotes(string slug, CancellationToken ct)
+    {
+        var quotes = await mediator.Send(
+            new GetMyQuotesQuery(CallerCustomerId, CallerTenantId), ct);
+        return Ok(quotes);
+    }
 }
 
 // ── Quote (no auth required) ──────────────────────────────────────────────────
 
 [ApiController]
 [Route("api/v1/public/{slug}/quotes")]
-public class StorefrontQuoteController(IMediator mediator, AppDbContext db) : ControllerBase
+public class StorefrontQuoteController(
+    IMediator mediator,
+    AppDbContext db,
+    IEmailService emailService,
+    ILogger<StorefrontQuoteController> logger) : ControllerBase
 {
-    private async Task<Guid?> ResolveSlugAsync(string slug, CancellationToken ct)
-    {
-        var tenant = await db.Tenants.AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Slug == slug, ct);
-        return tenant?.Id;
-    }
-
     [HttpPost]
     public async Task<IActionResult> Submit(string slug,
         [FromBody] SubmitQuoteRequest req, CancellationToken ct)
     {
-        var tenantId = await ResolveSlugAsync(slug, ct);
-        if (tenantId == null) return NotFound(new { error = "Store not found." });
+        var tenant = await db.Tenants.AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Slug == slug, ct);
+        if (tenant == null) return NotFound(new { error = "Store not found." });
+
+        // Respect the tenant's B2B toggle — no quote submissions when disabled
+        var b2bEnabled = await db.StorefrontSettings.AsNoTracking()
+            .Where(s => s.TenantId == tenant.Id)
+            .Select(s => (bool?)s.B2BEnabled)
+            .FirstOrDefaultAsync(ct) ?? true;
+        if (!b2bEnabled)
+            return BadRequest(new { error = "This store does not accept quote requests." });
 
         Guid? customerId = null;
         if (User.Identity?.IsAuthenticated == true && User.IsInRole("StorefrontCustomer"))
             customerId = Guid.Parse(User.FindFirstValue("sub")!);
 
         var id = await mediator.Send(new SubmitQuoteCommand(
-            tenantId.Value, customerId,
+            tenant.Id, customerId,
             req.ContactName, req.ContactEmail, req.ContactPhone,
             req.CompanyName, req.GstNumber,
             req.ItemsJson, req.Notes), ct);
+
+        // ── Notify the store owner (fire-and-forget — never blocks the buyer) ──
+        if (!string.IsNullOrWhiteSpace(tenant.ContactEmail))
+        {
+            var ownerEmail = tenant.ContactEmail;
+            var storeName  = tenant.Name;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var itemLines = new List<string>();
+                    try
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(req.ItemsJson);
+                        foreach (var el in doc.RootElement.EnumerateArray())
+                        {
+                            var title = el.TryGetProperty("title", out var t) ? t.GetString() : null;
+                            var qty   = el.TryGetProperty("qty", out var q) ? q.GetInt32() : 0;
+                            if (!string.IsNullOrWhiteSpace(title))
+                                itemLines.Add($"{title} × {qty}");
+                        }
+                    }
+                    catch { /* malformed items — send without lines */ }
+
+                    await emailService.SendNewQuoteNotificationAsync(
+                        ownerEmail, storeName, storeName,
+                        req.ContactName, req.CompanyName, req.ContactEmail, req.ContactPhone,
+                        itemLines, req.Notes, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Quote notification email failed for tenant {Tenant}", storeName);
+                }
+            }, CancellationToken.None);
+        }
 
         return Ok(new { quoteId = id, message = "Quote submitted. We'll get back to you shortly." });
     }

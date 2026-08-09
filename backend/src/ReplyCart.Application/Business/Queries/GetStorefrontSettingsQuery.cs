@@ -19,7 +19,8 @@ public record StorefrontSettingsDto(
     bool HasGA4OAuthToken = false,      // true if OAuth refresh token is saved
     string? FaviconUrl = null,          // custom browser-tab icon (falls back to LogoUrl)
     bool LoaderEnabled = true,          // show branded 2-second loading screen
-    bool SubCategoriesEnabled = false   // opt-in subcategory & featured-nav feature
+    bool SubCategoriesEnabled = false,  // opt-in subcategory & featured-nav feature
+    bool B2BEnabled = true              // B2B signup, wholesale tiers & quotes on the storefront
 );
 
 public record GetStorefrontSettingsQuery : IRequest<StorefrontSettingsDto?>;
@@ -72,7 +73,8 @@ public class GetStorefrontSettingsQueryHandler(IAppDbContext db, ITenantContext 
             !string.IsNullOrWhiteSpace(s?.GA4RefreshToken),
             FaviconUrl:             s?.FaviconUrl,
             LoaderEnabled:          s?.LoaderEnabled ?? true,
-            SubCategoriesEnabled:   s?.SubCategoriesEnabled ?? false
+            SubCategoriesEnabled:   s?.SubCategoriesEnabled ?? false,
+            B2BEnabled:             s?.B2BEnabled ?? true
         );
     }
 }

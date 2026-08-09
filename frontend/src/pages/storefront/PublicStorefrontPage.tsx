@@ -1,5 +1,5 @@
-﻿import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+﻿import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   ShoppingBag, Search, MessageCircle, X, Star,
@@ -7,9 +7,9 @@ import {
   Mail, Package, Sparkles, ChevronLeft, ChevronRight,
   Menu, Heart, Shield, Zap, Users, Flame,
   CheckCircle, BadgeCheck, Download,
-  Truck, Lock, RotateCcw, ShieldCheck, UserCircle,
+  Truck, Lock, RotateCcw, ShieldCheck, UserCircle, FileText,
 } from 'lucide-react';
-import { StorefrontAuthProvider, useStorefrontAuth } from '../../context/StorefrontAuthContext';
+import { StorefrontAuthProvider, useStorefrontAuth, useCustomerApi } from '../../context/StorefrontAuthContext';
 
 // Lazy-load heavy overlay panels — not needed for first paint
 const CustomerAuthModal = React.lazy(() =>
@@ -17,6 +17,9 @@ const CustomerAuthModal = React.lazy(() =>
 );
 const MyAccountPanel = React.lazy(() =>
   import('../../components/storefront/MyAccountPanel').then(m => ({ default: m.MyAccountPanel }))
+);
+const QuoteRequestModal = React.lazy(() =>
+  import('../../components/storefront/QuoteRequestModal').then(m => ({ default: m.QuoteRequestModal }))
 );
 
 /** Instagram brand icon — lucide-react v1.x doesn't include it */
@@ -95,6 +98,7 @@ interface StoreData {
   faviconUrl?: string;             // dedicated favicon (falls back to logoUrl)
   loaderEnabled?: boolean;         // show branded 2-second loading screen
   allowPublicInquiries?: boolean;  // allow inquiry button on public store
+  b2bEnabled?: boolean;            // tenant offers B2B (signup, tiers, quotes)
 }
 
 interface SubCategory {
@@ -179,16 +183,37 @@ function getProductBadge(product: Product): { label: string; bg: string } | null
 // ── Product Card ──────────────────────────────────────────────────────────────
 
 function ProductCard({
-  product, themeColor, store, onSelect, onAddToCart,
+  product, themeColor, store, onSelect, onAddToCart, slug, wishlisted = false, onRequireLogin,
 }: {
   product: Product;
   themeColor: string;
   store: StoreData;
   onSelect: (p: Product) => void;
   onAddToCart: (p: Product) => void;
+  slug?: string;
+  wishlisted?: boolean;
+  onRequireLogin?: () => void;
 }) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(wishlisted);
   const [addedFlash, setAddedFlash] = useState(false);
+  const { customer } = useStorefrontAuth();
+  const api = useCustomerApi(slug ?? '');
+  const qc = useQueryClient();
+  // Sync with the server-loaded wishlist when it arrives
+  useEffect(() => { setLiked(wishlisted); }, [wishlisted]);
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!customer) { onRequireLogin?.(); return; }
+    setLiked(l => !l); // optimistic
+    api.toggleWishlist(product.id)
+      .then(res => {
+        setLiked(res.isNowWishlisted);
+        qc.invalidateQueries({ queryKey: ['sf-wishlist', slug] });
+        qc.invalidateQueries({ queryKey: ['sf-wishlist-ids', slug] });
+      })
+      .catch(() => setLiked(l => !l)); // revert on failure
+  };
   const currency = store.currency ?? 'INR';
   const hasVariants = product.minVariantPrice != null;
   const price = hasVariants ? product.minVariantPrice! : (product.discountedPrice ?? product.basePrice);
@@ -272,9 +297,9 @@ function ProductCard({
           )}
         </div>
 
-        {/* Wishlist */}
+        {/* Wishlist — persists to the customer's account (prompts login when signed out) */}
         <button
-          onClick={e => { e.stopPropagation(); setLiked(l => !l); }}
+          onClick={handleWishlist}
           className="absolute top-2 right-2 z-10 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 opacity-0 group-hover:opacity-100"
           style={liked ? { opacity: 1 } : {}}
         >
@@ -282,7 +307,7 @@ function ProductCard({
         </button>
         {/* Mobile wishlist — always visible */}
         <button
-          onClick={e => { e.stopPropagation(); setLiked(l => !l); }}
+          onClick={handleWishlist}
           className="sm:hidden absolute top-2 right-2 z-10 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-md"
         >
           <Heart className={`w-3.5 h-3.5 ${liked ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
@@ -373,6 +398,8 @@ function ProductModal({
   product, store, themeColor, onClose, slug, isCustomDomain,
 }: { product: Product; store: StoreData; themeColor: string; onClose: () => void; slug: string; isCustomDomain: boolean }) {
   const navigate = useNavigate();
+  const { customer } = useStorefrontAuth();
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const [showInquiry, setShowInquiry] = useState(false);
@@ -415,13 +442,24 @@ function ProductModal({
   const [reviewSubmitted, setReviewSubmitted]   = useState(false);
   const [reviewError, setReviewError]           = useState<string | null>(null);
 
-  // Cart items (for abandoned cart tracking on inquiry)
-  const { items: cartItems } = useCart();
+  // Cart items (for abandoned cart tracking on inquiry) + bulk add for B2B
+  const { items: cartItems, addItem } = useCart();
+  const [bulkQty, setBulkQty] = useState('');
+  const [bulkAdded, setBulkAdded] = useState(false);
 
   // Fetch full product detail (includes variants) from public endpoint
   const { data: productDetail } = useQuery({
     queryKey: ['public-product', slug, product.id],
     queryFn: () => axios.get(`${BASE_URL}/public/${slug}/products/${product.id}`).then(r => r.data),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Wholesale tiers — only fetched for approved B2B customers on B2B-enabled stores
+  const b2bOn = store.b2bEnabled !== false;
+  const { data: wholesaleTiers } = useQuery({
+    queryKey: ['public-tiers', slug, product.id],
+    queryFn: () => axios.get(`${BASE_URL}/public/${slug}/products/${product.id}/wholesale-tiers`).then(r => r.data as any[]),
+    enabled: b2bOn && !!customer?.isB2BApproved,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -503,6 +541,17 @@ function ProductModal({
     .map(([k, v]) => `${k}: ${v}`)
     .join(', ') || undefined;
 
+  // Buy Now is a quantity-1 purchase: for approved B2B buyers apply a min-qty-1
+  // wholesale tier when one exists (mirrors the server's tier resolution — tier
+  // replaces base price, variant adjustment on top, never above retail).
+  const buyNowUnit = (() => {
+    if (!b2bOn || !customer?.isB2BApproved) return price;
+    const tier = ((wholesaleTiers ?? []) as any[])
+      .filter(t => t.minQuantity <= 1 && (t.maxQuantity == null || t.maxQuantity >= 1))
+      .sort((a, b) => b.minQuantity - a.minQuantity)[0];
+    return tier ? Math.min(price, tier.pricePerUnit + priceAdjustment) : price;
+  })();
+
   const handleRazorpayCheckout = async () => {
     if (!name.trim()) { setPayError('Please enter your name.'); return; }
     if (!phone.trim()) { setPayError('Please enter your phone number.'); return; }
@@ -512,7 +561,7 @@ function ProductModal({
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) throw new Error('Could not load Razorpay. Check your internet connection.');
 
-      const order = await paymentApi.createOrder(slug, price, name, phone);
+      const order = await paymentApi.createOrder(slug, buyNowUnit, name, phone);
 
       const options = {
         key: order.keyId,
@@ -534,11 +583,11 @@ function ProductModal({
               customerPhone: phone,
               customerEmail: email || undefined,
               deliveryAddress: address || undefined,
-              items: [{ productId: product.id, productTitle: product.title, variantInfo, quantity: 1, unitPrice: price }],
+              items: [{ productId: product.id, productTitle: product.title, variantInfo, quantity: 1, unitPrice: buyNowUnit }],
             });
             gtagEvent('purchase', {
               transaction_id: result.orderId,
-              value: price,
+              value: buyNowUnit,
               currency: store.currency ?? 'INR',
               payment_type: 'online',
               items: [{ item_id: product.id, item_name: product.title, price, quantity: 1 }],
@@ -592,7 +641,11 @@ function ProductModal({
     try {
       const res = await fetch(`${BASE_URL}/public/${slug}/cod-order`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          // B2B: lets the server verify approval and apply wholesale tier prices
+          ...(customer?.accessToken ? { Authorization: `Bearer ${customer.accessToken}` } : {}),
+        },
         body: JSON.stringify({
           customerName: name.trim(),
           customerPhone: phone.trim(),
@@ -600,7 +653,7 @@ function ProductModal({
           emailOtp: otpCode.trim(),
           deliveryAddress: address.trim() || null,
           notes: null,
-          items: [{ productId: product.id, productTitle: product.title, variantInfo: variantInfo || null, quantity: 1, unitPrice: price }],
+          items: [{ productId: product.id, productTitle: product.title, variantInfo: variantInfo || null, quantity: 1, unitPrice: buyNowUnit }],
         }),
       });
       const text = await res.text();
@@ -617,10 +670,10 @@ function ProductModal({
       }
       gtagEvent('purchase', {
         transaction_id: data.orderId,
-        value: price,
+        value: buyNowUnit,
         currency: store.currency ?? 'INR',
         payment_type: 'cod',
-        items: [{ item_id: product.id, item_name: product.title, price, quantity: 1 }],
+        items: [{ item_id: product.id, item_name: product.title, price: buyNowUnit, quantity: 1 }],
       });
       goToConfirmation(data.orderId);
       onClose();
@@ -783,6 +836,90 @@ function ProductModal({
             )}
           </div>
 
+          {/* Wholesale tier table — approved B2B customers only */}
+          {b2bOn && customer?.isB2BApproved && (wholesaleTiers?.length ?? 0) > 0 && (
+            <div className="rounded-xl border-2 overflow-hidden" style={{ borderColor: themeColor + '40' }}>
+              <div className="px-3 py-2 text-xs font-bold text-white flex items-center gap-1.5"
+                style={{ backgroundColor: themeColor }}>
+                <FileText className="w-3.5 h-3.5" /> Wholesale Pricing (B2B)
+              </div>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-slate-100">
+                  {wholesaleTiers!.map((t: any) => (
+                    <tr key={t.id}>
+                      <td className="px-3 py-1.5 text-slate-600">
+                        {t.label || (t.maxQuantity ? `${t.minQuantity}–${t.maxQuantity} pcs` : `${t.minQuantity}+ pcs`)}
+                      </td>
+                      <td className="px-3 py-1.5 text-right font-bold" style={{ color: themeColor }}>
+                        {formatCurrency(t.pricePerUnit, currency)}<span className="text-xs font-normal text-slate-400">/pc</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* B2B bulk order — stock visibility + quantity input */}
+          {b2bOn && customer?.isB2BApproved && !outOfStock && (() => {
+            const stock   = product.stockQuantity;
+            const qtyNum  = Math.max(0, Math.floor(Number(bulkQty) || 0));
+            const capped  = stock != null ? Math.min(qtyNum, stock) : qtyNum;
+            const retail  = product.discountedPrice ?? product.basePrice;
+            const tier    = (wholesaleTiers ?? [])
+              .filter((t: any) => capped >= t.minQuantity && (t.maxQuantity == null || capped <= t.maxQuantity))
+              .sort((a: any, b: any) => b.minQuantity - a.minQuantity)[0];
+            const unit    = tier ? Math.min(retail, tier.pricePerUnit) : retail;
+            return (
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wide">Bulk Order (B2B)</p>
+                  <span className="text-xs font-semibold" style={{ color: themeColor }}>
+                    {stock != null ? `${stock} units in stock` : 'Stock available'}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={stock ?? undefined}
+                    placeholder="Qty"
+                    value={bulkQty}
+                    onChange={e => { setBulkQty(e.target.value); setBulkAdded(false); }}
+                    className="w-24 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
+                  />
+                  <button
+                    onClick={() => {
+                      if (capped < 1) return;
+                      addItem({
+                        productId: product.id,
+                        productTitle: product.title,
+                        unitPrice: retail,
+                        primaryImage: product.primaryImage,
+                        categoryName: product.categoryName,
+                        stockQuantity: product.stockQuantity,
+                      }, capped);
+                      setBulkAdded(true);
+                    }}
+                    disabled={capped < 1}
+                    className="flex-1 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    {bulkAdded ? '✓ Added to cart' : capped >= 1
+                      ? `Add ${capped} — ${formatCurrency(unit * capped, currency)}${tier ? ' (wholesale)' : ''}`
+                      : 'Add to cart'}
+                  </button>
+                </div>
+                {tier && capped >= 1 && (
+                  <p className="text-[11px] text-slate-500">
+                    Wholesale rate applied: {formatCurrency(unit, currency)}/pc
+                    {stock != null && qtyNum > stock ? ` · capped at ${stock} available` : ''}
+                  </p>
+                )}
+              </div>
+            );
+          })()}
+
           {product.description && (
             <p className="text-sm text-slate-600 leading-relaxed">{product.description}</p>
           )}
@@ -854,7 +991,7 @@ function ProductModal({
                   className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-semibold text-sm transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: themeColor }}
                 >
-                  💳 Buy Now — {formatCurrency(price, currency)}{variantInfo ? ` · ${variantInfo}` : ''}
+                  💳 Buy Now — {formatCurrency(buyNowUnit, currency)}{buyNowUnit < price ? ' (wholesale)' : ''}{variantInfo ? ` · ${variantInfo}` : ''}
                 </button>
               )}
 
@@ -872,6 +1009,18 @@ function ProductModal({
                   <MessageCircle className="w-4 h-4" />
                   {store.whatsAppCtaLabel ?? 'Order on WhatsApp'}
                 </a>
+              )}
+
+              {/* B2B: request a wholesale quote for this product */}
+              {b2bOn && customer?.isB2BCustomer && (
+                <button
+                  onClick={() => setShowQuoteModal(true)}
+                  className="flex items-center justify-center gap-2 py-3 rounded-2xl border-2 font-semibold text-sm hover:bg-slate-50 transition-colors"
+                  style={{ borderColor: themeColor, color: themeColor }}
+                >
+                  <FileText className="w-4 h-4" />
+                  Request Bulk Quote
+                </button>
               )}
 
               <button
@@ -1132,6 +1281,24 @@ function ProductModal({
           </div>
         </div>
       </div>
+
+      {/* B2B quote request for this product */}
+      {showQuoteModal && (
+        <React.Suspense fallback={null}>
+          <QuoteRequestModal
+            slug={slug}
+            themeColor={themeColor}
+            currency={currency}
+            items={[{
+              productId: product.id,
+              title:     product.title,
+              qty:       1,
+              unitPrice: product.discountedPrice ?? product.basePrice,
+            }]}
+            onClose={() => setShowQuoteModal(false)}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 }
@@ -1885,7 +2052,7 @@ export function PublicStorefrontPage({ overrideSlug }: { overrideSlug?: string }
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = overrideSlug ?? paramSlug;
   return (
-    <StorefrontAuthProvider>
+    <StorefrontAuthProvider slug={slug}>
       <PublicStorefrontPageInner slug={slug} isCustomDomain={!!overrideSlug} />
     </StorefrontAuthProvider>
   );
@@ -1894,6 +2061,24 @@ export function PublicStorefrontPage({ overrideSlug }: { overrideSlug?: string }
 function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | undefined; isCustomDomain: boolean }) {
   const overrideSlug = isCustomDomain ? slug : undefined; // keep isCustomDomain=!!overrideSlug logic intact
   const { productId: paramProductId, categorySlug: paramCategorySlug } = useParams<{ productId?: string; categorySlug?: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // ── Catalog view: dedicated /products and /category/:slug pages ────────────
+  // These render header + product grid + footer only (no hero/landing sections).
+  const catalogBase   = isCustomDomain ? '' : `/${slug}`;
+  const isCatalogView = !!paramCategorySlug
+    || location.pathname.replace(/\/+$/, '') === `${catalogBase}/products`;
+  const slugify = (name: string) => name.toLowerCase().replace(/\s+/g, '-');
+  // From the landing page catalog links open in a NEW TAB; once inside the
+  // catalog view, navigation stays in the same tab (breadcrumbs, tab switches).
+  const openCatalog = (path: string) => {
+    if (isCatalogView) navigate(path);
+    else window.open(path, '_blank', 'noopener');
+  };
+  const goToAllProducts = () => openCatalog(`${catalogBase}/products`);
+  const goToCategory = (cat: { name: string }, sub?: { name: string }) =>
+    openCatalog(`${catalogBase}/category/${slugify(cat.name)}${sub ? `?sub=${slugify(sub.name)}` : ''}`);
   const { totalItems, addItem } = useCart();
   const { customer, isAuthenticated } = useStorefrontAuth();
   const [showAuthModal, setShowAuthModal]         = useState(false);
@@ -1908,7 +2093,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const [sort, setSort] = useState('');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 36;  // products per page — pager appears automatically beyond this
 
   // Review aggregate for JSON-LD (fetched when a product modal opens)
   const [productReviews, setProductReviews] = useState<{ averageRating: number; totalCount: number } | null>(null);
@@ -2196,7 +2381,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
       if (canonical) canonical.href = window.location.origin + productPath;
     } else {
-      const basePath = isCustomDomain ? '/' : `/${slug}`;
+      // Restore the URL of the view we're on (catalog page or landing)
+      const basePath = isCatalogView
+        ? (paramCategorySlug ? `${catalogBase}/category/${paramCategorySlug}` : `${catalogBase}/products`)
+        : (isCustomDomain ? '/' : `/${slug}`);
       window.history.replaceState({}, '', basePath);
       const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
       if (canonical) canonical.href = window.location.origin + basePath;
@@ -2339,6 +2527,15 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const totalCount: number = productsData?.totalCount ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
+  // Logged-in customer's wishlist product ids — so hearts reflect saved state
+  const customerApi = useCustomerApi(slug ?? '');
+  const { data: wishlistIds } = useQuery({
+    queryKey: ['sf-wishlist-ids', slug],
+    queryFn: () => customerApi.getWishlist().then(items => new Set(items.map((i: any) => i.productId as string))),
+    enabled: !!slug && isAuthenticated,
+    staleTime: 60 * 1000,
+  });
+
   // ── Auto-open product modal when URL contains /products/:slugOrId ──
   useEffect(() => {
     if (!paramProductId || !slug) return;
@@ -2365,25 +2562,29 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
       .catch(() => setProductReviews(null));
   }, [selectedProduct?.id, slug]);
 
-  // ── Auto-select category from URL /category/:categorySlug ─────────────────
+  // ── Auto-select category from URL /category/:categorySlug (+ ?sub=) ───────
   useEffect(() => {
     if (!paramCategorySlug || !categories?.length) return;
-    const cat = (categories as Array<{ id: string; name: string }>).find(
-      c => c.name.toLowerCase().replace(/\s+/g, '-') === paramCategorySlug
-    );
-    if (cat) setSelectedCategory(cat.id);
-  }, [paramCategorySlug, categories]);
+    const cat = categories.find(c => slugify(c.name) === paramCategorySlug);
+    if (!cat) return;
+    setSelectedCategory(cat.id);
+    const subSlug = new URLSearchParams(location.search).get('sub');
+    if (subSlug) {
+      const sub = cat.subCategories?.find(s => slugify(s.name) === subSlug);
+      if (sub) setSelectedSubCategory(sub.id);
+    }
+  }, [paramCategorySlug, categories, location.search]);
 
   // ── Update URL when category filter changes ───────────────────────────────
   useEffect(() => {
     if (!slug || selectedProduct) return; // product URL takes priority
     if (selectedCategory) {
       const cat = (categories as Array<{ id: string; name: string }>)?.find(c => c.id === selectedCategory);
-      const catSlug = cat ? cat.name.toLowerCase().replace(/\s+/g, '-') : selectedCategory;
-      const catPath = isCustomDomain ? `/category/${catSlug}` : `/${slug}/category/${catSlug}`;
-      window.history.replaceState({ categoryId: selectedCategory }, '', catPath);
+      const catSlug = cat ? slugify(cat.name) : selectedCategory;
+      window.history.replaceState({ categoryId: selectedCategory }, '', `${catalogBase}/category/${catSlug}`);
     } else if (!paramProductId) {
-      const basePath = isCustomDomain ? '/' : `/${slug}`;
+      // No category: catalog view stays on /products, landing goes back to base
+      const basePath = isCatalogView ? `${catalogBase}/products` : (isCustomDomain ? '/' : `/${slug}`);
       window.history.replaceState({}, '', basePath);
     }
   }, [selectedCategory, slug, isCustomDomain, selectedProduct, paramProductId]);
@@ -2510,9 +2711,15 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
   const scrollToContact = () => scrollToEl(footerRef.current as HTMLElement | null, 16);
 
   const handleNavClick = (item: string) => {
-    if (item === 'Home') scrollToTop();
-    else if (item === 'Categories') scrollToCategories();
-    else if (item === 'All Products') scrollToProducts();
+    if (item === 'Home') {
+      if (isCatalogView) navigate(catalogBase || '/');
+      else scrollToTop();
+    }
+    else if (item === 'Categories') {
+      if (isCatalogView) navigate(catalogBase || '/');
+      else scrollToCategories();
+    }
+    else if (item === 'All Products') goToAllProducts();
     else if (item === 'About Us') scrollToContact();
   };
 
@@ -2571,7 +2778,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             {categories.filter(c => c.isFeatured).map(cat => (
               <div key={cat.id} className="relative group">
                 <button
-                  onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
+                  onClick={() => goToCategory(cat)}
                   className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
                   style={{ color: selectedCategory === cat.id ? tc : undefined }}
                 >
@@ -2585,7 +2792,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 {(cat.subCategories?.length ?? 0) > 0 && (
                   <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
                     <button
-                      onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
+                      onClick={() => goToCategory(cat)}
                       className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 font-medium"
                     >
                       All {cat.name}
@@ -2594,7 +2801,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                       {cat.subCategories!.map(sub => (
                         <button
                           key={sub.id}
-                          onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(sub.id); setPage(1); scrollToProducts(); }}
+                          onClick={() => goToCategory(cat, sub)}
                           className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                           style={{ color: selectedSubCategory === sub.id ? tc : undefined }}
                         >
@@ -2722,7 +2929,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             {categories.filter(c => c.isFeatured).map(cat => (
               <div key={cat.id}>
                 <button
-                  onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); setMobileMenuOpen(false); }}
+                  onClick={() => { goToCategory(cat); setMobileMenuOpen(false); }}
                   className="block w-full text-left text-sm py-2 px-3 rounded-xl font-semibold hover:bg-slate-50"
                   style={{ color: tc }}
                 >
@@ -2733,7 +2940,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                     {cat.subCategories!.map(sub => (
                       <button
                         key={sub.id}
-                        onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(sub.id); setPage(1); scrollToProducts(); setMobileMenuOpen(false); }}
+                        onClick={() => { goToCategory(cat, sub); setMobileMenuOpen(false); }}
                         className="block w-full text-left text-sm py-1.5 px-3 rounded-xl text-slate-600 hover:bg-slate-50"
                       >
                         {sub.name}
@@ -2758,8 +2965,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         )}
       </header>
 
-      {/* ── Hero ── */}
-      {store.bannerUrl ? (
+      {/* ── Hero ── (landing only) */}
+      {!isCatalogView && (store.bannerUrl ? (
         <div className="relative h-64 md:h-96 overflow-hidden">
           <img
             src={optimizeImage(store.bannerUrl, 800)}
@@ -2888,9 +3095,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             </div>
           );
         })()
-      }
+      )}
 
-      {/* ── Trust ribbon ── */}
+      {/* ── Trust ribbon ── (landing only) */}
+      {!isCatalogView && (
       <div className="bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-center gap-5 md:gap-8 flex-wrap">
           {([
@@ -2909,9 +3117,10 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           ))}
         </div>
       </div>
+      )}
 
-      {/* ── Category Icon Rail ── */}
-      {categories.length > 0 && (
+      {/* ── Category Icon Rail ── (landing only) */}
+      {!isCatalogView && categories.length > 0 && (
         <div ref={categoriesRef} className="pt-8 pb-4" style={{ background: `linear-gradient(180deg, #f8fafb 0%, #fff 100%)` }}>
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
@@ -2938,7 +3147,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
               <div className="flex gap-4 overflow-x-auto pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
                 {/* All */}
                 <button
-                  onClick={() => { setSelectedCategory(null); setSelectedSubCategory(null); setPage(1); }}
+                  onClick={goToAllProducts}
                   className="flex-shrink-0 flex flex-col items-center gap-2.5 group"
                 >
                   <div
@@ -2955,7 +3164,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 {categories.map(cat => (
                   <button
                     key={cat.id}
-                    onClick={() => { setSelectedCategory(cat.id); setSelectedSubCategory(null); setPage(1); scrollToProducts(); }}
+                    onClick={() => goToCategory(cat)}
                     className="flex-shrink-0 flex flex-col items-center gap-2.5 group"
                   >
                     <div
@@ -2987,8 +3196,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         </div>
       )}
 
-      {/* ── Featured Products — Trending Now ── */}
-      {allProducts.filter(p => p.isFeatured).length > 0 && !selectedCategory && !debouncedSearch && (
+      {/* ── Featured Products — Trending Now ── (landing only) */}
+      {!isCatalogView && allProducts.filter(p => p.isFeatured).length > 0 && !selectedCategory && !debouncedSearch && (
         <div className="mt-2 py-10" style={{ background: `linear-gradient(160deg, ${tc}08 0%, ${sc}12 100%)` }}>
           <div className="max-w-6xl mx-auto px-4">
             {/* Header */}
@@ -3002,7 +3211,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                 <p className="text-sm text-slate-500 mt-0.5">Loved by our customers this week</p>
               </div>
               <button
-                onClick={scrollToProducts}
+                onClick={goToAllProducts}
                 className="hidden sm:flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl transition-all hover:shadow-md"
                 style={{ color: tc, background: tc + '12', border: `1.5px solid ${tc}30` }}
               >
@@ -3079,7 +3288,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             {/* Mobile view-all */}
             <div className="flex justify-center mt-5 sm:hidden">
               <button
-                onClick={scrollToProducts}
+                onClick={goToAllProducts}
                 className="flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-xl"
                 style={{ color: tc, background: tc + '12', border: `1.5px solid ${tc}30` }}
               >
@@ -3164,6 +3373,29 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
 
       {/* ── Products section ── */}
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-5">
+
+        {/* Breadcrumb — catalog pages only */}
+        {isCatalogView && (
+          <nav className="flex items-center gap-1.5 text-xs text-slate-400 font-medium" aria-label="Breadcrumb">
+            <button onClick={() => navigate(catalogBase || '/')} className="hover:text-slate-700 transition-colors">
+              Home
+            </button>
+            <ChevronRight className="w-3 h-3" />
+            {selectedCategory ? (
+              <>
+                <button onClick={goToAllProducts} className="hover:text-slate-700 transition-colors">
+                  All Products
+                </button>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-slate-600 font-semibold">
+                  {categories.find(c => c.id === selectedCategory)?.name ?? 'Category'}
+                </span>
+              </>
+            ) : (
+              <span className="text-slate-600 font-semibold">All Products</span>
+            )}
+          </nav>
+        )}
 
         {/* ── Toolbar ─── */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -3355,6 +3587,9 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
                   store={store}
                   onSelect={setSelectedProduct}
                   onAddToCart={handleAddToCart}
+                  slug={slug}
+                  wishlisted={wishlistIds?.has(p.id) ?? false}
+                  onRequireLogin={() => setShowAuthModal(true)}
                 />
               </div>
             ))}
@@ -3409,8 +3644,8 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
         )}
       </div>
 
-      {/* ── WhatsApp CTA Banner ── */}
-      {store.whatsAppNumber && (
+      {/* ── WhatsApp CTA Banner ── (landing only) */}
+      {!isCatalogView && store.whatsAppNumber && (
         <div className="max-w-6xl mx-auto px-4 py-10">
           <div
             className="rounded-3xl p-8 md:p-10 text-white relative overflow-hidden"
@@ -3508,11 +3743,11 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           <div>
             <h4 className="font-semibold mb-3 text-slate-300">Quick Links</h4>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><button onClick={scrollToProducts} className="hover:text-white transition-colors">All Products</button></li>
+              <li><button onClick={goToAllProducts} className="hover:text-white transition-colors">All Products</button></li>
               {categories.slice(0, 4).map(c => (
                 <li key={c.id}>
                   <button
-                    onClick={() => { setSelectedCategory(c.id); scrollToProducts(); }}
+                    onClick={() => goToCategory(c)}
                     className="hover:text-white transition-colors"
                   >
                     {c.name}
@@ -3654,6 +3889,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             razorpayEnabled: store.razorpayEnabled,
             whatsAppNumber: store.whatsAppNumber,
             whatsAppCtaLabel: store.whatsAppCtaLabel,
+            b2bEnabled: store.b2bEnabled,
           }}
           slug={slug ?? ''}
           isCustomDomain={!!overrideSlug}
@@ -3668,6 +3904,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
           <CustomerAuthModal
             slug={slug}
             themeColor={tc}
+            b2bEnabled={store.b2bEnabled !== false}
             onClose={() => setShowAuthModal(false)}
           />
         </React.Suspense>
@@ -3680,6 +3917,7 @@ function PublicStorefrontPageInner({ slug, isCustomDomain }: { slug: string | un
             slug={slug}
             themeColor={tc}
             currency={store.currency}
+            b2bEnabled={store.b2bEnabled !== false}
             onClose={() => setShowAccountPanel(false)}
             onAddToCart={(productId, title, price, imageUrl) => {
               addItem({ productId, productTitle: title, unitPrice: price, primaryImage: imageUrl });

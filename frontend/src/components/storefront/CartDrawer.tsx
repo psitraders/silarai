@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, AlertCircle, CreditCard, Truck } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, AlertCircle, CreditCard, Truck, FileText } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useStorefrontAuth } from '../../context/StorefrontAuthContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { paymentApi } from '../../api/payment.api';
+import { QuoteRequestModal } from './QuoteRequestModal';
 
 interface StoreData {
   name: string;
@@ -14,6 +17,7 @@ interface StoreData {
   razorpayKeyId?: string;
   whatsAppNumber?: string;
   whatsAppCtaLabel?: string;
+  b2bEnabled?: boolean;
 }
 
 interface CartDrawerProps {
@@ -42,6 +46,8 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 
 export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartDrawerProps) {
   const { items, totalItems, totalAmount, removeItem, updateQty, clearCart } = useCart();
+  const { customer } = useStorefrontAuth();
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const navigate  = useNavigate();
   const currency  = store.currency ?? 'INR';
   const tc        = store.themeColor;
@@ -67,7 +73,40 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
   const [couponError, setCouponError]       = useState<string | null>(null);
   const [couponLoading, setCouponLoading]   = useState(false);
 
-  const finalAmount = Math.max(0, totalAmount - couponDiscount);
+  // ── Wholesale tier pricing (approved B2B customers only) ───────────────────
+  // The server independently re-verifies B2B approval and recomputes tier
+  // prices on COD orders — this is display + payload consistency, not authority.
+  interface Tier { minQuantity: number; maxQuantity?: number | null; pricePerUnit: number; label?: string | null }
+  const b2bOn = store.b2bEnabled !== false;
+  const isWholesale = b2bOn && !!customer?.isB2BCustomer && !!customer?.isB2BApproved;
+  const productIdsKey = items.map(i => i.productId).sort().join(',');
+  const { data: tiersByProduct } = useQuery({
+    queryKey: ['sf-cart-tiers', slug, productIdsKey],
+    enabled: open && isWholesale && items.length > 0,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const entries = await Promise.all(items.map(async i => {
+        try {
+          const res = await fetch(`${BASE_URL}/public/${slug}/products/${i.productId}/wholesale-tiers`);
+          return [i.productId, res.ok ? ((await res.json()) as Tier[]) : []] as const;
+        } catch { return [i.productId, [] as Tier[]] as const; }
+      }));
+      return Object.fromEntries(entries) as Record<string, Tier[]>;
+    },
+  });
+
+  const effectiveUnitPrice = (item: { productId: string; quantity: number; unitPrice: number }) => {
+    if (!isWholesale) return item.unitPrice;
+    const tiers = tiersByProduct?.[item.productId] ?? [];
+    const tier = tiers
+      .filter(t => item.quantity >= t.minQuantity && (t.maxQuantity == null || item.quantity <= t.maxQuantity))
+      .sort((a, b) => b.minQuantity - a.minQuantity)[0];
+    return tier ? Math.min(item.unitPrice, tier.pricePerUnit) : item.unitPrice;
+  };
+  const effectiveTotal    = items.reduce((s, i) => s + effectiveUnitPrice(i) * i.quantity, 0);
+  const wholesaleSavings  = totalAmount - effectiveTotal;
+
+  const finalAmount = Math.max(0, effectiveTotal - couponDiscount);
 
   // OOS detection
   const oosItems = items.filter(i => i.stockQuantity != null && i.stockQuantity <= 0);
@@ -160,7 +199,12 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
     try {
       const res = await fetch(`${BASE_URL}/public/${slug}/cod-order`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          // B2B: the bearer token lets the server verify approval and apply
+          // wholesale tier prices (server recomputes — client price is advisory)
+          ...(customer?.accessToken ? { Authorization: `Bearer ${customer.accessToken}` } : {}),
+        },
         body: JSON.stringify({
           customerName: name.trim(),
           customerPhone: phone.trim(),
@@ -173,7 +217,7 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
             productTitle: i.productTitle,
             variantInfo: null,
             quantity: i.quantity,
-            unitPrice: i.unitPrice,
+            unitPrice: effectiveUnitPrice(i),
           })),
         }),
       });
@@ -235,7 +279,7 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
                 productTitle: i.productTitle,
                 variantInfo:  undefined,
                 quantity:     i.quantity,
-                unitPrice:    i.unitPrice,
+                unitPrice:    effectiveUnitPrice(i),
               })),
             });
             clearCart();
@@ -316,11 +360,24 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
                         <span className="inline-flex items-center gap-1 text-xs text-red-600 font-semibold mt-1">
                           <AlertCircle className="w-3 h-3" /> Out of Stock
                         </span>
-                      ) : (
-                        <p className="text-sm font-bold mt-1" style={{ color: tc }}>
-                          {formatCurrency(item.unitPrice * item.quantity, currency)}
-                        </p>
-                      )}
+                      ) : (() => {
+                        const unit = effectiveUnitPrice(item);
+                        return (
+                          <p className="text-sm font-bold mt-1" style={{ color: tc }}>
+                            {formatCurrency(unit * item.quantity, currency)}
+                            {unit < item.unitPrice && (
+                              <>
+                                <span className="ml-1.5 text-xs font-medium text-slate-400 line-through">
+                                  {formatCurrency(item.unitPrice * item.quantity, currency)}
+                                </span>
+                                <span className="ml-1.5 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: tc }}>
+                                  Wholesale
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        );
+                      })()}
                     </div>
 
                     {/* Quantity + Remove */}
@@ -391,6 +448,12 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
                 )}
 
                 {/* Totals */}
+                {wholesaleSavings > 0 && (
+                  <div className="flex items-center justify-between text-sm text-green-700">
+                    <span>Wholesale savings</span>
+                    <span>-{formatCurrency(wholesaleSavings, currency)}</span>
+                  </div>
+                )}
                 {couponDiscount > 0 && (
                   <div className="flex items-center justify-between text-sm text-green-700">
                     <span>Discount</span>
@@ -413,6 +476,17 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
                   Proceed to Checkout <ArrowRight className="w-4 h-4" />
                 </button>
 
+                {/* B2B: request a bulk/wholesale quote instead of checking out */}
+                {b2bOn && customer?.isB2BCustomer && items.length > 0 && (
+                  <button
+                    onClick={() => setShowQuoteModal(true)}
+                    className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-colors hover:bg-slate-50"
+                    style={{ color: tc, borderColor: tc }}
+                  >
+                    <FileText className="w-4 h-4" /> Request Bulk Quote
+                  </button>
+                )}
+
                 <p className="text-[10px] text-slate-400 text-center">
                   {store.razorpayEnabled ? '🔒 Secured by Razorpay' : ''}
                 </p>
@@ -432,10 +506,16 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
                   <div key={i.productId} className="flex justify-between text-sm">
                     <span className="text-slate-700 truncate flex-1 mr-2">{i.productTitle} ×{i.quantity}</span>
                     <span className="font-semibold text-slate-900 flex-shrink-0">
-                      {formatCurrency(i.unitPrice * i.quantity, currency)}
+                      {formatCurrency(effectiveUnitPrice(i) * i.quantity, currency)}
                     </span>
                   </div>
                 ))}
+                {wholesaleSavings > 0 && (
+                  <div className="flex justify-between text-sm text-green-700">
+                    <span>Wholesale savings</span>
+                    <span>-{formatCurrency(wholesaleSavings, currency)}</span>
+                  </div>
+                )}
                 {couponDiscount > 0 && (
                   <div className="flex justify-between text-sm text-green-700">
                     <span>Discount ({couponCode})</span>
@@ -605,6 +685,22 @@ export function CartDrawer({ open, onClose, store, slug, isCustomDomain }: CartD
           </>
         )}
       </div>
+
+      {/* B2B quote request — pre-filled with the cart contents */}
+      {showQuoteModal && (
+        <QuoteRequestModal
+          slug={slug}
+          themeColor={tc}
+          currency={currency}
+          items={items.map(i => ({
+            productId: i.productId,
+            title:     i.productTitle,
+            qty:       i.quantity,
+            unitPrice: i.unitPrice,
+          }))}
+          onClose={() => setShowQuoteModal(false)}
+        />
+      )}
     </>
   );
 }

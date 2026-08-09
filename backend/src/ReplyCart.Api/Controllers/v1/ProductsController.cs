@@ -14,7 +14,7 @@ namespace ReplyCart.Api.Controllers.v1;
 [ApiController]
 [Route("api/v1/products")]
 [Authorize]
-public class ProductsController(IMediator mediator) : ControllerBase
+public class ProductsController(IMediator mediator, IAppDbContext db) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll(
@@ -25,6 +25,44 @@ public class ProductsController(IMediator mediator) : ControllerBase
         [FromQuery] ProductStatus? status = null,
         CancellationToken ct = default)
         => Ok(await mediator.Send(new GetProductsQuery(page, pageSize, categoryId, search, status), ct));
+
+    /// <summary>
+    /// Inventory overview for the catalogue: total tracked units, stock value
+    /// (at current selling price) and low/out-of-stock counts.
+    /// </summary>
+    [HttpGet("inventory-summary")]
+    public async Task<IActionResult> GetInventorySummary(CancellationToken ct)
+    {
+        const int lowStockThreshold = 5;
+
+        var rows = await db.Products
+            .Where(p => p.Status != ProductStatus.Archived)
+            .Select(p => new
+            {
+                p.StockQuantity,
+                Price = p.DiscountedPrice ?? p.BasePrice,
+                IsOos = p.Status == ProductStatus.OutOfStock
+                     || (p.StockQuantity != null && p.StockQuantity <= 0),
+            })
+            .ToListAsync(ct);
+
+        var currency = await db.Businesses
+            .Select(b => b.Currency)
+            .FirstOrDefaultAsync(ct) ?? "INR";
+
+        return Ok(new
+        {
+            TotalProducts     = rows.Count,
+            TrackedProducts   = rows.Count(r => r.StockQuantity != null),
+            UntrackedProducts = rows.Count(r => r.StockQuantity == null),
+            TotalUnits        = rows.Sum(r => (long)(r.StockQuantity ?? 0)),
+            StockValue        = rows.Sum(r => (r.StockQuantity ?? 0) * r.Price),
+            LowStock          = rows.Count(r => r.StockQuantity > 0 && r.StockQuantity <= lowStockThreshold),
+            OutOfStock        = rows.Count(r => r.IsOos),
+            LowStockThreshold = lowStockThreshold,
+            Currency          = currency,
+        });
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)

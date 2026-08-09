@@ -413,6 +413,16 @@ export function StorefrontSettingsPage() {
                 </p>
               </div>
             </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" {...register('b2bEnabled')} className="rounded" />
+              <div>
+                <span className="text-sm text-slate-700 font-medium">Enable B2B (wholesale) features</span>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Business-buyer registration, wholesale pricing tiers and bulk quote requests on your storefront.
+                  Turn off if you only sell B2C.
+                </p>
+              </div>
+            </label>
           </div>
         </Card>
 

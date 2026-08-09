@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Package, RefreshCw, MessageCircle, Copy, Trash2 } from 'lucide-react';
+import { Plus, Search, Package, RefreshCw, MessageCircle, Copy, Trash2, Boxes, IndianRupee, AlertTriangle, XCircle } from 'lucide-react';
+import apiClient from '../../api/client';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -79,6 +80,18 @@ export function ProductsPage() {
     }),
   });
 
+  // Inventory overview totals (units, value, low/out-of-stock)
+  interface InventorySummary {
+    totalProducts: number; trackedProducts: number; untrackedProducts: number;
+    totalUnits: number; stockValue: number; lowStock: number; outOfStock: number;
+    lowStockThreshold: number; currency: string;
+  }
+  const { data: inventory } = useQuery<InventorySummary>({
+    queryKey: ['inventory-summary'],
+    queryFn: () => apiClient.get('/products/inventory-summary').then(r => r.data),
+    staleTime: 60 * 1000,
+  });
+
   // Client-side filter for the active tab
   const filteredItems = activeTab === 'All'
     ? (data?.items ?? [])
@@ -114,6 +127,36 @@ export function ProductsPage() {
           </Button>
         </div>
       </div>
+
+      {/* Inventory overview */}
+      {inventory && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { icon: Boxes,         label: 'Units in stock',  value: inventory.totalUnits.toLocaleString(),
+              sub: inventory.untrackedProducts > 0 ? `${inventory.untrackedProducts} product${inventory.untrackedProducts === 1 ? '' : 's'} untracked` : `across ${inventory.trackedProducts} products`,
+              accent: 'bg-teal-50 text-teal-600' },
+            { icon: IndianRupee,   label: 'Stock value',     value: formatCurrency(inventory.stockValue, inventory.currency || 'INR'),
+              sub: 'at current selling price', accent: 'bg-blue-50 text-blue-600' },
+            { icon: AlertTriangle, label: 'Low stock',       value: String(inventory.lowStock),
+              sub: `≤ ${inventory.lowStockThreshold} units left`, accent: 'bg-amber-50 text-amber-600' },
+            { icon: XCircle,       label: 'Out of stock',    value: String(inventory.outOfStock),
+              sub: 'need restocking', accent: 'bg-red-50 text-red-600' },
+          ].map(({ icon: Icon, label, value, sub, accent }) => (
+            <Card key={label}>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${accent}`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-slate-900 truncate">{value}</p>
+                  <p className="text-xs text-slate-500">{label}</p>
+                  <p className="text-[10px] text-slate-400">{sub}</p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Card padding="none">
         {/* Filters */}

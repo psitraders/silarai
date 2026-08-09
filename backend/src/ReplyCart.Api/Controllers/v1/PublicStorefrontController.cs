@@ -172,6 +172,7 @@ public class PublicStorefrontController(
             FaviconUrl    = AbsoluteImageUrl(business.StorefrontSettings?.FaviconUrl),
             LoaderEnabled = business.StorefrontSettings?.LoaderEnabled ?? true,
             AllowPublicInquiries = business.StorefrontSettings?.AllowPublicInquiries ?? true,
+            B2BEnabled    = business.StorefrontSettings?.B2BEnabled ?? true,
         });
     }
 
@@ -306,7 +307,16 @@ public class PublicStorefrontController(
                      || p.Status == Domain.Enums.ProductStatus.OutOfStock);
 
         if (categoryId.HasValue)
-            query = query.Where(p => p.CategoryId == categoryId);
+        {
+            // A parent category includes products assigned to any of its subcategories
+            var childIds = await db.Categories
+                .Where(c => c.ParentCategoryId == categoryId)
+                .Select(c => c.Id)
+                .ToListAsync(ct);
+            query = childIds.Count > 0
+                ? query.Where(p => p.CategoryId == categoryId || (p.CategoryId != null && childIds.Contains(p.CategoryId.Value)))
+                : query.Where(p => p.CategoryId == categoryId);
+        }
 
         if (!string.IsNullOrEmpty(search))
             query = query.Where(p => p.Title.Contains(search) || (p.Description != null && p.Description.Contains(search)));
@@ -1173,6 +1183,59 @@ public class PublicStorefrontController(
         return basePrice + (match?.PriceAdjustment ?? 0);
     }
 
+    /// <summary>
+    /// When the caller is a logged-in, APPROVED B2B storefront customer of this
+    /// tenant, returns the wholesale tiers for the given products; otherwise null
+    /// (retail pricing applies). The client can never opt into wholesale pricing
+    /// without a valid StorefrontCustomer token — the server re-verifies approval.
+    /// </summary>
+    private async Task<List<Domain.Storefront.ProductWholesaleTier>?> GetB2BTiersAsync(
+        Guid tenantId, List<Guid> productIds, CancellationToken ct)
+    {
+        if (User.Identity?.IsAuthenticated != true || !User.IsInRole("StorefrontCustomer"))
+            return null;
+        if (!Guid.TryParse(User.FindFirst("sub")?.Value, out var customerId))
+            return null;
+
+        // Respect the tenant's B2B toggle — retail pricing when disabled
+        var b2bEnabled = await db.StorefrontSettings.AsNoTracking()
+            .Where(s => s.TenantId == tenantId)
+            .Select(s => (bool?)s.B2BEnabled)
+            .FirstOrDefaultAsync(ct) ?? true;
+        if (!b2bEnabled) return null;
+
+        var approved = await db.StorefrontCustomers.AsNoTracking()
+            .AnyAsync(c => c.Id == customerId && c.TenantId == tenantId
+                        && c.IsB2BCustomer && c.IsB2BApproved, ct);
+        if (!approved) return null;
+
+        return await db.ProductWholesaleTiers.AsNoTracking()
+            .Where(t => productIds.Contains(t.ProductId))
+            .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Standard retail price, or the matching wholesale tier price for B2B orders.
+    /// Tier price replaces the base price (variant adjustment still applies) and
+    /// is never allowed to exceed the retail price.
+    /// </summary>
+    private static decimal ResolveUnitPriceWithTiers(
+        Domain.Catalog.Product product, string? variantInfo, int quantity,
+        List<Domain.Storefront.ProductWholesaleTier>? tiers)
+    {
+        var standard = ResolveUnitPrice(product, variantInfo);
+        var tier = tiers?
+            .Where(t => t.ProductId == product.Id
+                     && quantity >= t.MinQuantity
+                     && (t.MaxQuantity == null || quantity <= t.MaxQuantity))
+            .OrderByDescending(t => t.MinQuantity)
+            .FirstOrDefault();
+        if (tier == null) return standard;
+
+        var variantAdj = standard - (product.DiscountedPrice ?? product.BasePrice);
+        return Math.Min(standard, tier.PricePerUnit + variantAdj);
+    }
+
     [HttpPost("chat/confirm-cod-order")]
     public async Task<IActionResult> ConfirmChatCodOrder(
         string slug,
@@ -1441,10 +1504,12 @@ public class PublicStorefrontController(
         }
 
         // Server is the price authority — recompute from the catalogue, not the client.
+        // Approved B2B customers (verified via their bearer token) get wholesale tier prices.
+        var b2bTiers = await GetB2BTiersAsync(tenantId, productIds, ct);
         decimal ResolveItemPrice(CodOrderItemRequest i)
         {
             var p = products.FirstOrDefault(x => x.Id == i.ProductId);
-            return p == null ? i.UnitPrice : ResolveUnitPrice(p, i.VariantInfo);
+            return p == null ? i.UnitPrice : ResolveUnitPriceWithTiers(p, i.VariantInfo, i.Quantity, b2bTiers);
         }
         var pricedItems = request.Items.Select(i => new { Item = i, Unit = ResolveItemPrice(i) }).ToList();
         var totalAmount = pricedItems.Sum(x => x.Unit * x.Item.Quantity);

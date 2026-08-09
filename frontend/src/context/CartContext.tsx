@@ -15,7 +15,8 @@ interface CartContextValue {
   items: CartItem[];
   totalItems: number;
   totalAmount: number;
-  addItem: (item: Omit<CartItem, 'quantity'>) => void;
+  /** Adds qty units (default 1) — increments the line if it's already in the cart. */
+  addItem: (item: Omit<CartItem, 'quantity'>, qty?: number) => void;
   removeItem: (productId: string) => void;
   updateQty: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -50,7 +51,8 @@ export function CartProvider({
     }
   }, [items, storageKey]);
 
-  const addItem = useCallback((item: Omit<CartItem, 'quantity'>) => {
+  const addItem = useCallback((item: Omit<CartItem, 'quantity'>, qty: number = 1) => {
+    const addQty = Math.max(1, Math.floor(qty));
     setItems(prev => {
       // Match on both productId + variantInfo so different variants are separate cart lines
       const key = item.productId + (item.variantInfo ?? '');
@@ -58,11 +60,11 @@ export function CartProvider({
       if (existing) {
         return prev.map(i =>
           i.productId + (i.variantInfo ?? '') === key
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: i.quantity + addQty }
             : i
         );
       }
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...item, quantity: addQty }];
     });
   }, []);
 

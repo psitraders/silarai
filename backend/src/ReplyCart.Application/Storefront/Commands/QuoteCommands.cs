@@ -75,6 +75,36 @@ public class ListQuotesHandler(IAppDbContext db)
     }
 }
 
+// ── My quotes (storefront customer) ──────────────────────────────────────────
+
+public record GetMyQuotesQuery(Guid CustomerId, Guid TenantId) : IRequest<List<MyQuoteDto>>;
+
+public record MyQuoteDto(
+    Guid Id,
+    string Status,
+    string ItemsJson,
+    string? Notes,
+    string? MerchantReply,
+    DateTime? RepliedAt,
+    DateTime CreatedAt
+);
+
+public class GetMyQuotesHandler(IAppDbContext db)
+    : IRequestHandler<GetMyQuotesQuery, List<MyQuoteDto>>
+{
+    public async Task<List<MyQuoteDto>> Handle(GetMyQuotesQuery req, CancellationToken ct)
+    {
+        return await db.QuoteRequests
+            .AsNoTracking()
+            .Where(q => q.StorefrontCustomerId == req.CustomerId && q.TenantId == req.TenantId)
+            .OrderByDescending(q => q.CreatedAt)
+            .Take(50)
+            .Select(q => new MyQuoteDto(
+                q.Id, q.Status, q.ItemsJson, q.Notes, q.MerchantReply, q.RepliedAt, q.CreatedAt))
+            .ToListAsync(ct);
+    }
+}
+
 // ── Reply to quote (merchant) ─────────────────────────────────────────────────
 
 public record ReplyToQuoteCommand(Guid QuoteId, string Reply, string Status) : IRequest;
