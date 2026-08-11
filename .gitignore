@@ -31,3 +31,4 @@ secrets/
 All_Project_Special_Keys.txt
 
 frontend/.env
+backend-fast-api/

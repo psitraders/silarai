@@ -1,9 +1,13 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using ReplyCart.Infrastructure.Persistence;
 
 #nullable disable
 
 namespace ReplyCart.Infrastructure.Persistence.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260531000001_AddStorefrontPages")]
     public partial class AddStorefrontPages : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

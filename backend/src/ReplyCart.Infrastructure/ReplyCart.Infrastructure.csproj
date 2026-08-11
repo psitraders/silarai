@@ -15,6 +15,12 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    <!-- Hosting.Abstractions: BackgroundService for the chatbot session archive worker -->
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+    <!-- Options.ConfigurationExtensions: services.Configure<RedisOptions>(section) + section.Bind() -->
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <!-- StackExchange.Redis: Azure Managed Redis chatbot session store -->
+    <PackageReference Include="StackExchange.Redis" Version="2.8.16" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

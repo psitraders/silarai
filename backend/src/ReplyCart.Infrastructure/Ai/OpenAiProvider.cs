@@ -7,7 +7,7 @@ using ReplyCart.Application.Common.Interfaces;
 
 namespace ReplyCart.Infrastructure.Ai;
 
-public class OpenAiProvider : IAiProvider
+public class OpenAiProvider : IAiProvider, IAgentAiProvider
 {
     private readonly HttpClient     _http;
     private readonly string         _model;
@@ -365,15 +365,155 @@ public class OpenAiProvider : IAiProvider
                 var extractedAddress     = root.TryGetProperty("address",        out var addr) ? addr.GetString() : null;
                 var extractedCartJson    = root.TryGetProperty("cart",           out var cart) ? cart.ToString() : null;
                 var extractedPayment     = root.TryGetProperty("payment_method", out var pm)   ? pm.GetString() : null;
+                // Server-authoritative cart contract (chatbot-client module): the model
+                // proposes mutations rather than restating the whole cart with prices.
+                var extractedCartOps     = root.TryGetProperty("cart_ops",       out var ops)  ? ops.ToString() : null;
                 return new ConversationReply(replyText, stateSignal, extractedName, extractedPhone,
                     extractedAddress, extractedCartJson, extractedPayment,
-                    promptTokens, completionTokens);
+                    promptTokens, completionTokens, extractedCartOps);
             }
         }
         catch { /* Not JSON – treat as plain text */ }
 
         return new ConversationReply(rawText, null,
             PromptTokens: promptTokens, CompletionTokens: completionTokens);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Tool-calling agent step (Chatbot-as-a-Service loop)
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// The system message is expected to lead with a per-client static prefix so that
+    /// OpenAI's automatic prompt caching hits across turns. Anything that varies per
+    /// turn must be appended AFTER that prefix by the caller, or the cache misses.
+    /// </remarks>
+    public async Task<AgentStepResult> RunAgentStepAsync(
+        IReadOnlyList<AgentMessage> messages,
+        IReadOnlyList<AgentTool>    tools,
+        CancellationToken           ct = default)
+    {
+        var payload = new JsonObject
+        {
+            ["model"]       = _model,
+            ["messages"]    = SerialiseMessages(messages),
+            ["max_tokens"]  = 600,
+            ["temperature"] = 0.4,   // lower than chat: tool arguments should be literal
+        };
+
+        if (tools.Count > 0)
+        {
+            var toolArray = new JsonArray();
+            foreach (var t in tools)
+            {
+                toolArray.Add(new JsonObject
+                {
+                    ["type"] = "function",
+                    ["function"] = new JsonObject
+                    {
+                        ["name"]        = t.Name,
+                        ["description"] = t.Description,
+                        ["parameters"]  = JsonNode.Parse(t.ParametersJsonSchema),
+                    },
+                });
+            }
+
+            payload["tools"]       = toolArray;
+            payload["tool_choice"] = "auto";
+        }
+
+        var content  = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("v1/chat/completions", content, ct);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(ct);
+            throw new InvalidOperationException($"OpenAI agent step error {(int)response.StatusCode}: {errorBody}");
+        }
+
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+        var root      = doc.RootElement;
+
+        int promptTokens = 0, completionTokens = 0;
+        if (root.TryGetProperty("usage", out var usage))
+        {
+            if (usage.TryGetProperty("prompt_tokens",     out var pt))  promptTokens     = pt.GetInt32();
+            if (usage.TryGetProperty("completion_tokens", out var ctk)) completionTokens = ctk.GetInt32();
+        }
+
+        var message   = root.GetProperty("choices")[0].GetProperty("message");
+        var replyText = message.TryGetProperty("content", out var c) && c.ValueKind == JsonValueKind.String
+            ? c.GetString()
+            : null;
+
+        var calls = new List<AgentToolCall>();
+        if (message.TryGetProperty("tool_calls", out var tc) && tc.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var call in tc.EnumerateArray())
+            {
+                var id = call.TryGetProperty("id", out var idEl) ? idEl.GetString() : null;
+                if (id == null || !call.TryGetProperty("function", out var fn)) continue;
+
+                var name = fn.TryGetProperty("name", out var nEl) ? nEl.GetString() : null;
+                if (string.IsNullOrWhiteSpace(name)) continue;
+
+                var args = fn.TryGetProperty("arguments", out var aEl) ? aEl.GetString() ?? "{}" : "{}";
+                calls.Add(new AgentToolCall(id, name!, args));
+            }
+        }
+
+        return new AgentStepResult(replyText, calls, promptTokens, completionTokens);
+    }
+
+    private static JsonArray SerialiseMessages(IReadOnlyList<AgentMessage> messages)
+    {
+        var array = new JsonArray();
+
+        foreach (var m in messages)
+        {
+            var node = new JsonObject { ["role"] = m.Role };
+
+            if (m.Role == "tool")
+            {
+                node["tool_call_id"] = m.ToolCallId;
+                node["content"]      = m.Content ?? "";
+                array.Add(node);
+                continue;
+            }
+
+            // An assistant message carrying tool calls must send content:null, and the
+            // tool_calls must be echoed back verbatim or the follow-up call is rejected.
+            if (m.ToolCalls is { Count: > 0 })
+            {
+                node["content"] = null;
+
+                var calls = new JsonArray();
+                foreach (var call in m.ToolCalls)
+                {
+                    calls.Add(new JsonObject
+                    {
+                        ["id"]   = call.Id,
+                        ["type"] = "function",
+                        ["function"] = new JsonObject
+                        {
+                            ["name"]      = call.Name,
+                            ["arguments"] = call.ArgumentsJson,
+                        },
+                    });
+                }
+
+                node["tool_calls"] = calls;
+            }
+            else
+            {
+                node["content"] = m.Content ?? "";
+            }
+
+            array.Add(node);
+        }
+
+        return array;
     }
 
     /// <inheritdoc />

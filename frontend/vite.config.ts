@@ -2,13 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-const PROD_API = 'https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1';
-
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  define: {
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || PROD_API),
-  },
   server: {
     port: 5173,
     proxy: {
