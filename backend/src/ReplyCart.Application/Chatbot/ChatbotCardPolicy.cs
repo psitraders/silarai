@@ -57,10 +57,15 @@ public static class ChatbotCardPolicy
     /// <summary>
     /// Conversation states where the buyer is being asked for their details.
     /// Showing products here interrupts the checkout.
+    ///
+    /// "ordered" is deliberately NOT in this set. It is a terminal state, not an
+    /// in-flight one, and ChatProfile.State is monotonic — nothing ever writes it back —
+    /// so treating it as order-flow suppresses every carousel for the rest of the
+    /// session once a buyer has ordered once. Same rule as ChatbotAgent.Finish.
     /// </summary>
     private static readonly HashSet<string> OrderFlowStates = new(StringComparer.OrdinalIgnoreCase)
     {
-        "collecting_info", "confirming", "order_ready", "ordered",
+        "collecting_info", "confirming", "order_ready",
     };
 
     /// <summary>

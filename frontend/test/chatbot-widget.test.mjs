@@ -35,7 +35,9 @@ function ndjson(lines) {
 
 const calls = [];
 async function fakeFetch(url, opts = {}) {
-  calls.push({ url, accept: (opts.headers || {}).Accept });
+  let body = null;
+  if (typeof opts.body === 'string') { try { body = JSON.parse(opts.body); } catch (_) { /* not JSON */ } }
+  calls.push({ url, accept: (opts.headers || {}).Accept, body });
   const ok = (body) => ({ ok: true, headers: { get: () => 'application/json' }, json: async () => body });
 
   if (url.includes('/config')) return ok({ name: 'Test Jewels', currency: 'INR', welcomeMessage: 'Welcome!', products: PRODUCTS, payment: { codEnabled: true, onlineEnabled: false } });
@@ -129,16 +131,88 @@ check('composer hides its native scrollbar by default', /\.composer textarea\{[^
 check('composer not pinned to 0px when unmeasurable', inp.style.height === '',
   'got height=' + JSON.stringify(inp.style.height));
 
-// The Add button on a card must reach the server. This regressed once: the carousel
-// took pointer capture on pointerdown, which retargets the following click to the rail,
-// so no card button ever fired.
+// The Add button on a card must reach the server for a product with no variants.
+// This regressed once: the carousel took pointer capture on pointerdown, which
+// retargets the following click to the rail, so no card button ever fired.
 {
   const before = calls.length;
-  cards[0].querySelector('.add').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('variant-less card Add button reads "Add"', cards[1].querySelector('.add').textContent === 'Add');
+  cards[1].querySelector('.add').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
   await tick(60);
   const posted = calls.slice(before).find(c => c.url.includes('/cart') && !c.url.includes('?'));
-  check('Add on a card posts to the cart endpoint', !!posted);
-  check('Add on a card updates the badge', T('#cartCnt') === '1', T('#cartCnt'));
+  check('Add on a variant-less card posts to the cart endpoint', !!posted);
+  check('Add on a variant-less card updates the badge', T('#cartCnt') === '1', T('#cartCnt'));
+}
+
+// A card with variants (size/color/etc.) must never add on a single tap — the server
+// has no way to ask which one was meant, so the tap opens the detail sheet instead,
+// where Add to cart stays disabled until a variant is chosen.
+{
+  const before = calls.length;
+  check('variant card Add button reads "Select"', cards[0].querySelector('.add').textContent === 'Select', cards[0].querySelector('.add').textContent);
+
+  cards[0].querySelector('.add').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await tick(20);
+  const postedOnTap = calls.slice(before).find(c => c.url.includes('/cart') && !c.url.includes('?'));
+  check('Add on a variant card does not add directly', !postedOnTap);
+  check('Add on a variant card opens the detail sheet instead', $('#detail').classList.contains('on'));
+  check('pdAdd starts disabled until a variant is chosen', $('#pdAdd').disabled);
+
+  $('#pdAdd').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await tick(20);
+  const postedWhileDisabled = calls.slice(before).find(c => c.url.includes('/cart') && !c.url.includes('?'));
+  check('clicking Add to cart with no variant chosen does not add', !postedWhileDisabled);
+
+  root.querySelectorAll('#vrow button')[0].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('choosing a variant enables Add to cart', !$('#pdAdd').disabled);
+
+  $('#pdBack').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('detail closes so later tests start clean', !$('#detail').classList.contains('on'));
+}
+
+// Order now was previously exempt from the variant gate — it doesn't write the cart
+// directly, it just sends a chat message ("I want to order X"), so a customer could
+// reach checkout without ever specifying which variant. Even after gating it, the
+// message alone left the model free to narrate an add ("I've added X to your cart —
+// proceed to checkout?") without ever calling update_cart, so the real cart stayed
+// empty. Order now must both be gated identically to Add to cart AND write the cart
+// itself before handing off to chat, so there is nothing left for the model to get
+// wrong.
+{
+  const before = calls.length;
+  cards[0].querySelector('.body').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await tick(20);
+  check('pdOrder also starts disabled until a variant is chosen', $('#pdOrder').disabled);
+
+  $('#pdOrder').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await tick(20);
+  const sentWhileDisabled = calls.slice(before).find(c => c.url.includes('/cart') && !c.url.includes('?'));
+  check('clicking Order now with no variant chosen writes no cart line', !sentWhileDisabled);
+  check('detail stays open when Order now is blocked', $('#detail').classList.contains('on'));
+
+  root.querySelectorAll('#vrow button')[0].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('choosing a variant enables Order now too', !$('#pdOrder').disabled);
+
+  $('#pdOrder').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await tick(60);
+  const cartPost = calls.slice(before).find(c => c.url.includes('/cart') && !c.url.includes('?'));
+  const msgPost  = calls.slice(before).find(c => c.url.includes('/message'));
+  check('Order now writes the cart directly, like Add to cart does', !!cartPost);
+  check('the cart write carries the chosen variant', cartPost?.body?.ops?.[0]?.variant === 'S',
+    JSON.stringify(cartPost?.body));
+  check('Order now hands off to chat with a generic checkout message, not a product-named one',
+    msgPost?.body?.message === 'I\'d like to checkout', msgPost?.body?.message);
+  check('the cart write happens before the chat turn, not after',
+    calls.indexOf(cartPost) < calls.indexOf(msgPost));
+  check('cart badge reflects the direct write before the chat turn started',
+    T('#cartCnt') === '1', T('#cartCnt'));
+  check('detail closes on Order now', !$('#detail').classList.contains('on'));
+
+  // Order now enters focused (single-product) mode via setFocus(p). Reset it the same
+  // way the widget itself does (Browse all products), so a later block that expects a
+  // rendered carousel is not silently starved of cards by leftover focus state.
+  $('#browseBtn').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await tick(20);
 }
 
 // Vertical wheel over the carousel must fall through to the message list. The old
@@ -187,6 +261,8 @@ check('detail is a full panel, not a sheet', !!$('#detail') && !root.querySelect
 check('detail shows title', $('#detail h4')?.textContent === 'Gold Jhumka Earrings', $('#detail h4')?.textContent);
 check('detail shows variant chips', root.querySelectorAll('#vrow button').length === 2);
 
+// Add to cart is gated on a variant being chosen — pick one before this can add.
+root.querySelectorAll('#vrow button')[0].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
 $('#pdAdd').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
 await tick(60);
 check('cart badge updates after add', T('#cartCnt') === '1' && $('#cartCnt').classList.contains('on'), T('#cartCnt'));

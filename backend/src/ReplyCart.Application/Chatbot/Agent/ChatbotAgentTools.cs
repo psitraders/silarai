@@ -95,7 +95,10 @@ public static class ChatbotAgentTools
         tools.Add(new AgentTool(
             UpdateCart,
             "Add, change or remove items in the customer's cart. The server prices every item " +
-            "from the live catalogue — never send a price. Returns the updated cart.",
+            "from the live catalogue — never send a price. If the product has options (size, " +
+            "color, etc. — check its Variants), ask the customer which one BEFORE calling this; " +
+            "an add/set with no variant for such a product is rejected, not guessed. Returns the " +
+            "updated cart.",
             """
             {
               "type": "object",
@@ -334,21 +337,65 @@ public static class ChatbotAgentTools
         if (ops.Count == 0)
             return new ToolOutcome("No valid cart operations were supplied. The cart is unchanged.", Cart: cart);
 
+        // Server-enforced variant requirement — the same "AI proposes, server disposes"
+        // rule as pricing (see ChatbotCartResolver). A product with defined options
+        // (size/color/etc.) can never be added or set without one; the resolver would
+        // otherwise silently accept variant:null and the buyer would get whichever line
+        // the model happened to guess. Ops that fail this check are held back — never
+        // passed to the resolver — so nothing gets added blind.
+        var needsVariant = new List<ChatbotCatalogItem>();
+        var applicable    = new List<ChatbotCartOp>();
+
+        foreach (var op in ops)
+        {
+            var verb = (op.Op ?? "add").Trim().ToLowerInvariant();
+
+            if (verb is "add" or "set" && string.IsNullOrWhiteSpace(op.AnyVariant))
+            {
+                var product = focused ?? (Guid.TryParse(op.ProductId, out var pid)
+                    ? catalogue.FirstOrDefault(c => c.Id == pid)
+                    : null);
+
+                if (product != null && !string.IsNullOrWhiteSpace(product.Variants))
+                {
+                    if (needsVariant.All(p => p.Id != product.Id)) needsVariant.Add(product);
+                    continue;   // held back — never guess a variant
+                }
+            }
+
+            applicable.Add(op);
+        }
+
         var before  = cart;
-        var updated = ChatbotCartResolver.Apply(cart, ops, catalogue, focused);
+        var updated = applicable.Count > 0
+            ? ChatbotCartResolver.Apply(cart, applicable, catalogue, focused)
+            : ChatbotCartResolver.Reprice(cart, catalogue, focused);
 
         // The resolver silently DROPS any op whose product_id is not in this client's
         // catalogue — that is the price-authority rule and it stays. But silence here
         // means the model cheerfully tells the buyer something was added when it wasn't,
         // so an unchanged cart after a mutating op is reported back as a failure.
-        var mutating = ops.Any(o => !string.Equals(o.Op, "clear", StringComparison.OrdinalIgnoreCase));
+        var mutating = applicable.Any(o => !string.Equals(o.Op, "clear", StringComparison.OrdinalIgnoreCase));
         var unchanged = updated.Lines.Count == before.Lines.Count
                      && updated.Lines.SequenceEqual(before.Lines);
 
-        var note = mutating && unchanged
-            ? "Warning: nothing changed — the product id(s) did not match this catalogue. " +
-              "Call search_catalog and use an id exactly as returned.\n"
-            : "";
+        string note;
+        if (needsVariant.Count > 0)
+        {
+            var lines = needsVariant.Select(p => $"'{p.Title}' — options: {p.Variants}");
+            note = "STOP — do not tell the customer this was added. These need an option chosen first:\n" +
+                   string.Join("\n", lines) +
+                   "\nAsk the customer which one, then call update_cart again with that exact text as \"variant\".\n";
+        }
+        else if (mutating && unchanged)
+        {
+            note = "Warning: nothing changed — the product id(s) did not match this catalogue. " +
+                   "Call search_catalog and use an id exactly as returned.\n";
+        }
+        else
+        {
+            note = "";
+        }
 
         return new ToolOutcome(note + RenderCart(updated, currency), Cart: updated);
     }

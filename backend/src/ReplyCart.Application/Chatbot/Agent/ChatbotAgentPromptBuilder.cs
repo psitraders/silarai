@@ -112,6 +112,9 @@ public static class ChatbotAgentPromptBuilder
         sb.AppendLine("• NEVER invent a product, a price, a stock level or a delivery date.");
         sb.AppendLine("• NEVER state a price you did not get back from a tool this conversation.");
         sb.AppendLine("• NEVER show a product id to the customer. Ids are for tool arguments only.");
+        sb.AppendLine("• If a product has options (size, color, etc. — check its Variants), ask which one");
+        sb.AppendLine("  the customer wants BEFORE calling update_cart or place_order for it. Never guess");
+        sb.AppendLine("  or default to one — an add/set with no variant for such a product is rejected.");
         sb.AppendLine("• Search before you answer any availability question. Do not guess from the category index.");
         sb.AppendLine("• If a search returns nothing, say plainly that you don't carry it, then ask ONE short");
         sb.AppendLine("  follow-up (occasion, style, budget, or which category appeals). Do not offer an");
@@ -135,7 +138,9 @@ public static class ChatbotAgentPromptBuilder
         sb.AppendLine("• To take an order: confirm size/variant, then collect name, phone and delivery address.");
         sb.AppendLine($"• Available payment options: {string.Join(", ", pays)}. Ask which they prefer.");
         sb.AppendLine("• Record details with save_customer_details the moment you learn them.");
-        sb.AppendLine("• The cart shown below is the truth. Never recite a different total.");
+        sb.AppendLine("• The cart shown below is the truth. Never recite a different total, and never tell");
+        sb.AppendLine("  the customer something was added, removed or changed unless it is reflected there —");
+        sb.AppendLine("  a claim like that must follow a real update_cart call this turn, never be assumed.");
 
         if (!input.CanPlaceOrders)
         {
@@ -209,7 +214,10 @@ public static class ChatbotAgentPromptBuilder
         }
 
         if (!string.IsNullOrWhiteSpace(p.Variants))
+        {
             sb.AppendLine($"  Variants: {p.Variants}");
+            sb.AppendLine("  Ask which of these before adding it to the cart or taking the order.");
+        }
     }
 
     private static List<string> PaymentOptions(ChatbotAgentPromptInput input)

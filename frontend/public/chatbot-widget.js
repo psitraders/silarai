@@ -430,6 +430,9 @@
   }
   .pd .vrow button:hover{ border-color:var(--rc-primary); color:var(--rc-primary); }
   .pd .vrow button.on{ border-color:var(--rc-primary); color:var(--rc-primary); background:var(--rc-primary-a08); }
+  /* Cue when "Add to cart" is pressed before an option (size/color/etc.) is chosen. */
+  .pd .vrow.shake{ animation:rc-shake .32s; }
+  @keyframes rc-shake{ 25%{ transform:translateX(-4px); } 75%{ transform:translateX(4px); } }
 
   /* Order receipt */
   .receipt{
@@ -804,6 +807,7 @@
   // ── Product detail sheet ────────────────────────────────────────────────────
   function showDetail(p) {
     var chosen = null;
+    var needsVariant = !!p.variants;
     var sale = p.salePrice != null && p.salePrice < p.price;
     var off  = sale ? Math.round((1 - p.salePrice / p.price) * 100) : 0;
 
@@ -815,10 +819,32 @@
         '<div class="prow"><b>' + money(sale ? p.salePrice : p.price) + '</b>' +
           (sale ? '<s>' + money(p.price) + '</s><em>' + off + '% OFF</em>' : '') + '</div>' +
         (p.description ? '<p class="desc">' + esc(p.description) + '</p>' : '') +
-        (p.variants ? '<p class="vlabel">Options</p><div class="vrow" id="vrow"></div>' : '') +
+        (needsVariant ? '<p class="vlabel">Options</p><div class="vrow" id="vrow"></div>' : '') +
       '</div>';
 
-    if (p.variants) {
+    pdFoot.innerHTML =
+      '<button class="cta ghost" id="pdAdd">Add to cart</button>' +
+      '<button class="cta" id="pdOrder">Order now</button>';
+
+    var addBtn   = pdFoot.querySelector('#pdAdd');
+    var orderBtn = pdFoot.querySelector('#pdOrder');
+
+    // With variants (size/color/etc.), both Add to cart AND Order now stay disabled
+    // until one is picked. Order now used to be exempt from this — it just sends a chat
+    // message ("I want to order X") rather than writing the cart directly, so it looked
+    // unrelated, but that message is exactly how a customer could reach checkout without
+    // ever specifying which variant, leaving the model to guess (or worse, claim success
+    // without calling update_cart at all). ChatbotCartResolver has no way to ask the
+    // buyer which one was meant, so neither control should let that happen.
+    function refreshAddState() {
+      var ready = !needsVariant || !!chosen;
+      addBtn.disabled = !ready;
+      addBtn.title = ready ? '' : 'Choose an option first';
+      orderBtn.disabled = !ready;
+      orderBtn.title = ready ? '' : 'Choose an option first';
+    }
+
+    if (needsVariant) {
       var vrow = pdBody.querySelector('#vrow');
       p.variants.split(',').forEach(function (raw) {
         var v = raw.trim(); if (!v) return;
@@ -829,25 +855,44 @@
           vrow.querySelectorAll('button').forEach(function (x) {
             x.classList.toggle('on', x.textContent === chosen);
           });
+          refreshAddState();
         };
         vrow.appendChild(b);
       });
     }
+    refreshAddState();
 
-    pdFoot.innerHTML =
-      '<button class="cta ghost" id="pdAdd">Add to cart</button>' +
-      '<button class="cta" id="pdOrder">Order now</button>';
-
-    var addBtn = pdFoot.querySelector('#pdAdd');
     addBtn.onclick = function () {
+      // Belt-and-braces: a disabled button shouldn't fire a click, but don't rely on
+      // that alone across browsers.
+      if (needsVariant && !chosen) {
+        var vrow = pdBody.querySelector('#vrow');
+        if (vrow) { vrow.classList.remove('shake'); void vrow.offsetWidth; vrow.classList.add('shake'); }
+        return;
+      }
       addBtn.disabled = true; addBtn.textContent = 'Added ✓';
       addToCart(p, chosen).finally(function () {
-        setTimeout(function () { addBtn.disabled = false; addBtn.textContent = 'Add to cart'; }, 1200);
+        setTimeout(function () { addBtn.textContent = 'Add to cart'; refreshAddState(); }, 1200);
       });
     };
-    pdFoot.querySelector('#pdOrder').onclick = function () {
+    orderBtn.onclick = function () {
+      if (needsVariant && !chosen) {
+        var vrow = pdBody.querySelector('#vrow');
+        if (vrow) { vrow.classList.remove('shake'); void vrow.offsetWidth; vrow.classList.add('shake'); }
+        return;
+      }
       closeDetail(); setFocus(p);
-      submit('I want to order ' + p.title + (chosen ? ' in ' + chosen : ''));
+      // Write the cart directly first — the same call the Add button already makes —
+      // instead of asking the model to read "I want to order X" and call update_cart
+      // itself. That message gave the model nothing it was FORCED to act on, and no
+      // instruction reliably stopped it from just narrating success in prose instead
+      // of calling the tool: it would sometimes reply "I've added X to your cart" with
+      // the real cart still empty. Once the cart genuinely has the item before the chat
+      // turn starts, there is nothing left for the model to get wrong — it only has to
+      // react to what CURRENT CART already shows.
+      addToCart(p, chosen).finally(function () {
+        submit('I\'d like to checkout');
+      });
     };
 
     pdBody.scrollTop = 0;
@@ -942,7 +987,7 @@
           '<div class="pr"><b>' + money(sale ? p.salePrice : p.price) + '</b>' +
             (sale ? '<s>' + money(p.price) + '</s>' : '') + '</div>' +
         '</div>' +
-        '<button class="add">Add</button>';
+        '<button class="add">' + (p.variants ? 'Select' : 'Add') + '</button>';
 
       var img = card.querySelector('img');
       if (img) img.onerror = function () { this.style.display = 'none'; };
@@ -953,6 +998,9 @@
       var add = card.querySelector('.add');
       add.onclick = function (e) {
         e.stopPropagation();
+        // Products with variants (size/color/etc.) always route through the detail
+        // sheet so the buyer picks one — a one-tap add here would otherwise guess.
+        if (p.variants) { showDetail(p); return; }
         add.disabled = true; add.textContent = 'Added ✓';
         addToCart(p).finally(function () {
           setTimeout(function () { add.disabled = false; add.textContent = 'Add'; }, 1200);

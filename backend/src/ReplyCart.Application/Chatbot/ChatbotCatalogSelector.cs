@@ -10,6 +10,12 @@ public static class ChatbotCatalogSelector
 {
     private const int MinWordLength = 3;
 
+    /// <summary>
+    /// Shortest product title that may be matched inside reply text. Guards against a
+    /// one-word generic title ("Ring", "Set") turning an unrelated sentence into a card.
+    /// </summary>
+    private const int MinTitleLength = 6;
+
     /// <summary>Keyword-scores the catalogue against the buyer's message. Highest score first.</summary>
     public static List<ChatbotCatalogItem> Rank(
         IReadOnlyList<ChatbotCatalogItem> catalogue,
@@ -75,6 +81,51 @@ public static class ChatbotCatalogSelector
         if (picked.Count == 0) Add(SpreadAcrossCategories(catalogue, budget));
 
         return picked;
+    }
+
+    /// <summary>
+    /// The catalogue products a reply actually NAMES, in the order it names them.
+    ///
+    /// This is the carousel's fallback source when the model answered a product question
+    /// without calling a tool that turn — a follow-up like "tell me more about the pearl
+    /// ones" can be answered from what it already said last turn, so nothing is surfaced,
+    /// and the buyer gets a product-listing reply with no cards under it.
+    ///
+    /// This is NOT the old client-side ranker that was deliberately removed (see
+    /// context.md §4.8). That one ranked the BUYER'S message and fell back to a category
+    /// spread, so it produced cards after literally every message including "hi". This
+    /// matches only exact product titles present in the model's OWN reply text, so the
+    /// cards still cannot disagree with the words — they are derived from them. A reply
+    /// that names no product produces no cards.
+    /// </summary>
+    public static List<ChatbotCatalogItem> MentionedIn(
+        string?                           replyText,
+        IReadOnlyList<ChatbotCatalogItem> catalogue,
+        int                               take)
+    {
+        if (string.IsNullOrWhiteSpace(replyText) || catalogue.Count == 0 || take <= 0) return [];
+
+        var hay   = replyText.ToLowerInvariant();
+        var spans = new List<(int Start, int End, ChatbotCatalogItem Product)>();
+
+        // Longest titles first, so a longer title claims its span before a shorter title
+        // that happens to be a substring of it can match inside ("Antique Peacock
+        // Contemporary Earrings" must not also surface a separate "Peacock Earrings").
+        foreach (var p in catalogue.OrderByDescending(p => p.Title?.Length ?? 0))
+        {
+            var title = p.Title?.Trim();
+            if (string.IsNullOrEmpty(title) || title.Length < MinTitleLength) continue;
+
+            var idx = hay.IndexOf(title.ToLowerInvariant(), StringComparison.Ordinal);
+            if (idx < 0) continue;
+
+            var end = idx + title.Length;
+            if (spans.Any(s => idx < s.End && end > s.Start)) continue;   // span already claimed
+
+            spans.Add((idx, end, p));
+        }
+
+        return spans.OrderBy(s => s.Start).Select(s => s.Product).Take(take).ToList();
     }
 
     public static List<string> Categories(IReadOnlyList<ChatbotCatalogItem> catalogue) =>

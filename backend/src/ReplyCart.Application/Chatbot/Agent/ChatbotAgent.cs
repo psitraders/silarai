@@ -213,10 +213,28 @@ public sealed class ChatbotAgent(IAgentAiProvider provider, ILogger<ChatbotAgent
         List<string>                      thinking,
         ChatbotAgentRequest               request)
     {
+        // State is recomputed every turn, never simply inherited. ChatProfile.State is
+        // otherwise monotonic — save_customer_details only ever advances it to
+        // "collecting_info" and a placed order pins it at "ordered" — and nothing in the
+        // session store ever writes it back. Inheriting it therefore suppressed the
+        // carousel for the REST OF THE SESSION after the first order (or after the buyer
+        // simply gave their name), and because sessionId is persisted in the widget's
+        // localStorage and the Redis profile TTL slides on every read, a page refresh
+        // rejoined the same dead state.
         var state = intent != null ? "ordered" : patch?.State ?? request.Profile.State;
 
+        // A fresh search/lookup THIS TURN is the strongest signal of what the buyer
+        // wants right now, and it overrides a stale or even a same-turn "collecting_info"
+        // signal. Without this, a buyer who volunteers a detail in the same breath as a
+        // product question ("Hi, I'm Ravi, show me some sarees") loses the carousel: the
+        // model calls save_customer_details AND search_catalog in one turn, the patch
+        // marks state "collecting_info", and the old check (which required NO patch at
+        // all this turn) suppressed cards for a search that had literally just happened.
+        // "ordered" is excluded below because it is terminal, not in-flight — the
+        // order-placing turn itself is already covered by intent != null.
+        var justSearched = surfaced.Count > 0;
         var inOrderFlow = intent != null
-            || state is "collecting_info" or "confirming" or "order_ready" or "ordered";
+            || (!justSearched && state is "collecting_info" or "confirming" or "order_ready");
 
         IReadOnlyList<ChatbotCatalogItem> cards;
 
@@ -231,9 +249,24 @@ public sealed class ChatbotAgent(IAgentAiProvider provider, ILogger<ChatbotAgent
             // Never interrupt checkout with a product carousel.
             cards = Array.Empty<ChatbotCatalogItem>();
         }
-        else
+        else if (justSearched)
         {
             cards = surfaced.Take(CardCount).ToList();
+        }
+        else
+        {
+            // Nothing was looked up this turn, but the model can still answer a product
+            // question from what it already said — "tell me more about the pearl ones"
+            // needs no new tool call. That produced a product-listing reply with no cards
+            // under it. Fall back to the products the reply itself NAMES, so a listing
+            // reply always carries its carousel.
+            //
+            // Deliberately placed AFTER the inOrderFlow check, never before: during
+            // checkout the model naturally names the item being ordered ("your Gold
+            // Jhumka Earrings will be delivered soon"), and that must not resurrect the
+            // carousel mid-order. Only a real tool call (justSearched) is trusted to
+            // override order-flow suppression; a text mention is not.
+            cards = ChatbotCatalogSelector.MentionedIn(reply, request.Catalogue, CardCount);
         }
 
         return new ChatbotAgentResult(
