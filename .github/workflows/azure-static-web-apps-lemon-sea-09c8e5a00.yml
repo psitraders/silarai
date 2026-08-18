@@ -40,7 +40,7 @@ jobs:
         working-directory: ./frontend
         env:
           VITE_API_URL: "https://silarai-fbahb2bsg4cng3hq.southindia-01.azurewebsites.net/api/v1"
-          VITE_APP_URL: "https://www.silarai.com"
+          VITE_APP_URL: "https://app.silarai.com"
         run: npm install && npm run build
 
       - name: Build And Deploy

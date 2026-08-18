@@ -75,7 +75,7 @@ A multi-tenant SaaS platform for boutique/small-business sellers (clothing, jewe
 | Charts | Recharts v3 |
 | i18n | i18next / react-i18next, 12 locales |
 | Backend host | Azure App Service (`silarai`, South India region) |
-| Frontend host | Dual: Azure Static Web Apps **and** Vercel (both configs present) |
+| Frontend host | Dual: Azure Static Web Apps **and** Vercel (both configs present). Canonical app domain is `https://app.silarai.com` — `www.silarai.com` is a separate WordPress marketing site and serves none of the SPA's files, so `VITE_APP_URL` (used to build the chatbot embed snippet) must point at `app.silarai.com`. |
 | File storage | Cloudinary (current), Local disk (`wwwroot/uploads/`) as fallback provider |
 | AI provider | OpenAI (`gpt-4o-mini`, current default) or Mock provider, swappable via config |
 | Cache / session store | Azure Managed Redis (StackExchange.Redis) — chatbot-client session memory, cart and catalogue cache only (§4.8). Optional: `Redis:Enabled=false` falls back to in-process + SQL. Everything else still uses `IMemoryCache`. |
