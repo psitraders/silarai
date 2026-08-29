@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  --color-plum-50: #f6f3f5;
+  --color-plum-100: #ece5eb;
+  --color-plum-200: #d9cbd7;
+  --color-plum-300: #bfa8bc;
+  --color-plum-400: #9e7f9b;
+  --color-plum-500: #7d5b79;
+  --color-plum-600: #684863;
+  --color-plum-700: #584053; /* Primary Deep Plum: #584053 */
+  --color-plum-800: #453141;
+  --color-plum-900: #382734;
+  --color-plum-950: #221720;
+
+  --color-teal-50: #f2f9f8;
+  --color-teal-100: #e1f2f0;
+  --color-teal-200: #c4e5e1;
+  --color-teal-300: #a3d6cf;
+  --color-teal-400: #8DC6BF; /* Primary Soft Teal: #8DC6BF */
+  --color-teal-500: #66aea6;
+  --color-teal-600: #4e918a;
+  --color-teal-700: #3d746f;
+  --color-teal-800: #335c58;
+  --color-teal-900: #2b4c49;
+  --color-teal-950: #182f2d;
+
+  --color-peach-50: #fffcf5;
+  --color-peach-100: #fef7e6;
+  --color-peach-200: #fcebc7;
+  --color-peach-300: #FCB666; /* Warm Sand / Apricot Gold: #FCB666 */
+  --color-peach-400: #f7a042;
+  --color-peach-500: #ed8524;
+  --color-peach-600: #cf6815;
+  --color-peach-700: #a64b13;
+
+  --color-coral-50: #fef6f3;
+  --color-coral-100: #fdebe4;
+  --color-coral-200: #fbd4c6;
+  --color-coral-300: #f8b49e;
+  --color-coral-400: #F97B4F; /* Accent Vibrant Coral: #F97B4F */
+  --color-coral-500: #f05523;
+  --color-coral-600: #dc3b0a;
+  --color-coral-700: #b72b07;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: #221820;
+    background-color: #faf9f8;
+  }
+  
+  ::selection {
+    background-color: #fbdfb6;
+    color: #382835;
+  }
+}
+
+/* Custom Utilities for Sleek Interface SaaS Aesthetic */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(88, 64, 83, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(88, 64, 83, 0.05) 1px, transparent 1px);
+}
+
+.bg-radial-glow {
+  background: radial-gradient(circle at 50% 20%, rgba(251, 223, 182, 0.25) 0%, rgba(250, 249, 248, 0) 70%);
+}
+
+.shadow-sleek {
+  box-shadow: 0 10px 30px -5px rgba(88, 64, 83, 0.08), 0 4px 12px -2px rgba(88, 64, 83, 0.04);
+}
+
+.shadow-sleek-hover {
+  box-shadow: 0 20px 40px -8px rgba(88, 64, 83, 0.16), 0 8px 16px -4px rgba(88, 64, 83, 0.08);
+}
+
+.rounded-saas {
+  border-radius: 20px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f7f4f6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ddcad9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9e7998;
+}
+
+

@@ -1,0 +1,6 @@
+{
+  "name": "SilarAI",
+  "description": "Build Smarter Commerce with AI - Modern AI-powered commerce platform & shopping assistant",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

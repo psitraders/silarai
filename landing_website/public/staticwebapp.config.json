@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json.schemastore.org/staticwebapp.config.json",
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "/ai/*",
+      "/.well-known/*",
+      "/*.txt",
+      "/*.xml",
+      "/*.json",
+      "/*.{png,jpg,jpeg,gif,svg,webp,avif,ico}",
+      "/*.{css,js,map}",
+      "/*.{woff,woff2,ttf,otf,eot}"
+    ]
+  },
+  "mimeTypes": {
+    ".txt": "text/plain; charset=utf-8",
+    ".xml": "application/xml; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".webmanifest": "application/manifest+json",
+    ".avif": "image/avif",
+    ".webp": "image/webp"
+  },
+  "globalHeaders": {
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+  },
+  "routes": [
+    {
+      "route": "/blog*",
+      "redirect": "https://blog.silarai.com",
+      "statusCode": 301
+    },
+    {
+      "route": "/wp-content*",
+      "redirect": "https://blog.silarai.com",
+      "statusCode": 301
+    },
+    {
+      "route": "/wp-admin*",
+      "redirect": "https://blog.silarai.com/wp-admin",
+      "statusCode": 301
+    },
+    {
+      "route": "/wp-login.php",
+      "redirect": "https://blog.silarai.com/wp-login.php",
+      "statusCode": 301
+    },
+    {
+      "route": "/feed*",
+      "redirect": "https://blog.silarai.com/feed",
+      "statusCode": 301
+    },
+    {
+      "route": "/assets/*",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/ai/*",
+      "headers": {
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/.well-known/*",
+      "headers": {
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/llms.txt",
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/llms-full.txt",
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/sitemap.xml",
+      "headers": {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "route": "/robots.txt",
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "route": "/ai-manifest.json",
+      "headers": {
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "route": "/index.html",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    }
+  ],
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    }
+  }
+}
