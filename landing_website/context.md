@@ -3,7 +3,7 @@
 > **Authoritative project reference.** Read this before implementing features, fixing bugs, or refactoring.
 > Update this file whenever architecture, behaviour, workflows, or features change.
 
-Last updated: 2026-08-28
+Last updated: 2026-09-04
 
 ---
 
@@ -285,23 +285,27 @@ Build: `npm run build` → output `dist/`.
 - **`routes`** — immutable caching for `/assets/*`, 1-hour caching and `Access-Control-Allow-Origin: *` for the AI knowledge files (so crawlers and agents can fetch them cross-origin), no-cache for `index.html`
 - **`responseOverrides.404`** → rewrite to `/index.html` with status 200
 
-It also carries 301 redirects for the legacy WordPress paths (`/blog*`, `/wp-content*`, `/wp-admin*`, `/wp-login.php`, `/feed*`) to `blog.silarai.com`. Note that SWA route redirects **do not preserve the wildcard path segment**, so these land on the blog root; add explicit per-URL rules for pages worth preserving.
+The former 301 redirects for legacy WordPress paths (`/blog*`, `/wp-content*`, `/wp-admin*`, `/wp-login.php`, `/feed*` → `blog.silarai.com`) were **removed on 2026-09-04** — the WordPress blog was retired rather than migrated. See `DEPLOYMENT.md`'s status note for the full picture.
 
 ### Domain layout
 
-| Hostname | Serves |
-|---|---|
-| `silarai.com` | This site (Azure SWA), via `ALIAS @` |
-| `www.silarai.com` | Redirect to apex |
-| `blog.silarai.com` | WordPress, still on Hostinger (`94.136.187.227`) |
-| `app.silarai.com`, `stage.silarai.com` | A separate, pre-existing Azure SWA |
+DNS now lives in **Cloudflare** (moved off Hostinger's zone editor; Hostinger still hosts mailboxes). Verified live 2026-09-04 via direct DNS queries and HTTP fetches:
+
+| Hostname | Serves | Status |
+|---|---|---|
+| `silarai.com` | This site (Azure SWA `black-mushroom`), via `CNAME @` (Cloudflare flattens the apex) | ✅ live, confirmed serving correct content |
+| `www.silarai.com` | Should redirect to apex | ❌ NXDOMAIN — no CNAME record exists yet |
+| `app.silarai.com` | Separate, pre-existing Azure SWA (`lemon-sea`) — the product dashboard, not this site | ✅ live |
+| `stage.silarai.com` | Documented as a separate Azure SWA | not present in the current Cloudflare zone — unverified |
+| Email (`info@silarai.com`) | Hostinger (DKIM CNAMEs for `hostingermail-a/b/c` are in the zone) | ❌ **no MX record** — mail cannot be delivered, including Web3Forms demo-lead notifications |
+| `blog.silarai.com` | Retired — no longer part of this deployment | DNS still resolves to the old Hostinger IP (`94.136.187.227`) but serves an empty page; safe to delete the record |
 
 ### Deployment checklist
 
-1. Set `VITE_WEB3FORMS_ACCESS_KEY` in the SWA build environment (GitHub Actions secret or SWA configuration). It is needed **at build time**, not runtime.
-2. Set `SITE_URL` if the canonical origin is not `https://silarai.com`.
-3. In the SWA workflow set `app_location: "/"`, `output_location: "dist"`, and leave `api_location` empty.
-4. Restrict the Web3Forms key to the production domain once the custom domain is live.
+1. The live workflow is `.github/workflows/azure-static-web-apps-black-mushroom-050c17800.yml` (`app_location: ./landing_website`, `output_location: dist`) — the "black-mushroom" Azure Static Web App is what serves `silarai.com`. It now injects `VITE_WEB3FORMS_ACCESS_KEY` (from the GitHub Actions secret of the same name) and `SITE_URL` into the `Azure/static-web-apps-deploy@v1` build step, since Vite inlines `VITE_*` **at build time** inside Oryx — an Azure Portal application setting is not read at that stage. **The `VITE_WEB3FORMS_ACCESS_KEY` secret must exist in GitHub → Settings → Secrets and variables → Actions**, or the deployed form fails silently.
+2. `SITE_URL` is hardcoded to `https://silarai.com` in the workflow; change it there if the canonical origin ever moves.
+3. Restrict the Web3Forms key to the production domain once confirmed live.
+4. `landing_website/bun.lock` and `landing_website/package-lock.json` are both committed — only `package-lock.json` reflects the npm scripts CI actually runs; the stray `bun.lock` is a candidate for removal (not yet done, flagged 2026-09-04).
 
 **Full step-by-step procedure, including the DNS cutover and the WordPress move: see `DEPLOYMENT.md`.**
 
@@ -323,15 +327,17 @@ It also carries 301 redirects for the legacy WordPress paths (`/blog*`, `/wp-con
 
 Ordered by impact.
 
-1. **No prerendering — the biggest open issue.** All per-page metadata and JSON-LD is applied by JS after load, so non-JS crawlers (GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack) see homepage metadata on all ~50 routes. This undercuts the entire GEO/AEO strategy. Deliberately deferred to a separate change; it touches the router and build pipeline.
-2. **FMCG page has no SEO metadata** — `SeoHead` lacks an `fmcg-commerce` case, so it serves the homepage title/description/canonical.
-3. **Route logic duplicated** in `App.tsx` (`useState` initialiser vs `handlePopState`) — easy source of deep-link bugs.
-4. **Web3Forms free tier is 250 submissions/month.** No alerting if that ceiling is hit; submissions beyond it are rejected. Monitor, or upgrade before a campaign.
-5. **No form validation beyond `required` on name/email**, and no CAPTCHA. The honeypot plus Web3Forms filtering is the only spam defence — add hCaptcha if abuse appears.
-6. **`FloatingAiAssistantWidget` is a mock** — hardcoded replies, no LLM backend. It presents as a live product demo.
-7. **WordPress integration dormant** (§4.6) — ~620 lines retained but non-functional.
-8. **Dead components**: `DashboardSection.tsx`, `LogoConceptsModal.tsx`.
-9. **Bundle is 1.72 MB (428 KB gzipped)** in a single chunk — Vite warns on every build. The industry pages are the bulk; route-level code splitting would help, and pairs naturally with the prerendering work.
-10. **`src/server/` is a misleading directory name** — it contains build-time data only.
-11. **No tests, no ESLint**; `npm run lint` is a type-check only.
-12. **Knowledge data ships twice** — once in the JS bundle (imported by `AiDiscoveryModal` / `DistributorsBacklinkHub`) and once as static JSON. Fetching the JSON at runtime instead would cut bundle size.
+1. **No MX record for `silarai.com` (live, 2026-09-04).** `info@silarai.com` cannot receive mail, which breaks the `BookDemoModal` → Web3Forms → email lead flow silently (the form still reports success; the email just never arrives). Needs an MX record added in Cloudflare pointing at whatever host serves that mailbox (the `hostingermail-a/b/c` DKIM CNAMEs already in the zone suggest Hostinger Email). See `DEPLOYMENT.md` status note.
+2. **`www.silarai.com` does not resolve (live, 2026-09-04).** NXDOMAIN. Needs a `CNAME www` → the SWA hostname in Cloudflare, set to redirect to the apex.
+3. **No prerendering.** All per-page metadata and JSON-LD is applied by JS after load, so non-JS crawlers (GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack) see homepage metadata on all ~50 routes. This undercuts the entire GEO/AEO strategy. Deliberately deferred to a separate change; it touches the router and build pipeline.
+4. **FMCG page has no SEO metadata** — `SeoHead` lacks an `fmcg-commerce` case, so it serves the homepage title/description/canonical.
+5. **Route logic duplicated** in `App.tsx` (`useState` initialiser vs `handlePopState`) — easy source of deep-link bugs.
+6. **Web3Forms free tier is 250 submissions/month.** No alerting if that ceiling is hit; submissions beyond it are rejected. Monitor, or upgrade before a campaign.
+7. **No form validation beyond `required` on name/email**, and no CAPTCHA. The honeypot plus Web3Forms filtering is the only spam defence — add hCaptcha if abuse appears.
+8. **`FloatingAiAssistantWidget` is a mock** — hardcoded replies, no LLM backend. It presents as a live product demo.
+9. **WordPress integration dormant** (§4.6) — ~620 lines retained but non-functional, and now more likely to stay that way since the blog itself was retired rather than fixed.
+10. **Dead components**: `DashboardSection.tsx`, `LogoConceptsModal.tsx`.
+11. **Bundle is 1.72 MB (428 KB gzipped)** in a single chunk — Vite warns on every build. The industry pages are the bulk; route-level code splitting would help, and pairs naturally with the prerendering work.
+12. **`src/server/` is a misleading directory name** — it contains build-time data only.
+13. **No tests, no ESLint**; `npm run lint` is a type-check only.
+14. **Knowledge data ships twice** — once in the JS bundle (imported by `AiDiscoveryModal` / `DistributorsBacklinkHub`) and once as static JSON. Fetching the JSON at runtime instead would cut bundle size.

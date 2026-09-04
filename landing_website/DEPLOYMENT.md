@@ -1,10 +1,28 @@
 # Deployment Runbook — Azure Static Web Apps + silarai.com cutover
 
-Moves the landing site to Azure Static Web Apps on `silarai.com`, and relocates the
-existing WordPress site to `blog.silarai.com` without taking it offline.
+Moves the landing site to Azure Static Web Apps on `silarai.com`.
 
-**Read the whole document before starting.** The ordering is deliberate — it keeps
-WordPress reachable throughout and makes every step reversible.
+> **Status (2026-09-04): cutover is live.** `silarai.com` resolves via Cloudflare
+> DNS (CNAME-flattened at the apex) to the `black-mushroom` Azure Static Web App and
+> serves the correct site. **The WordPress blog was retired, not migrated** — it is
+> no longer part of this deployment. `blog.silarai.com` still has a stale DNS record
+> pointing at the old Hostinger box; it can be deleted. The `/blog*`, `/wp-content*`,
+> `/wp-admin*`, `/wp-login.php` and `/feed*` redirect rules have been **removed** from
+> `public/staticwebapp.config.json` — Phase 2 and Phase 5 below are kept only as
+> history and no longer apply. See `changes.md` (2026-09-04 entries).
+>
+> **Two DNS gaps found after cutover, still open:**
+> - No MX record for `silarai.com` — mail to `info@silarai.com` (where Web3Forms
+>   sends demo-request leads) cannot be delivered. Needs an MX record from whatever
+>   host serves that inbox — the `hostingermail-a/b/c` DKIM CNAMEs already in the
+>   zone suggest Hostinger Email.
+> - `www.silarai.com` does not resolve (NXDOMAIN). Add a `CNAME www` → the SWA
+>   hostname, same as `silarai.com`'s own CNAME, and set it to redirect to the apex
+>   in Azure's Custom domains settings (canonical URL is the apex, per `index.html`).
+
+**Read the whole document before starting** if you are redoing any part of this from
+scratch. The ordering below was deliberate for the original migration — it kept
+WordPress reachable throughout and made every step reversible.
 
 ---
 
@@ -12,12 +30,13 @@ WordPress reachable throughout and makes every step reversible.
 
 | Hostname | Serves | DNS record |
 |---|---|---|
-| `silarai.com` | This landing site (Azure SWA) | `ALIAS @` → SWA hostname |
-| `www.silarai.com` | Redirect → apex | `CNAME www` → SWA hostname |
-| `blog.silarai.com` | WordPress (unchanged server) | `A blog` → `94.136.187.227` |
-| `app.silarai.com` | Existing Azure SWA | unchanged |
+| `silarai.com` | This landing site (Azure SWA) | `CNAME @` → SWA hostname (Cloudflare flattens the apex) |
+| `www.silarai.com` | Redirect → apex | `CNAME www` → SWA hostname — **not yet added, see status note above** |
+| `app.silarai.com` | Existing Azure SWA (the product dashboard) | unchanged |
 | `stage.silarai.com` | Existing Azure SWA | unchanged |
-| Email | Hostinger + SES, unchanged | unchanged |
+| Email | Hostinger, unchanged | **MX record missing — see status note above** |
+
+`blog.silarai.com` / WordPress is retired and intentionally absent from this table.
 
 ---
 
@@ -68,7 +87,10 @@ Confirm no real Web3Forms key is committed.
 
 ---
 
-## Phase 2 — Move WordPress to blog.silarai.com
+## Phase 2 — Move WordPress to blog.silarai.com (RETIRED — do not follow)
+
+> This phase is kept for history only. The WordPress blog was retired rather than
+> migrated; `blog.silarai.com` is not part of the current deployment. Skip to Phase 3.
 
 **Do this first, while `silarai.com` still points at WordPress.** If you flip DNS first,
 the blog goes dark until this is finished.
@@ -89,28 +111,62 @@ nslookup blog.silarai.com
 
 ### 2.2 Point the subdomain at the existing WordPress install
 
-In Hostinger **hPanel** → Websites → your hosting plan:
+> ⚠️ **The single most dangerous step in this runbook.** Hostinger's Add Subdomain
+> flow creates a **new, empty document root** by default (`domains/blog.silarai.com/public_html/`).
+> If you accept that default, `blog.silarai.com` serves an empty directory listing
+> showing only `cgi-bin/` — and step 2.3 will then redirect your live site into it.
 
-- Add `blog.silarai.com` as a domain/subdomain on the **same hosting account**, mapped to the **same directory** the current WordPress site uses (usually `public_html`).
-- Issue an **SSL certificate** for `blog.silarai.com` (hPanel → SSL). Wait for it to go active before continuing.
+In Hostinger **hPanel** → Websites → Subdomains:
+
+- Add `blog.silarai.com`, and **enable the "Custom folder for subdomain" option**.
+- Set the folder to the **existing WordPress directory** — the one containing `wp-config.php` and `wp-content/`, usually `domains/silarai.com/public_html`.
+- Issue an **SSL certificate** for `blog.silarai.com` (hPanel → SSL). Wait for it to go active.
+
+**Verify before continuing:** `https://blog.silarai.com` must load your WordPress
+site. If you see a directory listing with only `cgi-bin/`, the document root is
+wrong — delete the subdomain and re-create it with the custom folder set. Do not
+proceed until WordPress renders.
+
+At this point both `silarai.com` and `blog.silarai.com` serve the same WordPress
+install. That is correct and expected.
 
 ### 2.3 Tell WordPress its new address
 
-This is the step people miss. WordPress stores its own URL in the database; if you
-skip it, WordPress will 301 every visitor back to `silarai.com`, which by then points
-at Azure — an infinite redirect loop.
+WordPress stores its own URL in the database. If you skip this, WordPress will 301
+every visitor back to `silarai.com` — which by then points at Azure — producing an
+infinite redirect loop.
 
-WordPress Admin → **Settings → General**:
+**Set it in `wp-config.php`, not in the admin UI.** The admin UI writes to the
+database, which is hard to reverse once the site stops loading. Constants in
+`wp-config.php` override the database and can be undone with one file edit.
 
-- **WordPress Address (URL)** → `https://blog.silarai.com`
-- **Site Address (URL)** → `https://blog.silarai.com`
-
-If admin becomes unreachable, set it in `wp-config.php` instead:
+hPanel → File Manager → your WordPress folder → `wp-config.php`. Add above the
+line `/* That's all, stop editing! Happy publishing. */`:
 
 ```php
 define('WP_HOME', 'https://blog.silarai.com');
 define('WP_SITEURL', 'https://blog.silarai.com');
 ```
+
+**Only do this after 2.2 verifies.** Changing WordPress's address before the new
+hostname serves WordPress takes both sites down at once.
+
+#### Recovery: if both sites are down
+
+Symptoms: `silarai.com` redirects to `blog.silarai.com`, and `blog.silarai.com`
+shows a directory listing with only `cgi-bin/`.
+
+Cause: 2.3 was applied while the subdomain still pointed at an empty folder.
+
+Fix: edit `wp-config.php` and point the constants back at the apex —
+
+```php
+define('WP_HOME', 'https://silarai.com');
+define('WP_SITEURL', 'https://silarai.com');
+```
+
+The site returns immediately. Then redo 2.2 correctly before retrying 2.3.
+No data is lost; only the site URL was ever changed.
 
 ### 2.4 Rewrite URLs stored inside content
 
@@ -127,7 +183,8 @@ Run a dry run first. Take a database backup before the real run.
 
 ### 2.5 Verify before moving on
 
-- [ ] `https://blog.silarai.com` loads with a valid certificate
+- [ ] `https://blog.silarai.com` loads **WordPress**, not a directory listing
+- [ ] Valid SSL certificate on the subdomain
 - [ ] A blog post loads, with images
 - [ ] `wp-admin` login works
 - [ ] No redirect back to `silarai.com`
@@ -232,9 +289,13 @@ TTLs are 300 seconds, so propagation is minutes and rollback is cheap.
 
 ---
 
-## Phase 5 — Blog redirects
+## Phase 5 — Blog redirects (RETIRED — do not follow)
 
-`public/staticwebapp.config.json` already redirects these to the blog subdomain:
+> Kept for history only. The blog redirect routes below were **removed** from
+> `public/staticwebapp.config.json` on 2026-09-04 when the WordPress blog was
+> retired. Skip to Phase 6.
+
+`public/staticwebapp.config.json` used to redirect these to the blog subdomain:
 
 ```
 /blog*        → https://blog.silarai.com
@@ -277,9 +338,6 @@ above assume a `/blog/` prefix.
 nslookup silarai.com
 nslookup www.silarai.com
 
-# Blog still resolves to Hostinger
-nslookup blog.silarai.com
-
 # Knowledge files serve with correct content types, not the SPA shell
 curl -sI https://silarai.com/llms.txt      | grep -i content-type   # text/plain
 curl -sI https://silarai.com/sitemap.xml   | grep -i content-type   # application/xml
@@ -291,15 +349,14 @@ curl -sI https://silarai.com/industries/manufacturing | head -1
 
 Checklist:
 
-- [ ] `https://silarai.com` serves the landing site with a valid certificate
-- [ ] `https://www.silarai.com` redirects to the apex
-- [ ] `https://blog.silarai.com` still serves WordPress
-- [ ] `https://app.silarai.com` and `stage.silarai.com` unaffected
-- [ ] **Send a test email to `info@silarai.com` and confirm it arrives**
-- [ ] Submit the demo form end to end and confirm delivery
+- [x] `https://silarai.com` serves the landing site with a valid certificate — confirmed live 2026-09-04
+- [ ] `https://www.silarai.com` redirects to the apex — **not yet resolvable, add the CNAME (see status note above)**
+- [ ] **Add an MX record for `silarai.com` and confirm `info@silarai.com` can receive mail** — currently missing, demo-request leads cannot be delivered
+- [x] `https://app.silarai.com` responds correctly — confirmed live 2026-09-04
+- [ ] Submit the demo form end to end and confirm delivery — blocked on the MX fix above
 - [ ] Restrict the Web3Forms key to `silarai.com` in the Web3Forms dashboard
 - [ ] Resubmit `https://silarai.com/sitemap.xml` in Search Console
-- [ ] Add `blog.silarai.com` as a separate Search Console property and submit its sitemap
+- [ ] Delete the stale `blog.silarai.com` DNS record (WordPress retired, no longer served)
 
 The email check matters most. Nothing in this runbook should affect mail, but a
 mistyped record in the zone editor is easy to make and slow to notice.
@@ -308,14 +365,18 @@ mistyped record in the zone editor is easy to make and slow to notice.
 
 ## Rollback
 
-If the site misbehaves after cutover:
+If the site misbehaves after cutover, note WordPress itself was retired (not kept
+warm on `blog.silarai.com`), so rollback no longer restores a working WordPress site
+— it only points the apex back at the old Hostinger IP, which by now likely serves
+nothing useful either. Reverting the Azure SWA deployment (previous GitHub Actions
+run, or `swa deploy` with an older `dist/`) is the safer rollback path today.
 
-1. Delete the `ALIAS @` record.
-2. Re-add `A @` → `94.136.187.227`.
-3. Revert `CNAME www` to `silarai.com`.
+Historical DNS-level rollback, if ever needed:
 
-At TTL 300 you are back on WordPress within minutes. Leave `blog.silarai.com` in
-place — it does no harm and saves redoing Phase 2.
+1. Delete the apex CNAME (`silarai.com` → the SWA hostname).
+2. Re-add `A @` → `94.136.187.227` (old Hostinger box — confirm it still serves
+   something before relying on this).
+3. Remove or revert `CNAME www`.
 
 ---
 
