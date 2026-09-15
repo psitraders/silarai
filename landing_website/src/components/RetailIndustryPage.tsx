@@ -37,8 +37,10 @@ import {
   HelpCircle,
   ExternalLink,
   ShieldCheck,
-  Check
+  Check,
+  Home
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 interface RetailIndustryPageProps {
   onBackToHome: () => void;
@@ -282,6 +284,18 @@ export const RetailIndustryPage: React.FC<RetailIndustryPageProps> = ({
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
+          { label: 'Retail Commerce AI Platform', isCurrent: true, icon: Store }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="Enterprise Retail Specification v2.4"
+      />
+
       {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
       <script
         type="application/ld+json"

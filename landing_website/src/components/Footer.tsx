@@ -17,6 +17,7 @@ interface FooterProps {
   customLogoImg?: string;
   onOpenLogoModal?: () => void;
   onOpenAiDiscoveryModal?: () => void;
+  onNavigateContactUs?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -33,7 +34,8 @@ export const Footer: React.FC<FooterProps> = ({
   onGoHome,
   customLogoImg,
   onOpenLogoModal,
-  onOpenAiDiscoveryModal
+  onOpenAiDiscoveryModal,
+  onNavigateContactUs
 }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -386,6 +388,20 @@ export const Footer: React.FC<FooterProps> = ({
                 >
                   About SilarAI
                 </button>
+              </li>
+              <li>
+                <a
+                  href="/contact-us"
+                  onClick={(e) => {
+                    if (onNavigateContactUs) {
+                      e.preventDefault();
+                      onNavigateContactUs();
+                    }
+                  }}
+                  className="hover:text-peach-300 transition-colors cursor-pointer"
+                >
+                  Contact Us
+                </a>
               </li>
               <li>
                 <button

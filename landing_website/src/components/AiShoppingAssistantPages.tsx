@@ -24,8 +24,10 @@ import {
   Cpu,
   Star,
   BrainCircuit,
-  Share2
+  Share2,
+  Home
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 export type AiShoppingPageId = 1 | 2 | 3;
 
@@ -100,8 +102,26 @@ export const AiShoppingAssistantPages: React.FC<AiShoppingAssistantPagesProps> =
   }, [activePage, currentMeta]);
 
   return (
-    <div className="min-h-screen bg-slate-50/60 text-slate-900 pt-24 pb-20">
-      
+    <div className="min-h-screen bg-slate-50/60 text-slate-900 pt-20 pb-20">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Products', shortLabel: 'Products', icon: Layers, onClick: onBackToHome },
+          { label: 'AI Shopping Assistant', shortLabel: 'AI Assistant', icon: Bot, onClick: () => onSelectPage(1) },
+          { label: currentMeta.shortTitle, isCurrent: true }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        siblings={[
+          { id: 1, label: 'Part 1: What is an AI Shopping Assistant?', shortLabel: 'Part 1: Intro', isActive: activePage === 1, onClick: () => onSelectPage(1) },
+          { id: 2, label: 'Part 2: Features & Benefits', shortLabel: 'Part 2: Features', isActive: activePage === 2, onClick: () => onSelectPage(2) },
+          { id: 3, label: 'Part 3: Help Businesses Grow', shortLabel: 'Part 3: Growth', isActive: activePage === 3, onClick: () => onSelectPage(3) },
+        ]}
+        siblingsLabel="Guide Part"
+        badgeText="Core AI Product Guide"
+      />
+
       {/* Hero / Header Section */}
       <div className="bg-plum-950 text-white relative overflow-hidden border-b border-plum-800 py-12 sm:py-16">
         <div className="absolute top-0 right-0 w-96 h-96 bg-plum-800/30 rounded-full blur-3xl pointer-events-none" />

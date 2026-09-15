@@ -43,8 +43,11 @@ import {
   Link,
   Compass,
   CornerDownRight,
-  Activity
+  Activity,
+  Home,
+  Building2
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 export interface D2cIndustryPageProps {
   onBackToHome: () => void;
@@ -371,7 +374,19 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
 
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-peach-300 selection:text-plum-950">
-      {/* Top Header / Breadcrumbs */}
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
+          { label: 'D2C Brands', isCurrent: true, icon: ShoppingBag }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="Complete D2C Commerce & Growth Guide"
+      />
+
+      {/* Top Header / Legacy Breadcrumbs */}
       <div className="bg-plum-950 text-white border-b border-plum-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs text-plum-300">

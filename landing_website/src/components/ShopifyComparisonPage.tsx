@@ -18,8 +18,11 @@ import {
   Layout,
   TrendingUp,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Home,
+  Scale
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 interface ShopifyComparisonPageProps {
   onBackToHome: () => void;
@@ -128,8 +131,20 @@ export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/50 text-slate-900 pt-24 pb-20">
-      {/* Top Breadcrumb & Hero Header */}
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 pt-20 pb-20">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Platform Comparisons', shortLabel: 'Comparisons', icon: Scale },
+          { label: 'Shopify vs SilarAI', isCurrent: true, icon: Bot }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="Architectural Comparison"
+      />
+
+      {/* Top Hero Header */}
       <div className="bg-plum-950 text-white relative overflow-hidden border-b border-plum-800 py-16 lg:py-20">
         <div className="absolute top-0 right-0 w-96 h-96 bg-plum-800/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />

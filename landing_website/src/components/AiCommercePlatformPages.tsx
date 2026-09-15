@@ -35,8 +35,10 @@ import {
   Flame,
   CheckSquare,
   Cpu,
-  Layers2
+  Layers2,
+  Home
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 export type AiCommercePageId = 1 | 2 | 3;
 
@@ -112,8 +114,26 @@ export const AiCommercePlatformPages: React.FC<AiCommercePlatformPagesProps> = (
   }, [activePage, currentMeta]);
 
   return (
-    <div className="min-h-screen bg-slate-50/60 text-slate-900 pt-24 pb-20">
-      
+    <div className="min-h-screen bg-slate-50/60 text-slate-900 pt-20 pb-20">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Products', shortLabel: 'Products', icon: Layers, onClick: onBackToHome },
+          { label: 'AI Commerce Platform', shortLabel: 'Commerce Engine', icon: ShoppingBag, onClick: () => onSelectPage(1) },
+          { label: currentMeta.shortTitle, isCurrent: true }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        siblings={[
+          { id: 1, label: 'Part 1: AI Commerce & Marketing', shortLabel: 'Part 1: Engine', isActive: activePage === 1, onClick: () => onSelectPage(1) },
+          { id: 2, label: 'Part 2: AI Shopping Assistant Built-In', shortLabel: 'Part 2: Assistant', isActive: activePage === 2, onClick: () => onSelectPage(2) },
+          { id: 3, label: 'Part 3: Meta & Multi-Channel Marketing', shortLabel: 'Part 3: Marketing', isActive: activePage === 3, onClick: () => onSelectPage(3) },
+        ]}
+        siblingsLabel="Platform Module"
+        badgeText="Unified Commerce Engine"
+      />
+
       {/* Hero / Header Section */}
       <div className="bg-plum-950 text-white relative overflow-hidden border-b border-plum-800 py-12 sm:py-16">
         <div className="absolute top-0 right-0 w-96 h-96 bg-plum-800/30 rounded-full blur-3xl pointer-events-none" />

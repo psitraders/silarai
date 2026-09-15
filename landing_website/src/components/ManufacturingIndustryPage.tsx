@@ -41,8 +41,10 @@ import {
   BarChart3,
   Truck,
   Plane,
-  Paintbrush
+  Paintbrush,
+  Home
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 interface ManufacturingIndustryPageProps {
   onBackToHome: () => void;
@@ -289,6 +291,27 @@ export const ManufacturingIndustryPage: React.FC<ManufacturingIndustryPageProps>
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
+          { label: 'Manufacturing AI Platform', icon: Factory, onClick: () => onSelectSubPage && onSelectSubPage(1) },
+          ...(activeSubPage === 2 ? [{ label: 'B2B Commerce & Dealer Portal', isCurrent: true }] : []),
+          ...(activeSubPage === 3 ? [{ label: 'AI Sales Agent for RFQs', isCurrent: true }] : []),
+          ...(activeSubPage === 1 || !activeSubPage ? [{ label: 'Factory Direct & Overview', isCurrent: true }] : [])
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        siblings={[
+          { id: 1, label: '1. Factory Direct Overview', shortLabel: '1. Overview', isActive: activeSubPage === 1 || !activeSubPage, onClick: () => onSelectSubPage && onSelectSubPage(1) },
+          { id: 2, label: '2. B2B Commerce & Dealer Portal', shortLabel: '2. Dealer Portal', isActive: activeSubPage === 2, onClick: () => onSelectSubPage && onSelectSubPage(2) },
+          { id: 3, label: '3. AI Sales Agent for RFQs', shortLabel: '3. Sales Agent', isActive: activeSubPage === 3, onClick: () => onSelectSubPage && onSelectSubPage(3) },
+        ]}
+        siblingsLabel="Guide Section"
+        badgeText="Industrial B2B Specification v2.4"
+      />
+
       {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
       <script
         type="application/ld+json"

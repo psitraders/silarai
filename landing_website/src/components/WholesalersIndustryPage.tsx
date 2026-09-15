@@ -39,8 +39,10 @@ import {
   Percent,
   Sprout,
   BarChart3,
-  Truck
+  Truck,
+  Home
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 interface WholesalersIndustryPageProps {
   onBackToHome: () => void;
@@ -283,6 +285,18 @@ export const WholesalersIndustryPage: React.FC<WholesalersIndustryPageProps> = (
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
+          { label: 'AI Commerce Platform for Wholesalers', isCurrent: true, icon: Boxes }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="Wholesale B2B Specification v2.4"
+      />
+
       {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
       <script
         type="application/ld+json"

@@ -40,6 +40,7 @@ import {
   CreditCard,
   FileText
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 interface FmcgIndustryPageProps {
   onBackToHome: () => void;
@@ -285,6 +286,18 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
+          { label: 'FMCG & CPG Commerce AI Platform', isCurrent: true, icon: Package }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="Enterprise FMCG Specification v3.1"
+      />
+
       {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
       <script
         type="application/ld+json"

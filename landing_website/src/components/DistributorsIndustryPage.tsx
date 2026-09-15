@@ -37,8 +37,10 @@ import {
   Target,
   ShoppingCart,
   Percent,
-  Check
+  Check,
+  Home
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 import { COMPLETE_AUTHORITATIVE_BACKLINKS } from '../data/authoritativeBacklinks';
 import { DistributorsBacklinkHub } from './DistributorsBacklinkHub';
@@ -294,6 +296,18 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
+          { label: 'AI Commerce Platform for Distributors', isCurrent: true, icon: Truck }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="B2B Enterprise Specification v2.4"
+      />
+
       {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
       <script
         type="application/ld+json"

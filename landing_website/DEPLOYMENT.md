@@ -12,10 +12,11 @@ Moves the landing site to Azure Static Web Apps on `silarai.com`.
 > history and no longer apply. See `changes.md` (2026-09-04 entries).
 >
 > **Two DNS gaps found after cutover, still open:**
-> - No MX record for `silarai.com` — mail to `info@silarai.com` (where Web3Forms
->   sends demo-request leads) cannot be delivered. Needs an MX record from whatever
->   host serves that inbox — the `hostingermail-a/b/c` DKIM CNAMEs already in the
->   zone suggest Hostinger Email.
+> - No MX record for `silarai.com` — mail to any `@silarai.com` address cannot be
+>   delivered. **Enquiries are not affected**: forms now hand off to the visitor's
+>   mail client addressed to `psitraders@outlook.com`, a mailbox on another domain.
+>   Still worth fixing; needs an MX record from whatever host serves the inbox — the
+>   `hostingermail-a/b/c` DKIM CNAMEs already in the zone suggest Hostinger Email.
 > - `www.silarai.com` does not resolve (NXDOMAIN). Add a `CNAME www` → the SWA
 >   hostname, same as `silarai.com`'s own CNAME, and set it to redirect to the apex
 >   in Azure's Custom domains settings (canonical URL is the apex, per `index.html`).
@@ -81,7 +82,7 @@ git push -u origin main
 ```
 
 `.gitignore` already excludes `node_modules/`, `dist/` and `.env*` (keeping `.env.example`).
-Confirm no real Web3Forms key is committed.
+Enquiry forms need no key or secret — they hand off to the visitor's mail client.
 
 > No GitHub? You can deploy with the SWA CLI instead — see *Appendix A*.
 
@@ -211,15 +212,15 @@ Azure Portal → **Create a resource** → **Static Web App**:
 | Api location | *(leave empty)* |
 | Output location | `dist` |
 
-Azure commits a workflow to `.github/workflows/`. **Edit it to inject the form key at
-build time** — Vite inlines `VITE_*` variables during the build, so it must be present
-in CI, not at runtime:
+Azure commits a workflow to `.github/workflows/`. **No secrets are needed for the
+enquiry forms** — they hand off to the visitor's mail client, so there is no key to
+inject. `SITE_URL` is set in the workflow's `env:` block because Vite and the discovery
+generator read it during the build, not at runtime:
 
 ```yaml
       - name: Build And Deploy
         uses: Azure/static-web-apps-deploy@v1
         env:
-          VITE_WEB3FORMS_ACCESS_KEY: ${{ secrets.VITE_WEB3FORMS_ACCESS_KEY }}
           SITE_URL: https://silarai.com
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
@@ -229,10 +230,6 @@ in CI, not at runtime:
           output_location: "dist"
 ```
 
-Add the secret in GitHub → Settings → Secrets and variables → Actions →
-`VITE_WEB3FORMS_ACCESS_KEY`. Get the key from [web3forms.com](https://web3forms.com)
-using the address that should receive demo requests.
-
 **Verify on the default hostname before going near DNS:**
 
 - [ ] `https://<generated-name>.azurestaticapps.net` loads the landing page
@@ -240,10 +237,12 @@ using the address that should receive demo requests.
 - [ ] `/llms.txt` returns plain text, **not** the HTML shell
 - [ ] `/sitemap.xml` returns XML with ~50 URLs
 - [ ] `/ai/discovery.json` returns JSON
-- [ ] Submitting the demo form delivers an email
+- [ ] Submitting the demo form opens your mail client with the details pre-filled,
+      addressed to `psitraders@outlook.com`
 
-That last one is the real test of the Web3Forms wiring. If the form shows an error,
-the build did not receive the key.
+For that last one, also test on a device with **no** mail client configured: the
+confirmation must still show the address in copyable text rather than appearing to
+do nothing.
 
 ---
 
@@ -354,7 +353,7 @@ Checklist:
 - [ ] **Add an MX record for `silarai.com` and confirm `info@silarai.com` can receive mail** — currently missing, demo-request leads cannot be delivered
 - [x] `https://app.silarai.com` responds correctly — confirmed live 2026-09-04
 - [ ] Submit the demo form end to end and confirm delivery — blocked on the MX fix above
-- [ ] Restrict the Web3Forms key to `silarai.com` in the Web3Forms dashboard
+- [ ] Submit the demo form and confirm the pre-filled mail opens, then that the sent mail arrives at `psitraders@outlook.com`
 - [ ] Resubmit `https://silarai.com/sitemap.xml` in Search Console
 - [ ] Delete the stale `blog.silarai.com` DNS record (WordPress retired, no longer served)
 
@@ -389,8 +388,9 @@ swa deploy ./dist --deployment-token <token-from-azure-portal> --env production
 ```
 
 Get the token from Azure Portal → your Static Web App → **Manage deployment token**.
-Set `VITE_WEB3FORMS_ACCESS_KEY` in a local `.env` before `npm run build`, since the
-value is baked into the bundle at build time.
+No form secrets are required. Set `SITE_URL` in a local `.env` before `npm run build`
+if the canonical origin differs from `https://silarai.com`, since it is baked into the
+generated sitemap and discovery files at build time.
 
 ---
 

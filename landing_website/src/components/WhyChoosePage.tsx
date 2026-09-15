@@ -17,8 +17,11 @@ import {
   Filter,
   BarChart3,
   Bot,
-  Megaphone
+  Megaphone,
+  Home,
+  Building2
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 interface WhyChoosePageProps {
   onBackToHome: () => void;
@@ -38,8 +41,20 @@ export const WhyChoosePage: React.FC<WhyChoosePageProps> = ({ onBackToHome, onBo
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/50 text-slate-900 pt-24 pb-20">
-      {/* Top Breadcrumb & Hero Header */}
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 pt-20 pb-20">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Company', shortLabel: 'Company', icon: Building2 },
+          { label: 'Why Choose SilarAI', isCurrent: true, icon: Sparkles }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="Platform Advantage Matrix"
+      />
+
+      {/* Top Hero Header */}
       <div className="bg-plum-950 text-white relative overflow-hidden border-b border-plum-800 py-16 lg:py-20">
         {/* Subtle Background Glows */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-plum-800/30 rounded-full blur-3xl pointer-events-none" />

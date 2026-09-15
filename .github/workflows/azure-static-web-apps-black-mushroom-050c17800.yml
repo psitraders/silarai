@@ -36,10 +36,10 @@ jobs:
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         env:
-          # Vite inlines VITE_* at build time (Oryx build inside this action), so these
-          # must be set here in CI rather than as Azure Portal application settings.
-          # Add VITE_WEB3FORMS_ACCESS_KEY as a GitHub Actions secret before the next push.
-          VITE_WEB3FORMS_ACCESS_KEY: ${{ secrets.VITE_WEB3FORMS_ACCESS_KEY }}
+          # Vite inlines VITE_* at build time (Oryx build inside this action), so any
+          # such value must be set here in CI rather than as an Azure Portal
+          # application setting. Enquiry forms hand off to the visitor's mail client,
+          # so no form-service key is needed.
           SITE_URL: "https://silarai.com"
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLACK_MUSHROOM_050C17800 }}

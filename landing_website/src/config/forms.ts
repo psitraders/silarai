@@ -1,30 +1,74 @@
 /**
- * Form submission configuration.
+ * Contact & form-handoff configuration.
  *
- * The site is a static build with no backend, so demo requests are delivered by
- * Web3Forms (https://web3forms.com), which emails each submission to the address
- * the access key is registered against.
+ * The site is a static build with no backend and no third-party form service.
+ * Enquiry forms therefore hand off to the visitor's own mail client via a
+ * pre-filled `mailto:` link — the visitor presses Send, and the message arrives
+ * from their real address, which makes replying straightforward.
  *
- * The access key is NOT a secret — Web3Forms documents it as safe to expose in
- * client-side code, because it is an alias for a destination email address
- * rather than an API credential. Restrict it to your domain in the Web3Forms
- * dashboard so a copied key cannot be used from another site.
- *
- * Setup:
- *   1. Go to https://web3forms.com and enter the address that should receive
- *      demo requests (e.g. info@silarai.com). The key arrives by email.
- *   2. Put the key in `.env` as VITE_WEB3FORMS_ACCESS_KEY, and add it to your
- *      Azure Static Web Apps build environment variables.
- *   3. In the Web3Forms dashboard, restrict the key to your production domain.
+ * Consequences worth knowing:
+ *   - Nothing is delivered until the visitor presses Send in their mail app.
+ *     UI copy must say so; it must never claim the message was already sent.
+ *   - Some visitors (webmail-only, locked-down devices) have no mail client
+ *     registered, so nothing visibly happens. Every form must therefore also
+ *     show the address in copyable plain text as a fallback.
+ *   - There is no server-side record of an enquiry. Replies land in the inbox
+ *     below and that is the only record.
  */
 
-export const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit';
+export const CONTACT_EMAIL = 'psitraders@outlook.com';
+export const CONTACT_PHONE = '(+91)9444139089';
+export const CONTACT_PHONE_HREF = 'tel:+919444139089';
+export const CONTACT_LEGAL_NAME = 'PSI traders OPC PVT LTD';
+export const CONTACT_ADDRESS = '74 RR Nagar, NSNPALAYAM, Coimbatore, Tamil Nadu 641031';
 
-/** Public access key — an alias for the destination inbox, not a secret. */
-export const WEB3FORMS_ACCESS_KEY: string = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY ?? '';
+/**
+ * Practical ceiling for a mailto: URL. Windows historically truncates around
+ * 2048 characters and some clients cut lower, so the body is trimmed to stay
+ * comfortably under that rather than silently losing the end of the message.
+ */
+const MAILTO_MAX_LENGTH = 1800;
 
-/** Shown in the success screen so the user knows where the request went. */
-export const DEMO_REQUEST_RECIPIENT = 'info@silarai.com';
+/** Builds a pre-filled mailto: URL addressed to the enquiries inbox. */
+export function buildMailtoUrl(subject: string, bodyLines: string[]): string {
+  const compose = (lines: string[]) =>
+    `mailto:${CONTACT_EMAIL}` +
+    `?subject=${encodeURIComponent(subject)}` +
+    `&body=${encodeURIComponent(lines.filter((line) => line !== null && line !== undefined).join('\n'))}`;
 
-/** True when a key is configured. When false, the form fails loudly rather than pretending to succeed. */
-export const isFormDeliveryConfigured = (): boolean => WEB3FORMS_ACCESS_KEY.trim().length > 0;
+  let lines = bodyLines.slice();
+  let url = compose(lines);
+
+  // Drop trailing lines until the URL fits, so the greeting and key details survive.
+  while (url.length > MAILTO_MAX_LENGTH && lines.length > 3) {
+    lines = lines.slice(0, -1);
+    url = compose(lines);
+  }
+
+  return url;
+}
+
+/**
+ * Opens the visitor's mail client. Returns false when the browser blocks it,
+ * so the caller can lean on the copyable fallback instead.
+ */
+export function openMailClient(url: string): boolean {
+  try {
+    window.location.href = url;
+    return true;
+  } catch (err) {
+    console.warn('Could not open mail client:', err);
+    return false;
+  }
+}
+
+/** Copies text to the clipboard, resolving false when the browser refuses. */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (!navigator.clipboard) return false;
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}

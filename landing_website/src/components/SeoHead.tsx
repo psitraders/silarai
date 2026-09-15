@@ -1,4 +1,257 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { findSeoMetaEntry, SeoMetaRow } from '../data/seoMetaTable';
+
+export type CtrVariantStyle = 'direct' | 'metric' | 'urgency';
+
+export interface DynamicSubPageMetaResult {
+  isSubPage: boolean;
+  metaDescription: string;
+  charCount: number;
+  isUnder60Chars: boolean;
+  activeVariant: CtrVariantStyle;
+  variants: Record<CtrVariantStyle, string>;
+  matchedEntry?: SeoMetaRow;
+  primaryKeyword?: string;
+  ctrHook?: string;
+  sectionTitle?: string;
+  canonicalUrl?: string;
+  setVariant: (variant: CtrVariantStyle) => void;
+  cycleVariant: () => void;
+}
+
+export interface SubPageMetaHookOptions {
+  currentView: string;
+  aiShoppingSubPage?: number;
+  aiCommerceSubPage?: number;
+  d2cSubPage?: number;
+  manufacturingSubPage?: number;
+  preferredVariant?: CtrVariantStyle;
+}
+
+// Master dictionary of tested, high-CTR sub-page meta descriptions strictly under 60 characters
+export const SUBPAGE_CTR_VARIANTS: Record<string, Record<CtrVariantStyle, string>> = {
+  // AI Shopping Assistant sub-pages
+  'ai-shopping-assistant-1': {
+    direct: '20+ language voice search AI. Instant 1-click checkout.', // 55 chars
+    metric: 'Sub-second voice parsing AI. Convert shoppers 3x faster.', // 57 chars
+    urgency: 'Enable voice & chat commerce today. 20+ languages ready.', // 57 chars
+  },
+  'ai-shopping-assistant-2': {
+    direct: 'Snap photos to find exact catalog matches in under 200ms.', // 57 chars
+    metric: '99.2% visual search match accuracy. Under 200ms discovery.', // 58 chars
+    urgency: 'Turn shopper camera photos into instant sales in 200ms.', // 55 chars
+  },
+  'ai-shopping-assistant-3': {
+    direct: '+28% AOV lift with AI recommendations & 1-click checkout.', // 57 chars
+    metric: 'Lift basket size by +28% with autonomous agentic checkout.', // 58 chars
+    urgency: 'Stop cart drop-offs with 1-click autonomous AI checkout.', // 57 chars
+  },
+
+  // AI Commerce Platform sub-pages
+  'ai-commerce-platform-1': {
+    direct: 'Sub-50ms AI dynamic pricing engine to maximize margins.', // 55 chars
+    metric: 'Boost margins with sub-50ms real-time AI repricing.', // 52 chars
+    urgency: 'Automate competitor price tracking & dynamic margin lift.', // 57 chars
+  },
+  'ai-commerce-platform-2': {
+    direct: 'Automated AI visual merchandising. Lift grid CTR by +41%.', // 57 chars
+    metric: '+41% product grid CTR with live inventory-aware sorting.', // 56 chars
+    urgency: 'Auto-arrange store grids with real-time AI merchandising.', // 57 chars
+  },
+  'ai-commerce-platform-3': {
+    direct: 'Real-time multi-channel inventory sync & live analytics.', // 56 chars
+    metric: '99.99% catalog sync uptime. Zero stockout discrepancies.', // 56 chars
+    urgency: 'Sync inventory across web, social & mobile in real time.', // 56 chars
+  },
+
+  // D2C Brands Industry sub-pages
+  'd2c-brands-1': {
+    direct: 'D2C AI shopping assistant. Zero-hallucination fit match.', // 56 chars
+    metric: '+35% D2C conversions with conversational product discovery.', // 58 chars
+    urgency: 'Deploy WhatsApp & web AI shopping assistant in 15 minutes.', // 58 chars
+  },
+  'd2c-brands-2': {
+    direct: 'D2C AI commerce engine: real-time intent & +28% AOV lift.', // 57 chars
+    metric: 'Scale D2C revenue with real-time customer cohort AI.', // 53 chars
+    urgency: 'Transform D2C ecommerce with autonomous predictive sales.', // 57 chars
+  },
+  'd2c-brands-3': {
+    direct: '+35% D2C sales lift & 65% cart recovery via WhatsApp AI.', // 56 chars
+    metric: 'Recover 65% of abandoned carts with automated WhatsApp AI.', // 58 chars
+    urgency: 'Stop losing carts. Recover lost D2C revenue automatically.', // 57 chars
+  },
+
+  // Manufacturing Industry sub-pages
+  'manufacturing-1': {
+    direct: 'B2B manufacturing commerce with SAP, Oracle & live RFQs.', // 56 chars
+    metric: 'Cut RFQ turnaround from days to seconds with AI quotes.', // 55 chars
+    urgency: 'Digitize dealer & factory ordering with instant ERP sync.', // 57 chars
+  },
+  'manufacturing-2': {
+    direct: 'Industrial AI spec search. Turn CAD queries into RFQs.', // 54 chars
+    metric: 'Instant spec search & automated quote creation for B2B.', // 56 chars
+    urgency: 'Help industrial buyers find exact parts & request quotes.', // 57 chars
+  },
+  'manufacturing-3': {
+    direct: 'AI dealer portal for manufacturers with ERP bulk orders.', // 56 chars
+    metric: 'Automate dealer contract pricing & exploded parts search.', // 57 chars
+    urgency: 'Launch AI dealer ordering with live ERP synchronization.', // 56 chars
+  },
+};
+
+/**
+ * Hard character limit helper ensuring any string is strictly under 60 characters.
+ */
+export function ensureUnder60Chars(text: string): string {
+  const trimmed = text.trim();
+  if (trimmed.length < 60) return trimmed;
+  const truncated = trimmed.slice(0, 56);
+  const lastSpace = truncated.lastIndexOf(' ');
+  const clean = (lastSpace > 28 ? truncated.slice(0, lastSpace) : truncated).trim();
+  return clean.endsWith('.') ? clean : `${clean}.`;
+}
+
+/**
+ * Dynamically synthesizes a high-CTR snippet under 60 characters from a SeoMetaRow entry.
+ */
+export function generateDynamicSubPageDescription(
+  entry: SeoMetaRow,
+  variant: CtrVariantStyle = 'direct'
+): string {
+  if (variant === 'direct' && entry.ctrShortDescription && entry.ctrShortDescription.length < 60) {
+    return entry.ctrShortDescription;
+  }
+
+  const kw = entry.primaryKeywords?.[0] || 'AI Commerce';
+  const hook = entry.ctrHook || 'Boost Sales & Conversions';
+
+  let candidate = '';
+  if (variant === 'metric') {
+    candidate = `${hook}. SilarAi engine.`;
+  } else if (variant === 'urgency') {
+    candidate = `Launch ${kw} now. ${hook}.`;
+  } else {
+    candidate = `${kw}: ${hook}.`;
+  }
+
+  return ensureUnder60Chars(candidate);
+}
+
+/**
+ * Hook that generates dynamic, unique meta descriptions for sub-pages strictly under 60 characters,
+ * aligned directly with the master SEO meta table and optimized for maximum CTR.
+ */
+export function useSubPageMetaDescription(
+  viewOrOptions: string | SubPageMetaHookOptions,
+  explicitSubPage?: number,
+  initialVariant: CtrVariantStyle = 'direct'
+): DynamicSubPageMetaResult {
+  const options: SubPageMetaHookOptions = typeof viewOrOptions === 'string'
+    ? { currentView: viewOrOptions, preferredVariant: initialVariant }
+    : viewOrOptions;
+
+  const {
+    currentView,
+    aiShoppingSubPage,
+    aiCommerceSubPage,
+    d2cSubPage,
+    manufacturingSubPage,
+    preferredVariant = initialVariant,
+  } = options;
+
+  const [activeVariant, setActiveVariant] = useState<CtrVariantStyle>(preferredVariant);
+
+  // Sync state if preferredVariant changes
+  useEffect(() => {
+    if (options.preferredVariant) {
+      setActiveVariant(options.preferredVariant);
+    }
+  }, [options.preferredVariant]);
+
+  // Determine active sub-page id
+  const { isSubPage, activeSubPage } = useMemo(() => {
+    if (currentView === 'ai-shopping-assistant') {
+      return { isSubPage: true, activeSubPage: aiShoppingSubPage || explicitSubPage || 1 };
+    }
+    if (currentView === 'ai-commerce-platform') {
+      return { isSubPage: true, activeSubPage: aiCommerceSubPage || explicitSubPage || 1 };
+    }
+    if (currentView === 'd2c-brands') {
+      const sub = d2cSubPage ?? explicitSubPage;
+      return { isSubPage: sub !== undefined && sub > 0, activeSubPage: sub };
+    }
+    if (currentView === 'manufacturing') {
+      const sub = manufacturingSubPage ?? explicitSubPage;
+      return { isSubPage: sub !== undefined && sub > 0, activeSubPage: sub };
+    }
+    if (explicitSubPage !== undefined && explicitSubPage > 0) {
+      return { isSubPage: true, activeSubPage: explicitSubPage };
+    }
+    return { isSubPage: false, activeSubPage: undefined };
+  }, [currentView, aiShoppingSubPage, aiCommerceSubPage, d2cSubPage, manufacturingSubPage, explicitSubPage]);
+
+  // Find corresponding entry in master SEO meta table
+  const matchedEntry = useMemo(() => {
+    return findSeoMetaEntry(currentView, activeSubPage);
+  }, [currentView, activeSubPage]);
+
+  // Generate or retrieve the 3 CTR variants
+  const variants = useMemo<Record<CtrVariantStyle, string>>(() => {
+    const key = `${currentView}-${activeSubPage || 1}`;
+    const prebuilt = SUBPAGE_CTR_VARIANTS[key];
+
+    if (prebuilt) {
+      return {
+        direct: ensureUnder60Chars(prebuilt.direct),
+        metric: ensureUnder60Chars(prebuilt.metric),
+        urgency: ensureUnder60Chars(prebuilt.urgency),
+      };
+    }
+
+    if (matchedEntry) {
+      return {
+        direct: generateDynamicSubPageDescription(matchedEntry, 'direct'),
+        metric: generateDynamicSubPageDescription(matchedEntry, 'metric'),
+        urgency: generateDynamicSubPageDescription(matchedEntry, 'urgency'),
+      };
+    }
+
+    // Default fallback
+    return {
+      direct: ensureUnder60Chars('Enterprise AI shopping assistant & autonomous commerce.'),
+      metric: ensureUnder60Chars('+35% conversions with sub-second AI catalog search.'),
+      urgency: ensureUnder60Chars('Deploy intelligent AI commerce today with SilarAi.'),
+    };
+  }, [currentView, activeSubPage, matchedEntry]);
+
+  const activeDescription = variants[activeVariant] || variants.direct;
+  const charCount = activeDescription.length;
+  const isUnder60Chars = charCount < 60;
+
+  const cycleVariant = useCallback(() => {
+    setActiveVariant((prev) => {
+      if (prev === 'direct') return 'metric';
+      if (prev === 'metric') return 'urgency';
+      return 'direct';
+    });
+  }, []);
+
+  return {
+    isSubPage,
+    metaDescription: activeDescription,
+    charCount,
+    isUnder60Chars,
+    activeVariant,
+    variants,
+    matchedEntry,
+    primaryKeyword: matchedEntry?.primaryKeywords?.[0],
+    ctrHook: matchedEntry?.ctrHook,
+    sectionTitle: matchedEntry?.section,
+    canonicalUrl: matchedEntry?.canonicalUrl,
+    setVariant: setActiveVariant,
+    cycleVariant,
+  };
+}
 
 interface SeoHeadProps {
   currentView: string;
@@ -24,12 +277,26 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
   d2cSubPage,
   manufacturingSubPage,
 }) => {
+  // Hook generates dynamic, unique meta descriptions for sub-pages under 60 characters
+  const subPageMeta = useSubPageMetaDescription({
+    currentView,
+    aiShoppingSubPage,
+    aiCommerceSubPage,
+    d2cSubPage,
+    manufacturingSubPage,
+  });
+
   useEffect(() => {
     const origin = window.location.origin;
     const currentUrl = window.location.href;
 
     // Get page specific SEO metadata
     const meta = getPageMetadata(currentView, aiShoppingSubPage, aiCommerceSubPage, d2cSubPage, manufacturingSubPage, origin, currentUrl);
+
+    // Apply under-60-char dynamic description for sub-pages to optimize CTR
+    const finalDescription = subPageMeta.isSubPage && subPageMeta.metaDescription
+      ? subPageMeta.metaDescription
+      : meta.description;
 
     // 1. Update Title
     document.title = meta.title;
@@ -46,11 +313,18 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     };
 
     // Standard Meta
-    setMetaTag('meta[name="description"]', 'name', 'description', meta.description);
+    setMetaTag('meta[name="description"]', 'name', 'description', finalDescription);
     setMetaTag('meta[name="keywords"]', 'name', 'keywords', meta.keywords);
     setMetaTag('meta[name="robots"]', 'name', 'robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
     setMetaTag('meta[name="author"]', 'name', 'author', 'SilarAi Engineering & AI Research Team');
     setMetaTag('meta[name="publisher"]', 'name', 'publisher', 'SilarAi Technologies');
+
+    // Sub-page CTR optimization markers and diagnostics
+    if (subPageMeta.isSubPage) {
+      setMetaTag('meta[name="subpage:ctr-under-60"]', 'name', 'subpage:ctr-under-60', 'true');
+      setMetaTag('meta[name="subpage:char-count"]', 'name', 'subpage:char-count', String(subPageMeta.charCount));
+      setMetaTag('meta[name="subpage:ctr-variant"]', 'name', 'subpage:ctr-variant', subPageMeta.activeVariant);
+    }
 
     // GEO / Geolocation & Regional Meta
     setMetaTag('meta[name="geo.region"]', 'name', 'geo.region', 'US-CA');
@@ -67,7 +341,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
 
     // Open Graph Meta Tags
     setMetaTag('meta[property="og:title"]', 'property', 'og:title', meta.title);
-    setMetaTag('meta[property="og:description"]', 'property', 'og:description', meta.description);
+    setMetaTag('meta[property="og:description"]', 'property', 'og:description', finalDescription);
     setMetaTag('meta[property="og:url"]', 'property', 'og:url', meta.canonicalUrl);
     setMetaTag('meta[property="og:type"]', 'property', 'og:type', meta.ogType);
     setMetaTag('meta[property="og:site_name"]', 'property', 'og:site_name', 'SilarAi Smart Commerce AI');
@@ -76,7 +350,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     setMetaTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');
     setMetaTag('meta[name="twitter:site"]', 'name', 'twitter:site', '@SilarAi');
     setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', meta.title);
-    setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', meta.description);
+    setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', finalDescription);
 
     // Canonical Link
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
@@ -99,7 +373,17 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     if (meta.jsonLdSchema) {
       jsonLdScript.textContent = JSON.stringify(meta.jsonLdSchema);
     }
-  }, [currentView, aiShoppingSubPage, aiCommerceSubPage, d2cSubPage]);
+  }, [
+    currentView,
+    aiShoppingSubPage,
+    aiCommerceSubPage,
+    d2cSubPage,
+    manufacturingSubPage,
+    subPageMeta.metaDescription,
+    subPageMeta.activeVariant,
+    subPageMeta.isSubPage,
+    subPageMeta.charCount
+  ]);
 
   return null; // Side-effect only head manager
 };
@@ -117,18 +401,103 @@ function getPageMetadata(
     '@type': 'Organization',
     '@id': `${origin}/#organization`,
     name: 'SilarAi Technologies',
+    legalName: 'PSI traders OPC PVT LTD',
     url: origin,
     logo: `${origin}/assets/images/silarai_official_logo.jpg`,
     slogan: 'Build. Sell. Grow. Powered by AI.',
+    telephone: '(+91)9444139089',
+    email: 'psitraders@outlook.com',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '74 RR Nagar, NSNPALAYAM',
+      addressLocality: 'Coimbatore',
+      addressRegion: 'Tamil Nadu',
+      postalCode: '641031',
+      addressCountry: 'IN',
+    },
     contactPoint: {
       '@type': 'ContactPoint',
-      email: 'info@silarai.com',
+      telephone: '(+91)9444139089',
+      email: 'psitraders@outlook.com',
       contactType: 'customer service',
-      availableLanguage: ['English', 'Spanish', 'German', 'French'],
+      availableLanguage: ['English', 'Tamil', 'Hindi'],
     },
   };
 
   switch (view) {
+    case 'contact-us':
+      return {
+        title: 'Contact SilarAI | Let’s Build the Future of Commerce & Marketing',
+        description: 'Talk to the SilarAI team to explore how our AI Commerce & Marketing Platform can help your business attract customers, increase conversions, and build stronger relationships.',
+        keywords: 'Contact SilarAI, AI Commerce Demo, Enterprise AI Shopping Assistant, Commerce Cloud Contact, Retail AI Solutions',
+        canonicalUrl: `${origin}/contact-us`,
+        ogType: 'website',
+        jsonLdSchema: {
+          '@context': 'https://schema.org',
+          '@graph': [
+            commonOrg,
+            {
+              '@type': 'ContactPage',
+              '@id': `${origin}/contact-us/#webpage`,
+              url: `${origin}/contact-us`,
+              name: 'Contact SilarAI Team',
+              description: 'Connect with SilarAI specialists for AI Commerce and Marketing demos and enterprise deployments.',
+              publisher: { '@id': `${origin}/#organization` },
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
+                { '@type': 'ListItem', position: 2, name: 'Contact Us', item: `${origin}/contact-us` },
+              ],
+            },
+          ],
+        },
+      };
+
+    case 'ai-commerce-marketing-platform': {
+      return {
+        title: 'AI Commerce & Marketing Platform | AI Marketing Platform & Commerce Cloud | SilarAI',
+        description: 'SilarAI is the best-in-class AI Commerce & Marketing Platform uniting Commerce Cloud, AI Marketing Automation, AI Customer Intelligence, Headless Commerce, and 24/7 AI Shopping Assistants for B2B and B2C ecommerce.',
+        keywords: 'AI Commerce Platform, AI Marketing Platform, AI Commerce Platform for Ecommerce, AI Commerce Software, AI Commerce Solution, AI-powered Commerce Platform, AI-powered Marketing Platform, AI Commerce and Marketing Software, AI Marketing Automation, AI Marketing Software, AI Marketing Platform for Ecommerce, AI Ecommerce Marketing, AI Customer Engagement, AI Personalization, AI Customer Intelligence, AI Customer Segmentation, AI Marketing Analytics, AI Sales Automation, AI Campaign Automation, AI Customer Engagement Platform, Commerce Cloud, Ecommerce Cloud Platform, Cloud Commerce Platform, B2B Commerce Cloud, B2C Commerce Cloud, Enterprise Commerce Cloud, Headless Commerce Cloud, Commerce Management Platform, Ecommerce Commerce Platform, Cloud Ecommerce Platform, AI-powered ecommerce, AI ecommerce software, AI ecommerce solution, AI commerce software, AI commerce technology, AI-native commerce, intelligent commerce platform, AI-driven commerce, AI retail technology, AI retail platform',
+        canonicalUrl: `${origin}/ai-commerce-marketing-platform/`,
+        ogType: 'website',
+        jsonLdSchema: {
+          '@context': 'https://schema.org',
+          '@graph': [
+            commonOrg,
+            {
+              '@type': 'SoftwareApplication',
+              name: 'SilarAI AI Commerce & Marketing Platform',
+              applicationCategory: 'BusinessApplication, ECommerceApplication',
+              operatingSystem: 'Cloud Native / Web / Headless API / Mobile',
+              url: `${origin}/ai-commerce-marketing-platform/`,
+              description: 'Enterprise AI Commerce & Marketing Platform combining Commerce Cloud, AI Marketing Automation, AI Customer Intelligence, and 24/7 Conversational Shopping Assistants.',
+              offers: {
+                '@type': 'Offer',
+                price: '149.00',
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.96',
+                reviewCount: '142',
+              },
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
+                { '@type': 'ListItem', position: 2, name: 'Products', item: `${origin}/products` },
+                { '@type': 'ListItem', position: 3, name: 'AI Commerce & Marketing Platform', item: `${origin}/ai-commerce-marketing-platform/` },
+              ],
+            },
+          ],
+        },
+      };
+    }
+
     case 'about':
       return {
         title: 'About SilarAi | Enterprise Agentic AI Commerce Leader & Team',
@@ -1207,6 +1576,75 @@ function getPageMetadata(
                 { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
                 { '@type': 'ListItem', position: 2, name: 'Industries', item: `${origin}/#industries` },
                 { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for Wholesalers', item: `${origin}/?page=wholesalers` },
+              ],
+            },
+          ],
+        },
+      };
+
+    case 'fmcg-commerce':
+    case 'fmcg':
+      return {
+        title: 'AI Commerce Platform for FMCG & CPG Brands | SilarAI',
+        description: 'Supercharge fast-moving consumer goods brands with SilarAI AI commerce engine: instant reorders, predictive replenishment alerts, localized inventory visibility, and high-converting conversational shopping.',
+        keywords: 'FMCG AI Commerce, CPG Brands Ecommerce AI, Fast-Moving Consumer Goods AI, Predictive Replenishment AI, Quick Commerce Conversational AI, FMCG Reorder Engine, AI Shopping Assistant for CPG',
+        canonicalUrl: `${origin}/?page=fmcg-commerce`,
+        ogType: 'website',
+        jsonLdSchema: {
+          '@context': 'https://schema.org',
+          '@graph': [
+            commonOrg,
+            {
+              '@type': 'SoftwareApplication',
+              name: 'SilarAI FMCG & CPG Commerce AI Platform',
+              applicationCategory: 'BusinessApplication, ECommerceApplication',
+              operatingSystem: 'Cloud Native / Web / Headless API',
+              description: 'Supercharge fast-moving consumer goods brands with SilarAI AI commerce engine: instant reorders, predictive replenishment alerts, localized inventory visibility, and high-converting conversational shopping.',
+              offers: {
+                '@type': 'Offer',
+                price: '199.00',
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.96',
+                reviewCount: '168',
+              },
+            },
+            {
+              '@type': 'Service',
+              name: 'AI Commerce Platform for FMCG & CPG',
+              provider: { '@id': `${origin}/#organization` },
+              serviceType: 'FMCG & CPG Conversational Commerce',
+            },
+            {
+              '@type': 'FAQPage',
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'How does AI Commerce benefit FMCG and CPG brands?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'AI commerce helps FMCG and CPG brands automate instant reorders, predict customer replenishment schedules, show real-time localized stock, and increase basket size through conversational basket-building assistants.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Can SilarAI integrate with existing FMCG supply chain and ERP software?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes. SilarAI connects seamlessly with SAP, Oracle, Microsoft Dynamics 365, and custom warehouse management systems to enable accurate inventory synchronization.',
+                  },
+                },
+              ],
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
+                { '@type': 'ListItem', position: 2, name: 'Industries', item: `${origin}/#industries` },
+                { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for FMCG', item: `${origin}/?page=fmcg-commerce` },
               ],
             },
           ],

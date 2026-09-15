@@ -32,3 +32,8 @@ All_Project_Special_Keys.txt
 
 frontend/.env
 backend-fast-api/
+
+# Google AI Studio export used as a merge reference for landing_website.
+# Not built or deployed — it still carries the pre-Azure Express/Vercel setup.
+# See landing_website/context.md §4.0 before merging anything out of it.
+imported_landing_website/

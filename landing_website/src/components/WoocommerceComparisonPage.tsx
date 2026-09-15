@@ -12,8 +12,12 @@ import {
   CheckCircle2,
   AlertTriangle,
   ShieldAlert,
-  Cpu
+  Cpu,
+  Home,
+  Scale,
+  ShoppingBag
 } from 'lucide-react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 interface WoocommerceComparisonPageProps {
   onBackToHome: () => void;
@@ -127,7 +131,19 @@ export const WoocommerceComparisonPage: React.FC<WoocommerceComparisonPageProps>
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/50 text-slate-900 pt-24 pb-20">
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 pt-20 pb-20">
+      {/* Top Breadcrumb Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Platform Comparisons', shortLabel: 'Comparisons', icon: Scale },
+          { label: 'WooCommerce vs SilarAI', isCurrent: true, icon: ShoppingBag }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="Architectural Comparison"
+      />
+
       {/* Hero Header */}
       <div className="bg-plum-950 text-white relative overflow-hidden border-b border-plum-800 py-16 lg:py-20">
         <div className="absolute top-0 right-0 w-96 h-96 bg-plum-800/30 rounded-full blur-3xl pointer-events-none" />

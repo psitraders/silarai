@@ -3,7 +3,7 @@
 > **Authoritative project reference.** Read this before implementing features, fixing bugs, or refactoring.
 > Update this file whenever architecture, behaviour, workflows, or features change.
 
-Last updated: 2026-09-04
+Last updated: 2026-09-14
 
 ---
 
@@ -15,7 +15,7 @@ Marketing / lead-generation website for **SilarAI**, an AI commerce platform (AI
 
 Two primary business goals:
 
-1. **Convert visitors into demo requests** — `BookDemoModal` → Web3Forms → email to sales.
+1. **Convert visitors into demo requests** — `BookDemoModal` / `ContactUsPage` → pre-filled `mailto:` handoff → the visitor presses Send.
 2. **Rank and get cited** — extensive keyword-cluster content, per-view JSON-LD schema, and a set of machine-readable knowledge files under `/ai/`.
 
 ---
@@ -30,7 +30,7 @@ Two primary business goals:
 | Icons | `lucide-react` (~34 components) |
 | Charts | `recharts` (only in `RoiCalculator`) |
 | Animation | `motion` (Framer Motion successor) — only in `HeroSection`; `canvas-confetti` in `BookDemoModal` |
-| Form delivery | [Web3Forms](https://web3forms.com) — client-side POST, no backend |
+| Form delivery | `mailto:` handoff to the visitor's own mail client — no backend, no form service |
 | Build tooling | `tsx` (runs the discovery generator only — not a runtime dependency) |
 | Hosting | Azure Static Web Apps |
 
@@ -57,11 +57,12 @@ landing_website/
 │   ├── index.css            # Tailwind v4 @theme design tokens
 │   ├── types.ts             # Shared content/domain interfaces
 │   ├── config/
-│   │   └── forms.ts         # Web3Forms endpoint, access key, recipient
+│   │   └── forms.ts         # Contact details + mailto: builder (single source of truth)
 │   ├── components/          # 36 components: sections, full pages, modals
 │   ├── data/
 │   │   ├── content.ts       # All marketing copy/data (single source of truth)
 │   │   ├── siteArchitecture.ts     # Pillars, industries, keyword clusters, GEO blocks
+│   │   ├── seoMetaTable.ts  # Per-view/sub-page SEO meta records + findSeoMetaEntry()
 │   │   └── authoritativeBacklinks.ts  # Semantic backlink corpus + helpers
 │   ├── lib/                 # ⚠️ DORMANT WordPress clients — see §4.6
 │   ├── server/              # Misnomer: build-time data only, no server runtime
@@ -73,7 +74,7 @@ landing_website/
 ├── public/
 │   └── staticwebapp.config.json  # Azure SWA config (copied to dist/ by Vite)
 ├── vite.config.ts           # `@` alias → project root; HMR toggle via DISABLE_HMR
-└── .env.example             # VITE_WEB3FORMS_ACCESS_KEY, SITE_URL
+└── .env.example             # SITE_URL (forms need no configuration)
 ```
 
 `src/server/` is a historical name. Nothing in it runs at request time — the two modules are pure data consumed by the build script and by `AiDiscoveryModal`. Consider renaming to `src/knowledge/`.
@@ -82,9 +83,31 @@ landing_website/
 
 ## 4. Architecture
 
+### 4.0 `imported_landing_website/` — do not build from it
+
+The repo root also holds `imported_landing_website/`, a Google AI Studio export of this
+same site. **It is a reference folder, not a second app**, and is **gitignored** (root
+`.gitignore`) so it never reaches the repo or a build. It still contains the
+pre-Azure architecture that was deliberately deleted here — `server.ts`, `api/index.ts`,
+`vercel.json`, `VERCEL_DEPLOYMENT.md`, `public/_headers`, `public/_redirects`,
+hand-written `public/sitemap.xml` / `llms.txt` / `robots.txt` / `.well-known/*`, and a
+`package.json` depending on `express`, `nodemailer` and `@google/genai`.
+
+Its SEO/UI work was merged into `landing_website/` on 2026-09-14 (see `changes.md`).
+When merging anything else from it, three things must be adapted rather than copied:
+
+1. **`/api/*` URLs are dead** — this build has no backend. Knowledge surfaces are the
+   generated `/ai/*.json` files (§4.4); forms hand off via `mailto:` (§4.7).
+2. **Forms must not report false success.** The import's `ContactUsPage` and
+   `BookDemoModal` both set `submitted = true` from a `catch` block.
+3. **Static files under `public/`** are generated at build time here — copying the
+   import's versions would shadow the generator's output.
+
 ### 4.1 Client routing (hand-rolled, no router library)
 
-`src/App.tsx` is the router. There is **no** `react-router`. Routing works by:
+`src/App.tsx` is the router. There is **no** `react-router`. Every page, below-the-fold
+home section and modal is loaded through `React.lazy` + `Suspense`, and modals mount
+only while open. Routing works by:
 
 - Reading `window.location.pathname` and `?page=` / `?subPage=` / `?industry=` query params in `useState` initialisers.
 - A `popstate` listener that re-derives state on back/forward.
@@ -95,9 +118,9 @@ landing_website/
 `currentView` union:
 
 ```
-'home' | 'about' | 'ai-shopping-assistant' | 'ai-commerce-platform' | 'why-choose-us'
-| 'shopify-comparison' | 'woocommerce-comparison' | 'retail-commerce' | 'd2c-brands'
-| 'distributors' | 'wholesalers' | 'manufacturing' | 'fmcg-commerce' | 'fmcg'
+'home' | 'about' | 'contact-us' | 'ai-shopping-assistant' | 'ai-commerce-platform'
+| 'why-choose-us' | 'shopify-comparison' | 'woocommerce-comparison' | 'retail-commerce'
+| 'd2c-brands' | 'distributors' | 'wholesalers' | 'manufacturing' | 'fmcg-commerce' | 'fmcg'
 ```
 
 Sub-page state is tracked separately: `aiShoppingSubPage`, `aiCommerceSubPage`, `d2cSubPage`, `manufacturingSubPage` (each `1 | 2 | 3`), plus `activeUseCaseSlug` (from `/use-cases/:slug`) and `activeIndustryId` (from `?industry=`).
@@ -110,6 +133,7 @@ Note: `path.startsWith('/industries/')` is the **last** industry branch and acts
 |---|---|
 | `/` | Home composition (Hero → Products → Integrations → Problems → HowItWorks → Industries → WhySilarAi → Metrics → UseCases → Pricing → FAQ → FinalCta) |
 | `/about`, `?page=about` | `AboutPage` |
+| `/contact-us`, `/contact`, `?page=contact-us` | `ContactUsPage` (mailto: handoff enquiry form) |
 | `/why-choose-us` | `WhyChoosePage` |
 | `/shopify-vs-silarai`, `/integrations/shopify` | `ShopifyComparisonPage` |
 | `/woocommerce-vs-silarai`, `/integrations/woocommerce` | `WoocommerceComparisonPage` |
@@ -134,9 +158,18 @@ A side-effect-only component. On every `currentView` / sub-page change it impera
 - sets OG + Twitter tags and the `<link rel="canonical">`
 - injects per-view **JSON-LD** schema
 
-Metadata lives in one big `getPageMetadata(...)` `switch` keyed by `currentView` (+ sub-page). Cases exist for: `about`, `why-choose-us`, `shopify-comparison`, `woocommerce-comparison`, `ai-shopping-assistant`, `ai-commerce-platform`, `retail-commerce`, `d2c-brands`, `distributors`, `manufacturing`, `wholesalers`, `home`/`default`.
+Metadata lives in one big `getPageMetadata(...)` `switch` keyed by `currentView` (+ sub-page). Cases exist for: `contact-us`, `about`, `why-choose-us`, `shopify-comparison`, `woocommerce-comparison`, `ai-shopping-assistant`, `ai-commerce-marketing-platform`, `ai-commerce-platform`, `retail-commerce`, `d2c-brands`, `distributors`, `manufacturing`, `wholesalers`, `fmcg-commerce`/`fmcg`, `home`/`default`.
 
-**Adding a view means adding a `case` here**, otherwise it silently falls through to the generic homepage metadata. This has already happened: **`fmcg-commerce` / `fmcg` have no case**, so the FMCG page serves the homepage title, description and canonical URL (`origin`) — a live SEO defect.
+**Adding a view means adding a `case` here**, otherwise it silently falls through to the generic homepage metadata. (The FMCG page had exactly this defect until 2026-09-14.)
+
+`SeoHead` also exports `useSubPageMetaDescription`, which picks a tested under-60-character description per sub-page from `SUBPAGE_CTR_VARIANTS` (3 CTR styles: `direct` / `metric` / `urgency`) and emits `subpage:*` diagnostic meta tags. Sub-page views use that instead of the case's long description.
+
+Two companions:
+
+- **`src/data/seoMetaTable.ts`** — the master table of 24 per-view/sub-page SEO records (title, description, canonical, keywords, CTR hook, schema type, rating), with `findSeoMetaEntry(view, subPage)` and 60-word / 60-char compliance warnings at module load.
+- **`src/components/SectionSeoMetaSnippet.tsx`** — renders nothing visible; mounted inside `<main>` in `App.tsx`, it applies title/description/canonical/OG/Twitter and a per-view JSON-LD block from that table. **Because it sits below `SeoHead` in the tree its effect runs last, so `seoMetaTable` wins on title, description and canonical**; `SeoHead` still owns robots, geo, AI-crawler directives and the rich JSON-LD graph. Keep the two in agreement.
+
+**`src/components/Breadcrumbs.tsx`** emits `BreadcrumbList` JSON-LD alongside the visible trail and is mounted at the top of all 12 sub-pages.
 
 > ⚠️ **All of this runs in JavaScript, after load.** Crawlers that do not execute JS — GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack, Facebook — see only the static `<head>` in `index.html`, which is the homepage's. Every route looks identical to them. Prerendering is the fix and is not yet implemented; see §11.
 
@@ -182,11 +215,14 @@ To re-enable, either enable CORS on the WordPress host and call `wp-json` direct
 
 ### 4.7 Demo request flow
 
-`BookDemoModal` POSTs JSON to `https://api.web3forms.com/submit` with the access key from `src/config/forms.ts`. Web3Forms emails the submission to the address the key is registered against.
+`BookDemoModal` and `ContactUsPage` build a pre-filled `mailto:` URL with `buildMailtoUrl()` from `src/config/forms.ts` and open the visitor's own mail client. **Nothing is delivered until the visitor presses Send in their mail app** — there is no server, no form service, and no API key.
 
-- The access key is **public by design** — it is an alias for a destination inbox, not a credential. Restrict it to the production domain in the Web3Forms dashboard.
-- Configured via `VITE_WEB3FORMS_ACCESS_KEY` (build-time env var, inlined by Vite).
-- Spam handling: a hidden `botcheck` honeypot field, plus Web3Forms' own filtering.
+- `src/config/forms.ts` is the single source of truth for `CONTACT_EMAIL`, `CONTACT_PHONE`, `CONTACT_LEGAL_NAME` and `CONTACT_ADDRESS`. Change the destination inbox there and both forms follow.
+- Confirmation copy says "press Send", never "sent" — the visitor has not sent anything yet at that point. Keep it that way.
+- Both forms show the address as copyable text with a Copy button, because visitors on webmail-only or locked-down devices have no mail client registered and will see nothing happen.
+- `buildMailtoUrl()` trims trailing body lines to stay under ~1800 characters, since some clients truncate a long `mailto:` silently.
+- **There is no server-side record of an enquiry.** The reply in the inbox is the only record, and there is no way to measure form abandonment.
+- Spam handling is not applicable — no endpoint to abuse. The honeypot fields were removed along with the POST.
 - If the key is missing or the request fails, the modal now shows an **error state** and does not claim success. (The previous implementation set `submitted = true` in a `finally` block, so users saw "Demo Request Dispatched!" even when the POST failed.)
 - Free tier is 250 submissions/month.
 
@@ -266,7 +302,7 @@ All are **build-time** — Vite inlines `VITE_*` into the bundle. There is no ru
 
 | Variable | Used by | Notes |
 |---|---|---|
-| `VITE_WEB3FORMS_ACCESS_KEY` | `src/config/forms.ts` | Web3Forms key. Public by design (inbox alias, not a credential). Must be set in the Azure SWA build environment or demo requests fail with a visible error. |
+| *(none for forms)* | — | Enquiry forms hand off to the visitor's mail client; no key or endpoint to configure. |
 | `SITE_URL` | `scripts/generate-static-discovery.mts` | Canonical origin for generated sitemap/llms/JSON. Defaults to `https://silarai.com` |
 | `VITE_WORDPRESS_URL` | dormant | See §4.6 |
 | `DISABLE_HMR` | `vite.config.ts` | `'true'` disables HMR and file watching |
@@ -297,14 +333,14 @@ DNS now lives in **Cloudflare** (moved off Hostinger's zone editor; Hostinger st
 | `www.silarai.com` | Should redirect to apex | ❌ NXDOMAIN — no CNAME record exists yet |
 | `app.silarai.com` | Separate, pre-existing Azure SWA (`lemon-sea`) — the product dashboard, not this site | ✅ live |
 | `stage.silarai.com` | Documented as a separate Azure SWA | not present in the current Cloudflare zone — unverified |
-| Email (`info@silarai.com`) | Hostinger (DKIM CNAMEs for `hostingermail-a/b/c` are in the zone) | ❌ **no MX record** — mail cannot be delivered, including Web3Forms demo-lead notifications |
+| Email (`info@silarai.com`) | Hostinger (DKIM CNAMEs for `hostingermail-a/b/c` are in the zone) | ❌ **no MX record** — mail to `@silarai.com` cannot be delivered. Enquiries are unaffected: forms route to `psitraders@outlook.com`. |
 | `blog.silarai.com` | Retired — no longer part of this deployment | DNS still resolves to the old Hostinger IP (`94.136.187.227`) but serves an empty page; safe to delete the record |
 
 ### Deployment checklist
 
-1. The live workflow is `.github/workflows/azure-static-web-apps-black-mushroom-050c17800.yml` (`app_location: ./landing_website`, `output_location: dist`) — the "black-mushroom" Azure Static Web App is what serves `silarai.com`. It now injects `VITE_WEB3FORMS_ACCESS_KEY` (from the GitHub Actions secret of the same name) and `SITE_URL` into the `Azure/static-web-apps-deploy@v1` build step, since Vite inlines `VITE_*` **at build time** inside Oryx — an Azure Portal application setting is not read at that stage. **The `VITE_WEB3FORMS_ACCESS_KEY` secret must exist in GitHub → Settings → Secrets and variables → Actions**, or the deployed form fails silently.
-2. `SITE_URL` is hardcoded to `https://silarai.com` in the workflow; change it there if the canonical origin ever moves.
-3. Restrict the Web3Forms key to the production domain once confirmed live.
+1. The live workflow is `.github/workflows/azure-static-web-apps-black-mushroom-050c17800.yml` (`app_location: ./landing_website`, `output_location: dist`) — the "black-mushroom" Azure Static Web App is what serves `silarai.com`.
+2. **No secrets are needed for forms.** Enquiry forms hand off to the visitor's mail client, so there is no key to configure. `SITE_URL` is hardcoded to `https://silarai.com` in the workflow's `env:` block; change it there if the canonical origin ever moves. (Vite inlines `VITE_*` **at build time** inside Oryx, so anything of that shape must be set in the workflow, not as an Azure Portal application setting.)
+3. To change the enquiry destination inbox, edit `CONTACT_EMAIL` in `src/config/forms.ts` — it is the single source of truth for both forms and the contact block.
 4. `landing_website/bun.lock` and `landing_website/package-lock.json` are both committed — only `package-lock.json` reflects the npm scripts CI actually runs; the stray `bun.lock` is a candidate for removal (not yet done, flagged 2026-09-04).
 
 **Full step-by-step procedure, including the DNS cutover and the WordPress move: see `DEPLOYMENT.md`.**
@@ -327,17 +363,18 @@ DNS now lives in **Cloudflare** (moved off Hostinger's zone editor; Hostinger st
 
 Ordered by impact.
 
-1. **No MX record for `silarai.com` (live, 2026-09-04).** `info@silarai.com` cannot receive mail, which breaks the `BookDemoModal` → Web3Forms → email lead flow silently (the form still reports success; the email just never arrives). Needs an MX record added in Cloudflare pointing at whatever host serves that mailbox (the `hostingermail-a/b/c` DKIM CNAMEs already in the zone suggest Hostinger Email). See `DEPLOYMENT.md` status note.
+1. **No MX record for `silarai.com` (live, 2026-09-04).** `info@silarai.com` cannot receive mail. **Enquiries are no longer affected** — forms now route to `psitraders@outlook.com`, an Outlook mailbox on a different domain. Still worth fixing so `@silarai.com` addresses work at all; needs an MX record in Cloudflare pointing at whatever host serves that mailbox (the `hostingermail-a/b/c` DKIM CNAMEs suggest Hostinger Email). See `DEPLOYMENT.md` status note.
 2. **`www.silarai.com` does not resolve (live, 2026-09-04).** NXDOMAIN. Needs a `CNAME www` → the SWA hostname in Cloudflare, set to redirect to the apex.
 3. **No prerendering.** All per-page metadata and JSON-LD is applied by JS after load, so non-JS crawlers (GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack) see homepage metadata on all ~50 routes. This undercuts the entire GEO/AEO strategy. Deliberately deferred to a separate change; it touches the router and build pipeline.
-4. **FMCG page has no SEO metadata** — `SeoHead` lacks an `fmcg-commerce` case, so it serves the homepage title/description/canonical.
-5. **Route logic duplicated** in `App.tsx` (`useState` initialiser vs `handlePopState`) — easy source of deep-link bugs.
-6. **Web3Forms free tier is 250 submissions/month.** No alerting if that ceiling is hit; submissions beyond it are rejected. Monitor, or upgrade before a campaign.
-7. **No form validation beyond `required` on name/email**, and no CAPTCHA. The honeypot plus Web3Forms filtering is the only spam defence — add hCaptcha if abuse appears.
+4. **Two pages from `imported_landing_website/` are not merged yet** — `HeroSection` (adds two image tabs plus a lightbox; needs `shopping_assistant_ui_1788795889801.jpg` and `commerce_cloud_platform_1788795904634.jpg` copied into `src/assets/images/`) and `AiCommerceMarketingPlatformPage` (new ~1,000-line pillar page; `SeoHead` already carries its metadata case, but no route is wired).
+5. **`index.html` still lists `info@silarai.com`** in its static Organization JSON-LD, while `config/forms.ts`, `SeoHead` and both forms now use `psitraders@outlook.com`. Since `info@` has no MX record (gap 1), the static block is advertising an address that cannot receive mail — worth aligning.
+6. **Route logic duplicated** in `App.tsx` (`useState` initialiser vs `handlePopState`) — easy source of deep-link bugs.
+6. **`mailto:` handoff has inherent leakage.** A visitor with no mail client registered (webmail-only, managed device, some mobile browsers) sees nothing happen; the copyable fallback mitigates but does not eliminate this. There is also no record of enquiries that were composed but never sent, and no way to measure that drop-off. If lead volume matters more than avoiding a third party, a hosted form service is the fix.
+7. **No form validation beyond `required` on name/email.** Not a spam risk any more (no endpoint), but malformed input still reaches the mail body verbatim.
 8. **`FloatingAiAssistantWidget` is a mock** — hardcoded replies, no LLM backend. It presents as a live product demo.
 9. **WordPress integration dormant** (§4.6) — ~620 lines retained but non-functional, and now more likely to stay that way since the blog itself was retired rather than fixed.
 10. **Dead components**: `DashboardSection.tsx`, `LogoConceptsModal.tsx`.
-11. **Bundle is 1.72 MB (428 KB gzipped)** in a single chunk — Vite warns on every build. The industry pages are the bulk; route-level code splitting would help, and pairs naturally with the prerendering work.
+11. **Bundle size** — was 1.72 MB (428 KB gzipped) in a single chunk. `App.tsx` now `React.lazy`-loads every page, below-the-fold home section and modal, so this should be substantially split; re-measure on the next build and update this line.
 12. **`src/server/` is a misleading directory name** — it contains build-time data only.
 13. **No tests, no ESLint**; `npm run lint` is a type-check only.
 14. **Knowledge data ships twice** — once in the JS bundle (imported by `AiDiscoveryModal` / `DistributorsBacklinkHub`) and once as static JSON. Fetching the JSON at runtime instead would cut bundle size.
