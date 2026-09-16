@@ -63,6 +63,7 @@ landing_website/
 │   │   ├── content.ts       # All marketing copy/data (single source of truth)
 │   │   ├── siteArchitecture.ts     # Pillars, industries, keyword clusters, GEO blocks
 │   │   ├── seoMetaTable.ts  # Per-view/sub-page SEO meta records + findSeoMetaEntry()
+│   │   ├── internalLinkingClusters.ts  # Topical internal-link clusters + getInternalLinkingForPage()
 │   │   └── authoritativeBacklinks.ts  # Semantic backlink corpus + helpers
 │   ├── lib/                 # ⚠️ DORMANT WordPress clients — see §4.6
 │   ├── server/              # Misnomer: build-time data only, no server runtime
@@ -171,6 +172,13 @@ Two companions:
 
 **`src/components/Breadcrumbs.tsx`** emits `BreadcrumbList` JSON-LD alongside the visible trail and is mounted at the top of all 12 sub-pages.
 
+**`src/components/InternalLinkingSection.tsx`** is `sr-only` (invisible to sighted users) and renders a topical internal-link cluster plus `ItemList` / `SiteNavigationElement` JSON-LD, driven by `src/data/internalLinkingClusters.ts`. Two rules for that data file:
+
+- **`path` must resolve to a real route.** The SPA fallback returns `index.html` with a 200 for anything unrecognised, so a wrong path becomes a soft 404 serving homepage content — duplicate content in Google's eyes, which is the opposite of what this file is for. Industry entries therefore use `/industries/*`, not `/d2c-brands` or `/manufacturing`.
+- **Absolute URLs use the apex** `https://silarai.com`, never `www.` (which does not resolve — see §9).
+
+`getInternalLinkingForPage()` falls back to the `home` cluster for any unknown key, so a page without its own cluster still renders valid links instead of throwing.
+
 > ⚠️ **All of this runs in JavaScript, after load.** Crawlers that do not execute JS — GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack, Facebook — see only the static `<head>` in `index.html`, which is the homepage's. Every route looks identical to them. Prerendering is the fix and is not yet implemented; see §11.
 
 ### 4.4 Build-time static generation (`scripts/generate-static-discovery.mts`)
@@ -230,17 +238,23 @@ To re-enable, either enable CORS on the WordPress host and call `wp-json` direct
 
 ## 5. Design System
 
-Defined CSS-first in `src/index.css` with Tailwind v4 `@theme`:
+Defined CSS-first in `src/index.css` with Tailwind v4 `@theme`.
 
-| Token family | Anchor value |
-|---|---|
-| `plum` 50–950 | primary `--color-plum-700: #584053` |
-| `teal` 50–950 | primary `--color-teal-400: #8DC6BF` |
-| `peach` 50–700 | `--color-peach-300: #FCB666` (warm sand / apricot gold) |
-| `coral` 50–700 | accent `--color-coral-400: #F97B4F` |
-| Font | `--font-sans: 'Plus Jakarta Sans', system-ui, …` |
+**The palette was rebranded on 2026-09-16** from the original plum/soft-teal/apricot scheme to the official brand colours:
 
-Base layer sets smooth scroll, body colour `#221820` on `#faf9f8`, and a custom `::selection`. `index.html` also declares `theme-color: #2b0f38` (a legacy plum that does not match the current token set).
+| Brand role | Hex | Token families |
+|---|---|---|
+| Main structural (headers, footers, dark sections) | **Dark Teal `#245668`** | `darkteal-*`, and `plum-*` remapped onto it |
+| Secondary (icons, active states, subheaders) | **Teal Green `#0D8F81`** | `tealgreen-*`, and `teal-*` remapped onto it |
+| High-contrast CTA | **Persimmon `#F47A38`** | `persimmon-*`, with `coral-*` and `peach-*` remapped onto it |
+| Page canvas | **Off-White `#F8F9FA`** | base layer `html` / `body` |
+| Font | `'Plus Jakarta Sans', system-ui, …` | `--font-sans` |
+
+**The legacy token names were deliberately kept and remapped.** `plum-*` no longer means purple — it is the Dark Teal ramp; `peach-*` and `coral-*` are both Persimmon. That is what let a whole-site rebrand land by editing one file, with no changes to the ~60 components that reference those class names. When adding components, prefer the new `darkteal-*` / `tealgreen-*` / `persimmon-*` names; the old aliases are kept only so existing markup keeps working.
+
+Base layer sets smooth scroll, body colour `#183a47` on `#F8F9FA`, and a custom `::selection`. Custom utilities: `.bg-grid-pattern`, `.bg-radial-glow`, `.shadow-sleek`, `.shadow-sleek-hover`, `.rounded-saas` (20px), plus a themed scrollbar.
+
+⚠️ `index.html` still declares `theme-color: #2b0f38` and a purple `#2b0f38` favicon — both legacy plum values that now clash with the Dark Teal brand. Worth updating to `#245668`.
 
 Styling is Tailwind utility classes inline in components — no CSS modules, no styled-components, no component library.
 
@@ -366,7 +380,7 @@ Ordered by impact.
 1. **No MX record for `silarai.com` (live, 2026-09-04).** `info@silarai.com` cannot receive mail. **Enquiries are no longer affected** — forms now route to `psitraders@outlook.com`, an Outlook mailbox on a different domain. Still worth fixing so `@silarai.com` addresses work at all; needs an MX record in Cloudflare pointing at whatever host serves that mailbox (the `hostingermail-a/b/c` DKIM CNAMEs suggest Hostinger Email). See `DEPLOYMENT.md` status note.
 2. **`www.silarai.com` does not resolve (live, 2026-09-04).** NXDOMAIN. Needs a `CNAME www` → the SWA hostname in Cloudflare, set to redirect to the apex.
 3. **No prerendering.** All per-page metadata and JSON-LD is applied by JS after load, so non-JS crawlers (GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack) see homepage metadata on all ~50 routes. This undercuts the entire GEO/AEO strategy. Deliberately deferred to a separate change; it touches the router and build pipeline.
-4. **Two pages from `imported_landing_website/` are not merged yet** — `HeroSection` (adds two image tabs plus a lightbox; needs `shopping_assistant_ui_1788795889801.jpg` and `commerce_cloud_platform_1788795904634.jpg` copied into `src/assets/images/`) and `AiCommerceMarketingPlatformPage` (new ~1,000-line pillar page; `SeoHead` already carries its metadata case, but no route is wired).
+4. **Three items from `imported_landing_website/` are not merged yet.** (a) `HeroSection` — adds two image tabs plus a lightbox; still blocked on `shopping_assistant_ui_1788795889801.jpg` and `commerce_cloud_platform_1788795904634.jpg`, which are not in `src/assets/images/`. (b) `AiCommerceMarketingPlatformPage` — new ~1,000-line pillar page; `SeoHead` carries its metadata case but no route is wired, so any link to `/ai-commerce-marketing-platform` currently soft-404s to the homepage. (c) `internalLinkingClusters.ts` holds 3 of the import's 16 clusters (`home`, `about`, `why-choose-us`); the other 13 page types fall back to the `home` cluster, which is valid but not page-specific.
 5. **`index.html` still lists `info@silarai.com`** in its static Organization JSON-LD, while `config/forms.ts`, `SeoHead` and both forms now use `psitraders@outlook.com`. Since `info@` has no MX record (gap 1), the static block is advertising an address that cannot receive mail — worth aligning.
 6. **Route logic duplicated** in `App.tsx` (`useState` initialiser vs `handlePopState`) — easy source of deep-link bugs.
 6. **`mailto:` handoff has inherent leakage.** A visitor with no mail client registered (webmail-only, managed device, some mobile browsers) sees nothing happen; the copyable fallback mitigates but does not eliminate this. There is also no record of enquiries that were composed but never sent, and no way to measure that drop-off. If lead volume matters more than avoiding a third party, a hosted form service is the fix.

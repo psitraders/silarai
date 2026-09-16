@@ -1,47 +1,97 @@
 @import "tailwindcss";
 
 @theme {
-  --color-plum-50: #f6f3f5;
-  --color-plum-100: #ece5eb;
-  --color-plum-200: #d9cbd7;
-  --color-plum-300: #bfa8bc;
-  --color-plum-400: #9e7f9b;
-  --color-plum-500: #7d5b79;
-  --color-plum-600: #684863;
-  --color-plum-700: #584053; /* Primary Deep Plum: #584053 */
-  --color-plum-800: #453141;
-  --color-plum-900: #382734;
-  --color-plum-950: #221720;
+  /* Official Brand Colors */
+  --color-dark-teal: #245668;
+  --color-teal-green: #0D8F81;
+  --color-persimmon: #F47A38;
+  --color-off-white: #F8F9FA;
 
-  --color-teal-50: #f2f9f8;
-  --color-teal-100: #e1f2f0;
-  --color-teal-200: #c4e5e1;
-  --color-teal-300: #a3d6cf;
-  --color-teal-400: #8DC6BF; /* Primary Soft Teal: #8DC6BF */
-  --color-teal-500: #66aea6;
-  --color-teal-600: #4e918a;
-  --color-teal-700: #3d746f;
-  --color-teal-800: #335c58;
-  --color-teal-900: #2b4c49;
-  --color-teal-950: #182f2d;
+  /* #245668 (Dark Teal): Main structural color (headers, footers, dark sections) */
+  --color-darkteal-50: #f0f5f7;
+  --color-darkteal-100: #dce8ec;
+  --color-darkteal-200: #bdd3db;
+  --color-darkteal-300: #90b6c4;
+  --color-darkteal-400: #5c93a8;
+  --color-darkteal-500: #3b768c;
+  --color-darkteal-600: #2c5f73;
+  --color-darkteal-700: #245668; /* Exact Main Structural Dark Teal: #245668 */
+  --color-darkteal-800: #1d4654;
+  --color-darkteal-900: #183a47;
+  --color-darkteal-950: #0e222b; /* Deep luxury structural dark canvas */
 
-  --color-peach-50: #fffcf5;
-  --color-peach-100: #fef7e6;
-  --color-peach-200: #fcebc7;
-  --color-peach-300: #FCB666; /* Warm Sand / Apricot Gold: #FCB666 */
-  --color-peach-400: #f7a042;
-  --color-peach-500: #ed8524;
-  --color-peach-600: #cf6815;
-  --color-peach-700: #a64b13;
+  /* Map plum-* to Dark Teal system for complete site-wide architecture alignment */
+  --color-plum-50: #f0f5f7;
+  --color-plum-100: #dce8ec;
+  --color-plum-200: #bdd3db;
+  --color-plum-300: #90b6c4;
+  --color-plum-400: #5c93a8;
+  --color-plum-500: #3b768c;
+  --color-plum-600: #2c5f73;
+  --color-plum-700: #245668; /* Main Structural Color: #245668 */
+  --color-plum-800: #1d4654;
+  --color-plum-900: #183a47;
+  --color-plum-950: #0e222b;
 
-  --color-coral-50: #fef6f3;
-  --color-coral-100: #fdebe4;
-  --color-coral-200: #fbd4c6;
-  --color-coral-300: #f8b49e;
-  --color-coral-400: #F97B4F; /* Accent Vibrant Coral: #F97B4F */
-  --color-coral-500: #f05523;
-  --color-coral-600: #dc3b0a;
-  --color-coral-700: #b72b07;
+  /* #0D8F81 (Teal Green): Secondary brand color (icons, active states, subheaders) */
+  --color-tealgreen-50: #edf9f7;
+  --color-tealgreen-100: #d3f2ed;
+  --color-tealgreen-200: #abe5db;
+  --color-tealgreen-300: #74d3c3;
+  --color-tealgreen-400: #38b9a5;
+  --color-tealgreen-500: #0D8F81; /* Exact Secondary Teal Green: #0D8F81 */
+  --color-tealgreen-600: #0a776c;
+  --color-tealgreen-700: #0c5f57;
+  --color-tealgreen-800: #0d4c46;
+  --color-tealgreen-900: #0e403b;
+  --color-tealgreen-950: #052422;
+
+  /* Map teal-* to Teal Green (#0D8F81) system */
+  --color-teal-50: #edf9f7;
+  --color-teal-100: #d3f2ed;
+  --color-teal-200: #abe5db;
+  --color-teal-300: #74d3c3;
+  --color-teal-400: #38b9a5;
+  --color-teal-500: #0D8F81; /* Exact Secondary Teal Green: #0D8F81 */
+  --color-teal-600: #0a776c;
+  --color-teal-700: #0c5f57;
+  --color-teal-800: #0d4c46;
+  --color-teal-900: #0e403b;
+  --color-teal-950: #052422;
+
+  /* #F47A38 (Persimmon Orange): High-contrast call-to-action (CTA) buttons */
+  --color-persimmon-50: #fef6f0;
+  --color-persimmon-100: #fdeade;
+  --color-persimmon-200: #fbd2bd;
+  --color-persimmon-300: #f8b493;
+  --color-persimmon-400: #F47A38; /* Exact Persimmon Orange CTA: #F47A38 */
+  --color-persimmon-500: #e45f18;
+  --color-persimmon-600: #c7480e;
+  --color-persimmon-700: #9f340f;
+  --color-persimmon-800: #802b13;
+  --color-persimmon-900: #6a2514;
+  --color-persimmon-950: #3a1007;
+
+  /* Map coral-* directly to Persimmon Orange CTA scale */
+  --color-coral-50: #fef6f0;
+  --color-coral-100: #fdeade;
+  --color-coral-200: #fbd2bd;
+  --color-coral-300: #f8b493;
+  --color-coral-400: #F47A38; /* Accent CTA Persimmon Orange: #F47A38 */
+  --color-coral-500: #e45f18;
+  --color-coral-600: #c7480e;
+  --color-coral-700: #9f340f;
+  --color-coral-800: #802b13;
+
+  /* Map peach-* to luminous Persimmon highlights and accents */
+  --color-peach-50: #fff8f4;
+  --color-peach-100: #feeee4;
+  --color-peach-200: #fcd8c4;
+  --color-peach-300: #f99859; /* Warm radiant Persimmon highlight */
+  --color-peach-400: #F47A38; /* Exact Persimmon Orange: #F47A38 */
+  --color-peach-500: #e45f18;
+  --color-peach-600: #c7480e;
+  --color-peach-700: #9f340f;
 
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -50,34 +100,39 @@
   html {
     scroll-behavior: smooth;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    color: #221820;
-    background-color: #faf9f8;
+    color: #183a47;
+    background-color: #F8F9FA; /* #F8F9FA (Off-White): Clean, high-readability background canvas */
   }
-  
+
+  body {
+    background-color: #F8F9FA;
+    color: #183a47;
+  }
+
   ::selection {
-    background-color: #fbdfb6;
-    color: #382835;
+    background-color: #fbd2bd;
+    color: #0e222b;
   }
 }
 
 /* Custom Utilities for Sleek Interface SaaS Aesthetic */
 .bg-grid-pattern {
   background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(88, 64, 83, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(88, 64, 83, 0.05) 1px, transparent 1px);
+  background-image:
+    linear-gradient(to right, rgba(36, 86, 104, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(36, 86, 104, 0.06) 1px, transparent 1px);
 }
 
 .bg-radial-glow {
-  background: radial-gradient(circle at 50% 20%, rgba(251, 223, 182, 0.25) 0%, rgba(250, 249, 248, 0) 70%);
+  background: radial-gradient(circle at 50% 20%, rgba(244, 122, 56, 0.15) 0%, rgba(248, 249, 250, 0) 70%);
 }
 
 .shadow-sleek {
-  box-shadow: 0 10px 30px -5px rgba(88, 64, 83, 0.08), 0 4px 12px -2px rgba(88, 64, 83, 0.04);
+  box-shadow: 0 10px 30px -5px rgba(36, 86, 104, 0.08), 0 4px 12px -2px rgba(36, 86, 104, 0.04);
 }
 
 .shadow-sleek-hover {
-  box-shadow: 0 20px 40px -8px rgba(88, 64, 83, 0.16), 0 8px 16px -4px rgba(88, 64, 83, 0.08);
+  box-shadow: 0 20px 40px -8px rgba(36, 86, 104, 0.16), 0 8px 16px -4px rgba(36, 86, 104, 0.08);
 }
 
 .rounded-saas {
@@ -91,16 +146,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f7f4f6;
+  background: #F8F9FA;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ddcad9;
+  background: #bdd3db;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9e7998;
+  background: #245668;
 }
-
-

@@ -35,7 +35,10 @@ const UseCasesSection = React.lazy(() => import('./components/UseCasesSection').
 const PricingSection = React.lazy(() => import('./components/PricingSection').then(m => ({ default: m.PricingSection })));
 const FaqSection = React.lazy(() => import('./components/FaqSection').then(m => ({ default: m.FaqSection })));
 const FinalCta = React.lazy(() => import('./components/FinalCta').then(m => ({ default: m.FinalCta })));
+const AllInOneSection = React.lazy(() => import('./components/AllInOneSection').then(m => ({ default: m.AllInOneSection })));
+const CustomDomainSection = React.lazy(() => import('./components/CustomDomainSection').then(m => ({ default: m.CustomDomainSection })));
 const SectionSeoMetaSnippet = React.lazy(() => import('./components/SectionSeoMetaSnippet').then(m => ({ default: m.SectionSeoMetaSnippet })));
+const InternalLinkingSection = React.lazy(() => import('./components/InternalLinkingSection').then(m => ({ default: m.InternalLinkingSection })));
 
 // Modular Lazy Loading for Modals and Interactive Widgets
 const BookDemoModal = React.lazy(() => import('./components/BookDemoModal').then(m => ({ default: m.BookDemoModal })));
@@ -496,6 +499,54 @@ export default function App() {
     window.location.href = 'https://app.silarai.com/login';
   };
 
+  /** Maps a view id (used by the internal-link clusters) onto the matching navigation handler. */
+  const handleNavigateToView = (view: string, options?: { pageId?: number; subPageId?: number; section?: string }) => {
+    switch (view) {
+      case 'contact-us':
+        handleNavigateContactUs();
+        break;
+      case 'about':
+        handleNavigateAbout();
+        break;
+      case 'why-choose-us':
+        handleNavigateWhyChooseUs();
+        break;
+      case 'shopify-comparison':
+        handleNavigateShopifyComparison();
+        break;
+      case 'woocommerce-comparison':
+        handleNavigateWoocommerceComparison();
+        break;
+      case 'ai-shopping-assistant':
+        handleSelectAiShoppingPage((options?.pageId || 1) as AiShoppingPageId);
+        break;
+      case 'ai-commerce-platform':
+        handleSelectAiCommercePage((options?.pageId || 1) as AiCommercePageId);
+        break;
+      case 'retail-commerce':
+        handleNavigateRetailCommerce();
+        break;
+      case 'd2c-brands':
+        handleNavigateD2cCommerce(options?.subPageId ?? options?.section);
+        break;
+      case 'distributors':
+        handleNavigateDistributors();
+        break;
+      case 'wholesalers':
+        handleNavigateWholesalers();
+        break;
+      case 'manufacturing':
+        handleNavigateManufacturing(options?.pageId);
+        break;
+      case 'fmcg-commerce':
+      case 'fmcg':
+        handleNavigateFmcgCommerce();
+        break;
+      default:
+        handleBackToHome();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900">
       {/* Dynamic SEO Head Manager */}
@@ -643,6 +694,12 @@ export default function App() {
               <WhySilarAi onOpenFullPage={handleNavigateWhyChooseUs} />
 
               <Suspense fallback={<SectionLoadingFallback />}>
+                {/* All-in-One Tooling Overview */}
+                <AllInOneSection onBookDemo={(plan) => handleOpenDemo(plan)} />
+
+                {/* Custom Domain / Whitelabel Storefront */}
+                <CustomDomainSection onBookDemo={(plan) => handleOpenDemo(plan)} />
+
                 {/* Customer Metrics & Growth Cards */}
                 <CustomerMetrics />
 
@@ -684,6 +741,14 @@ export default function App() {
                 ? manufacturingSubPage
                 : undefined
             }
+          />
+        </Suspense>
+
+        {/* Topical internal-link architecture — sr-only, emits SiteNavigationElement JSON-LD */}
+        <Suspense fallback={null}>
+          <InternalLinkingSection
+            currentPage={currentView}
+            onNavigate={(view, options) => handleNavigateToView(view, options)}
           />
         </Suspense>
       </main>
