@@ -1,16 +1,3 @@
-/**
- * ⚠️ DORMANT — not wired to any rendered component.
- *
- * This module was written against the Express proxy routes (/api/wordpress/*)
- * that were removed when the site became a fully static Azure deployment.
- * The proxy existed to avoid CORS when calling the WordPress REST API.
- *
- * Before re-enabling, choose one of:
- *   a) enable CORS on the WordPress host and call wp-json directly, or
- *   b) reintroduce a proxy (Azure Function, or the existing .NET backend).
- *
- * See context.md § WordPress integration.
- */
 export interface WpPostItem {
   id: number;
   slug: string;

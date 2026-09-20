@@ -4,14 +4,18 @@ import { findSeoMetaEntry, SeoMetaRow } from '../data/seoMetaTable';
 interface SectionSeoMetaSnippetProps {
   currentView: string;
   subPage?: number;
+  sectorSlug?: string;
+  useCaseSlug?: string;
   onOpenFullTable?: () => void;
 }
 
 export const SectionSeoMetaSnippet: React.FC<SectionSeoMetaSnippetProps> = ({
   currentView,
   subPage,
+  sectorSlug,
+  useCaseSlug,
 }) => {
-  const entry: SeoMetaRow = findSeoMetaEntry(currentView, subPage);
+  const entry: SeoMetaRow = findSeoMetaEntry(currentView, subPage, sectorSlug, useCaseSlug);
 
   // Keep SEO contents dynamically embedded in the website's document head and backend metadata
   useEffect(() => {

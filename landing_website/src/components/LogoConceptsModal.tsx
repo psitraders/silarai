@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { X, Sparkles, CheckCircle2, ShieldCheck, Palette, ArrowRight, RefreshCw, Check } from 'lucide-react';
 
-import sharpEmblemImg from '../assets/images/s_sharp_modern_emblem_1787576880426.jpg';
-import origamiBagImg from '../assets/images/s_origami_growth_bag_1787576706278.jpg';
-import bagEmblemImg from '../assets/images/s_shopping_bag_emblem_1787576286102.jpg';
-import modernEmblemImg from '../assets/images/silar_modern_ai_emblem_1787162503739.jpg';
-import sEmblemHexFacet from '../assets/images/s_emblem_hex_facet_1787204256289.jpg';
-import sEmblemMobiusHelix from '../assets/images/s_emblem_mobius_helix_1787204269551.jpg';
-import sEmblemCyberMatrix from '../assets/images/s_emblem_cyber_matrix_1787204282553.jpg';
-import growthLogoImg from '../assets/images/silar_ai_growth_logo_1787161422563.jpg';
-import officialLogoImg from '../assets/images/silarai_official_logo_1785580316828.jpg';
-import infinityLogoImg from '../assets/images/infinity_logo_1787156789897.jpg';
+import sharpEmblemImg from '../assets/images/s_sharp_modern_emblem_1787576880426.webp';
+import origamiBagImg from '../assets/images/s_origami_growth_bag_1787576706278.webp';
+import bagEmblemImg from '../assets/images/s_shopping_bag_emblem_1787576286102.webp';
+import modernEmblemImg from '../assets/images/silar_modern_ai_emblem_1787162503739.webp';
+import sEmblemHexFacet from '../assets/images/s_emblem_hex_facet_1787204256289.webp';
+import sEmblemMobiusHelix from '../assets/images/s_emblem_mobius_helix_1787204269551.webp';
+import sEmblemCyberMatrix from '../assets/images/s_emblem_cyber_matrix_1787204282553.webp';
+import growthLogoImg from '../assets/images/silar_ai_growth_logo_1787161422563.webp';
+import officialLogoImg from '../assets/images/silarai_official_logo_1785580316828.webp';
+import infinityLogoImg from '../assets/images/infinity_logo_1787156789897.webp';
 
 interface LogoConceptsModalProps {
   isOpen: boolean;
@@ -25,8 +25,8 @@ export const LOGO_DESIGNS = [
     name: 'Primary: Sharp-Edged Geometric S + Chamfered Bag',
     style: 'Modern Sharp-Faceted S Monogram',
     image: sharpEmblemImg,
-    description: 'Precision angular 45-degree chamfered "S" monogram with sharp faceted polygon wings in luminous warm peach (#FCB666) & fiery solar orange (#FF4500) over deep velvet plum shadow bevels.',
-    palette: ['Luminous Peach (#FCB666)', 'Solar Orange (#FF4500)', 'Deep Plum (#584053)', 'Midnight Base (#180B17)'],
+    description: 'Precision angular 45-degree chamfered "S" monogram with sharp faceted polygon wings in high-contrast persimmon orange (#F47A38) & teal green (#0D8F81) over deep dark teal (#245668) shadow bevels.',
+    palette: ['Persimmon Orange (#F47A38)', 'Teal Green (#0D8F81)', 'Dark Teal (#245668)', 'Off-White Canvas (#F8F9FA)'],
     recommendedFor: 'Next-gen enterprise AI commerce, high-performance retail intelligence, and modern SaaS brand marks.'
   },
   {
@@ -34,8 +34,8 @@ export const LOGO_DESIGNS = [
     name: 'Concept 2: Origami Growth Bag + Dual-Ribbon S',
     style: 'Precision Folded S Ribbon Commerce Emblem',
     image: origamiBagImg,
-    description: 'Precision folded 3D aerodynamic "S" monogram integrated with a modern shopping bag silhouette. Dual ribbon flow in glowing golden peach (#FCB666) & deep plum (#584053) with an apex AI spark.',
-    palette: ['Radiant Peach (#FCB666)', 'Deep Plum (#584053)', 'Sunrise Coral (#F97B4F)', 'Solar Gold (#FF7A00)'],
+    description: 'Precision folded 3D aerodynamic "S" monogram integrated with a modern shopping bag silhouette. Dual ribbon flow in high-contrast persimmon orange (#F47A38) & dark teal (#245668) with an apex AI spark.',
+    palette: ['Persimmon Orange (#F47A38)', 'Dark Teal (#245668)', 'Teal Green (#0D8F81)', 'Off-White (#F8F9FA)'],
     recommendedFor: 'Modern AI SaaS, high-conversion eCommerce storefronts, and conversational AI store agents.'
   },
   {
@@ -43,8 +43,8 @@ export const LOGO_DESIGNS = [
     name: 'Concept 3: AI Shopping Bag Classic S',
     style: 'Luxury AI eCommerce Bag + Glowing S Ribbon',
     image: bagEmblemImg,
-    description: 'Modern geometric luxury shopping bag silhouette with arching handle and an interlocking 3D glowing "S" neural ribbon in radiant peach (#FCB666) & deep plum (#584053) with an AI intelligence spark at the apex.',
-    palette: ['Luminous Peach (#FCB666)', 'Deep Velvet Plum (#584053)', 'Solar Orange (#FF4500)', 'Midnight Slate (#0B1938)'],
+    description: 'Modern geometric luxury shopping bag silhouette with arching handle and an interlocking 3D glowing "S" neural ribbon in persimmon orange (#F47A38) & dark teal (#245668) with an AI intelligence spark at the apex.',
+    palette: ['Persimmon Orange (#F47A38)', 'Dark Teal (#245668)', 'Teal Green (#0D8F81)', 'Off-White (#F8F9FA)'],
     recommendedFor: 'Autonomous AI store agents, high-conversion shopping assistants, and next-gen retail commerce platforms.'
   },
   {
@@ -52,8 +52,8 @@ export const LOGO_DESIGNS = [
     name: 'Concept 3: Futuristic AI Tech Emblem + Wordmark',
     style: 'Futuristic AI Tech Emblem & Growth Mark',
     image: modernEmblemImg,
-    description: 'Modern 3D geometric AI emblem badge with luminous peach-to-solar orange neural ribbon, 4-point AI intelligence spark, paired with SilarAI ascending growth wordmark.',
-    palette: ['Luminous Peach (#FCB666)', 'Solar Orange (#FF4500)', 'Midnight Navy (#0B1938)', 'Deep Plum (#584053)'],
+    description: 'Modern 3D geometric AI emblem badge with luminous persimmon orange-to-teal neural ribbon, 4-point AI intelligence spark, paired with SilarAI ascending growth wordmark.',
+    palette: ['Persimmon Orange (#F47A38)', 'Dark Teal (#245668)', 'Teal Green (#0D8F81)', 'Off-White (#F8F9FA)'],
     recommendedFor: 'Next-gen conversational commerce, autonomous AI store agents, and enterprise SaaS.'
   },
   {
@@ -61,8 +61,8 @@ export const LOGO_DESIGNS = [
     name: 'Geometric Style 1: Hexagonal Facet Crystal S',
     style: 'Isometric 3D Hex Polygon Prism',
     image: sEmblemHexFacet,
-    description: 'Sharp isometric hexagonal shield housing a multifaceted geometric S with high-refraction peach-300 light planes and deep plum-700 shadow contours.',
-    palette: ['Deep Plum (#584053)', 'Warm Apricot Peach (#FCB666)', 'Coral Glow (#F97B4F)', 'Dark Midnight (#221720)'],
+    description: 'Sharp isometric hexagonal shield housing a multifaceted geometric S with high-refraction persimmon orange light planes and deep dark teal shadow contours.',
+    palette: ['Dark Teal (#245668)', 'Teal Green (#0D8F81)', 'Persimmon Orange (#F47A38)', 'Off-White (#F8F9FA)'],
     recommendedFor: 'Enterprise intelligence, cryptographic commerce security, and high-performance financial AI.'
   },
   {
@@ -70,8 +70,8 @@ export const LOGO_DESIGNS = [
     name: 'Geometric Style 2: Mobius Helix AI Ribbon',
     style: 'Aerodynamic Parametric Dual-Loop',
     image: sEmblemMobiusHelix,
-    description: 'Continuous mathematical Mobius ribbon twisting in perpetual motion, blending deep plum-700 tones into radiant peach-300 highlights with glossy studio illumination.',
-    palette: ['Radiant Peach (#FCB666)', 'Deep Plum (#584053)', 'Amber Gold (#FBBF24)', 'Pure White (#FFFFFF)'],
+    description: 'Continuous mathematical Mobius ribbon twisting in perpetual motion, blending deep dark teal tones into vibrant persimmon orange highlights with glossy studio illumination.',
+    palette: ['Persimmon Orange (#F47A38)', 'Dark Teal (#245668)', 'Teal Green (#0D8F81)', 'Off-White (#F8F9FA)'],
     recommendedFor: 'Omnichannel automation, continuous learning models, and dynamic marketplace optimization.'
   },
   {
@@ -79,8 +79,8 @@ export const LOGO_DESIGNS = [
     name: 'Geometric Style 3: Cyber Matrix Grid S',
     style: 'Interlocking Neural Circuit Nodes',
     image: sEmblemCyberMatrix,
-    description: 'Futuristic architectural S formed by precision angular circuit traces and glowing peach-300 neural dot nodes set against a dark plum-700 tech glass badge.',
-    palette: ['Dark Tech Plum (#584053)', 'Glowing Neural Peach (#FCB666)', 'Midnight Slate (#0F172A)', 'Electric Coral (#FB7185)'],
+    description: 'Futuristic architectural S formed by precision angular circuit traces and glowing persimmon neural dot nodes set against a dark teal tech glass badge.',
+    palette: ['Dark Teal (#245668)', 'Teal Green (#0D8F81)', 'Persimmon Orange (#F47A38)', 'Off-White (#F8F9FA)'],
     recommendedFor: 'Developer APIs, AI workflow orchestrations, and headless commerce architectures.'
   },
   {

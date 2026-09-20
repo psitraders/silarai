@@ -7,12 +7,19 @@ import {
   ArrowRight,
   Sparkles,
   Layers,
+  Zap,
   Globe,
+  MessageCircle,
+  ShieldCheck,
   BookOpen,
   ExternalLink,
+  HelpCircle,
+  TrendingUp,
+  Sliders,
+  ChevronRight,
 } from 'lucide-react';
-import aiBotCommerceImg from '../assets/images/ai_bot_commerce_dashboard_1785403446965.jpg';
-import aiCommerceEngineImg from '../assets/images/ai_commerce_platform_engine_1785488597071.jpg';
+import aiBotCommerceImg from '../assets/images/ai_bot_commerce_dashboard_1785403446965.webp';
+import aiCommerceEngineImg from '../assets/images/ai_commerce_platform_engine_1785488597071.webp';
 
 interface ProductsSectionProps {
   onLearnMoreAssistant: (subPage?: 1 | 2 | 3) => void;
@@ -38,10 +45,10 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
   const platform = PRODUCTS[1];
 
   return (
-    <section id="products" className="py-20 bg-slate-50/50 border-t border-slate-200/80">
+    <section id="products" className="py-14 sm:py-18 bg-slate-50/50 border-t border-slate-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+        <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
           <span className="text-xs font-extrabold tracking-widest uppercase text-plum-900 bg-peach-300 px-3.5 py-1.5 rounded-full border border-peach-400/60">
             Core Products
           </span>
@@ -55,7 +62,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
 
         {/* Two Equal Width Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
+          
           {/* Card 1: AI Shopping Assistant */}
           <div
             onClick={() => onLearnMoreAssistant(1)}

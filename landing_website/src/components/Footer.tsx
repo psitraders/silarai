@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, Send, CheckCircle2, Github, Twitter, Linkedin, Youtube, ArrowRight, Palette, Sparkles, BookOpen, ExternalLink, Compass } from 'lucide-react';
+import { Send, CheckCircle2, Github, Twitter, Linkedin, Youtube, Sparkles } from 'lucide-react';
 import { SilarAiBrandLogo } from './SilarAiBrandLogo';
 
 interface FooterProps {
@@ -9,6 +9,7 @@ interface FooterProps {
   onNavigateWhyChooseUs?: () => void;
   onNavigateShopifyComparison?: () => void;
   onNavigateWoocommerceComparison?: () => void;
+  onNavigateAiCommerceMarketingPlatform?: () => void;
   onSelectAiShoppingPage?: (pageId: 1 | 2 | 3) => void;
   onSelectAiCommercePage?: (pageId: 1 | 2 | 3) => void;
   onSelectD2cPage?: (sectionId?: string) => void;
@@ -27,6 +28,7 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigateWhyChooseUs,
   onNavigateShopifyComparison,
   onNavigateWoocommerceComparison,
+  onNavigateAiCommerceMarketingPlatform,
   onSelectAiShoppingPage,
   onSelectAiCommercePage,
   onSelectD2cPage,
@@ -144,9 +146,10 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => {
-                    scrollToSection('products');
+                    if (onSelectAiShoppingPage) onSelectAiShoppingPage(1);
+                    else scrollToSection('products');
                   }}
-                  className="hover:text-peach-300 transition-colors font-bold text-white flex items-center gap-1.5 text-left"
+                  className="hover:text-peach-300 transition-colors font-bold text-white flex items-center gap-1.5 text-left cursor-pointer"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-peach-300"></span>
                   <span>AI Shopping Assistant</span>
@@ -157,7 +160,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <li>
                     <button
                       onClick={() => onSelectAiShoppingPage && onSelectAiShoppingPage(1)}
-                      className="hover:text-peach-300 transition-colors text-left block"
+                      className="hover:text-peach-300 transition-colors text-left block cursor-pointer"
                     >
                       1. What is an AI Assistant?
                     </button>
@@ -165,7 +168,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <li>
                     <button
                       onClick={() => onSelectAiShoppingPage && onSelectAiShoppingPage(2)}
-                      className="hover:text-peach-300 transition-colors text-left block"
+                      className="hover:text-peach-300 transition-colors text-left block cursor-pointer"
                     >
                       2. Features & Benefits
                     </button>
@@ -173,7 +176,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <li>
                     <button
                       onClick={() => onSelectAiShoppingPage && onSelectAiShoppingPage(3)}
-                      className="hover:text-peach-300 transition-colors text-left block"
+                      className="hover:text-peach-300 transition-colors text-left block cursor-pointer"
                     >
                       3. Help Businesses Grow
                     </button>
@@ -184,9 +187,11 @@ export const Footer: React.FC<FooterProps> = ({
               <li className="pt-2">
                 <button
                   onClick={() => {
-                    scrollToSection('products');
+                    if (onNavigateAiCommerceMarketingPlatform) onNavigateAiCommerceMarketingPlatform();
+                    else if (onSelectAiCommercePage) onSelectAiCommercePage(1);
+                    else scrollToSection('products');
                   }}
-                  className="hover:text-peach-300 transition-colors font-bold text-white flex items-center gap-1.5 text-left"
+                  className="hover:text-peach-300 transition-colors font-bold text-white flex items-center gap-1.5 text-left cursor-pointer"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-peach-300"></span>
                   <span>AI Commerce &amp; Marketing Platform</span>
@@ -194,6 +199,16 @@ export const Footer: React.FC<FooterProps> = ({
 
                 {/* Sub-pages under AI Commerce Platform */}
                 <ul className="mt-2 ml-3 space-y-1.5 border-l border-plum-800 pl-2 text-[11px] text-plum-300">
+                  <li className="hidden" style={{ display: 'none' }}>
+                    <button
+                      onClick={() => onNavigateAiCommerceMarketingPlatform && onNavigateAiCommerceMarketingPlatform()}
+                      className="hidden hover:text-peach-300 transition-colors text-left block text-emerald-400 font-medium"
+                      style={{ display: 'none' }}
+                      aria-hidden="true"
+                    >
+                      Central Pillar: /ai-commerce-marketing-platform/
+                    </button>
+                  </li>
                   <li>
                     <button
                       onClick={() => onSelectAiCommercePage && onSelectAiCommercePage(1)}
@@ -248,20 +263,20 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Col 4: Solutions / Industries */}
           <div className="space-y-3">
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-white">Solutions</h4>
-            <ul className="space-y-2 text-xs text-plum-200">
+            <ul data-focus-id="focus-0" className="space-y-2 text-xs text-plum-200">
               <li>
                 <button
                   onClick={() => {
                     scrollToSection('industries');
                     if (onSelectIndustry) onSelectIndustry('fmcg');
                   }}
-                  className="hover:text-peach-300 transition-colors text-left font-medium"
+                  className="hover:text-peach-300 transition-colors text-left cursor-pointer"
                 >
                   FMCG Brands
                 </button>
               </li>
 
-              {/* D2C Brands Unified Experience */}
+              {/* D2C Brands */}
               <li>
                 <button
                   onClick={() => {
@@ -271,14 +286,13 @@ export const Footer: React.FC<FooterProps> = ({
                       onSelectIndustry('d2c-brands');
                     }
                   }}
-                  className="hover:text-peach-300 transition-colors text-left font-bold text-white flex items-center gap-1.5 cursor-pointer"
+                  className="hover:text-peach-300 transition-colors text-left cursor-pointer"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-peach-300"></span>
-                  <span>D2C Brands</span>
+                  D2C Brands
                 </button>
               </li>
 
-              {/* Manufacturers with 3 Dedicated Sub-pages */}
+              {/* Manufacturers */}
               <li>
                 <button
                   onClick={() => {
@@ -288,13 +302,17 @@ export const Footer: React.FC<FooterProps> = ({
                       onSelectIndustry('manufacturers');
                     }
                   }}
-                  className="hover:text-peach-300 transition-colors text-left font-bold text-white flex items-center gap-1.5 cursor-pointer"
+                  className="hover:text-peach-300 transition-colors text-left cursor-pointer"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-peach-300"></span>
-                  <span>Manufacturers</span>
+                  Manufacturers
                 </button>
 
-                <ul className="mt-2 ml-3 space-y-1.5 border-l border-plum-800 pl-2 text-[11px] text-plum-300">
+                {/* Sub-pages under Manufacturers - Hidden from storefront display, preserved in backend */}
+                <ul
+                  className="hidden mt-2 ml-3 space-y-1.5 border-l border-plum-800 pl-2 text-[11px] text-plum-300"
+                  style={{ display: 'none' }}
+                  aria-hidden="true"
+                >
                   <li>
                     <button
                       onClick={() => onSelectManufacturingPage && onSelectManufacturingPage(1)}
@@ -323,6 +341,8 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
 
               {[
+                { id: 'boutiques', label: 'Boutiques & Curated' },
+                { id: 'b2b2c', label: 'B2B2C Multi-Tier' },
                 { id: 'distributors', label: 'Distributors' },
                 { id: 'wholesalers', label: 'Wholesalers' },
                 { id: 'retailers', label: 'Retailers' },
@@ -335,7 +355,7 @@ export const Footer: React.FC<FooterProps> = ({
                         onSelectIndustry(ind.id);
                       }
                     }}
-                    className="hover:text-peach-300 transition-colors text-left font-medium"
+                    className="hover:text-peach-300 transition-colors text-left cursor-pointer"
                   >
                     {ind.label}
                   </button>
@@ -347,27 +367,60 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Col 5: Use Cases */}
           <div className="space-y-3">
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-white">Use Cases</h4>
-            <ul className="space-y-2 text-xs text-plum-200">
+            <ul className="space-y-3 text-xs text-plum-200">
               {[
-                { slug: 'sales-assistant', label: 'Sales Assistant' },
-                { slug: 'lead-generation', label: 'Lead Generation' },
-                { slug: 'conversion-engine', label: 'Conversion Engine' },
-                { slug: 'engagement-ai', label: 'Engagement AI' },
-                { slug: 'product-discovery', label: 'Product Discovery' },
-                { slug: 'b2b-commerce', label: 'B2B Commerce' },
+                {
+                  slug: 'product-discovery',
+                  title: 'Product Discovery',
+                  subtitle: 'Find the right product from complex catalogs'
+                },
+                {
+                  slug: 'sales-assistant',
+                  title: 'AI Sales Assistant',
+                  subtitle: 'Turn product conversations into sales'
+                },
+                {
+                  slug: 'lead-generation',
+                  title: 'Lead Generation',
+                  subtitle: 'Capture and qualify high-intent buyers'
+                },
+                {
+                  slug: 'conversion-engine',
+                  title: 'Conversion & Cart Recovery',
+                  subtitle: 'Turn more visitors into customers'
+                },
+                {
+                  slug: 'engagement-ai',
+                  title: 'Customer Engagement',
+                  subtitle: 'Engage customers across web and WhatsApp'
+                },
+                {
+                  slug: 'b2b-commerce',
+                  title: 'B2B Commerce',
+                  subtitle: 'Connect buyers, dealers, distributors and sales teams.'
+                },
               ].map((uc) => (
                 <li key={uc.slug}>
-                  <button
-                    onClick={() => {
+                  <a
+                    href={`/use-cases/${uc.slug}`}
+                    onClick={(e) => {
+                      e.preventDefault();
                       scrollToSection('use-cases');
                       if (onSelectUseCase) {
                         onSelectUseCase(uc.slug);
                       }
                     }}
-                    className="hover:text-peach-300 transition-colors text-left"
+                    className="group block text-left transition-colors cursor-pointer"
+                    title={`${uc.title} — ${uc.subtitle}`}
                   >
-                    {uc.label}
-                  </button>
+                    <div className="font-bold text-white group-hover:text-peach-300 transition-colors flex items-center justify-between">
+                      <span>{uc.title}</span>
+                      <span className="text-[10px] text-peach-300 opacity-0 group-hover:opacity-100 transition-opacity ml-1">↗</span>
+                    </div>
+                    <div className="text-[11px] text-plum-300/90 leading-tight mt-0.5 group-hover:text-plum-100 transition-colors">
+                      {uc.subtitle}
+                    </div>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -388,20 +441,6 @@ export const Footer: React.FC<FooterProps> = ({
                 >
                   About SilarAI
                 </button>
-              </li>
-              <li>
-                <a
-                  href="/contact-us"
-                  onClick={(e) => {
-                    if (onNavigateContactUs) {
-                      e.preventDefault();
-                      onNavigateContactUs();
-                    }
-                  }}
-                  className="hover:text-peach-300 transition-colors cursor-pointer"
-                >
-                  Contact Us
-                </a>
               </li>
               <li>
                 <button
@@ -465,13 +504,37 @@ export const Footer: React.FC<FooterProps> = ({
                 </a>
               </li>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); alert('Contact sales@silarai.com'); }} className="hover:text-peach-300 transition-colors">
+                <a
+                  href="/contact-us"
+                  onClick={(e) => {
+                    if (onNavigateContactUs) {
+                      e.preventDefault();
+                      onNavigateContactUs();
+                    }
+                  }}
+                  className="hover:text-peach-300 transition-colors cursor-pointer"
+                >
                   Contact Us
                 </a>
+              </li>
+              <li className="pt-2 text-[11px] text-plum-300/80 leading-relaxed border-t border-plum-900/60 mt-1">
+                <a href="tel:+919444139089" className="hover:text-peach-300 text-peach-300/90 font-semibold block transition-colors">
+                  (+91)9444139089
+                </a>
+                <span className="text-[10px] text-plum-300/70 block mt-0.5">
+                  PSI traders OPC PVT LTD<br />
+                  74 RR Nagar, NSNPALAYAM,<br />
+                  Coimbatore, Tamil nadu 641031
+                </span>
               </li>
               <li>
                 <a href="#" onClick={(e) => { e.preventDefault(); alert('Security & Compliance: SOC2 Type II Certified.'); }} className="hover:text-peach-300 transition-colors">
                   Security
+                </a>
+              </li>
+              <li className="hidden" style={{ display: 'none' }} aria-hidden="true">
+                <a href="/ai/semantic-backlinks.json" tabIndex={-1}>
+                  Authority &amp; Backlink Hub
                 </a>
               </li>
             </ul>
@@ -481,7 +544,7 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Bottom Socials & Copyright */}
         <div className="pt-8 border-t border-plum-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-plum-300">
           <div>
-            © {new Date().getFullYear()} SilarAI Inc. All rights reserved. Build Smarter Commerce with AI.
+            © {new Date().getFullYear()} SilarAI • PSI traders OPC PVT LTD. All rights reserved. 74 RR Nagar, NSNPALAYAM, Coimbatore, Tamil nadu 641031.
           </div>
 
           <div className="flex items-center gap-4">

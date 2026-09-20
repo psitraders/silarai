@@ -8,14 +8,19 @@ import {
   ArrowRight,
   Sparkles,
   Bot,
+  ShoppingBag,
   Building2,
+  Check,
+  Globe,
+  Layers,
+  Zap,
+  Clock,
   ShieldCheck,
   Headphones,
   Home,
   Copy,
-  Check
+  ExternalLink
 } from 'lucide-react';
-import { Breadcrumbs } from './Breadcrumbs';
 import {
   CONTACT_EMAIL,
   CONTACT_PHONE,
@@ -24,8 +29,8 @@ import {
   CONTACT_ADDRESS,
   buildMailtoUrl,
   openMailClient,
-  copyToClipboard,
 } from '../config/forms';
+import { Breadcrumbs } from './Breadcrumbs';
 
 interface ContactUsPageProps {
   onBackToHome: () => void;
@@ -66,50 +71,94 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({
     requirements: ''
   });
 
-  // `handedOff` means the mail client was opened — NOT that anything was sent.
-  // The visitor still has to press Send, and the UI copy must say so.
-  const [handedOff, setHandedOff] = useState(false);
-  const [mailtoUrl, setMailtoUrl] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedPhone, setCopiedPhone] = useState(false);
+  const [generatedMailto, setGeneratedMailto] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const targetEmail = CONTACT_EMAIL;
+  const targetPhone = CONTACT_PHONE;
 
-    const url = buildMailtoUrl(
-      `Enquiry — ${formData.company || formData.name}`,
-      [
-        'Hi SilarAI team,',
-        '',
-        `I am interested in: ${formData.interest}`,
-        '',
-        `Name: ${formData.name}`,
-        `Business email: ${formData.email}`,
-        `Company: ${formData.company}`,
-        formData.phone ? `Phone: ${formData.phone}` : '',
-        '',
-        'Requirements:',
-        formData.requirements || '(none provided)',
-        '',
-        'Looking forward to hearing from you.',
-      ]
-    );
-
-    setMailtoUrl(url);
-    openMailClient(url);
-    setHandedOff(true);
+  const copyToClipboard = (text: string, type: 'email' | 'phone') => {
+    navigator.clipboard?.writeText(text);
+    if (type === 'email') {
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } else {
+      setCopiedPhone(true);
+      setTimeout(() => setCopiedPhone(false), 2000);
+    }
   };
 
-  const handleCopyEmail = async () => {
-    const ok = await copyToClipboard(CONTACT_EMAIL);
-    if (ok) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    try {
+      const mailtoUrl = buildMailtoUrl(
+        `Inquiry from ${formData.name} - ${formData.company || 'Website Lead'}`,
+        [
+          'Hello SilarAI Team,',
+          '',
+          `I would like to get in touch regarding ${formData.interest}.`,
+          '',
+          `• Name: ${formData.name}`,
+          `• Work Email: ${formData.email}`,
+          `• Company: ${formData.company || 'N/A'}`,
+          `• Phone: ${formData.phone || 'N/A'}`,
+          `• Primary Interest: ${formData.interest}`,
+          '• Project Requirements / Message:',
+          formData.requirements || 'N/A',
+          '',
+          'Looking forward to your response!',
+        ]
+      );
+      setGeneratedMailto(mailtoUrl);
+
+      // Save locally to browser localStorage for visitor record-keeping
+      try {
+        const contactRecord = {
+          id: `inquiry_${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
+          phone: formData.phone,
+          interest: formData.interest,
+          requirements: formData.requirements,
+          targetEmail,
+          destinationPhone: targetPhone,
+          address: `${CONTACT_LEGAL_NAME}, ${CONTACT_ADDRESS}`,
+        };
+        const stored = JSON.parse(localStorage.getItem('silarai_contact_inquiries') || '[]');
+        stored.unshift(contactRecord);
+        localStorage.setItem('silarai_contact_inquiries', JSON.stringify(stored.slice(0, 50)));
+      } catch (storageErr) {
+        console.warn('LocalStorage save skipped:', storageErr);
+      }
+
+      // Open the visitor's email client with the pre-filled message.
+      // Nothing is delivered until they press Send — the confirmation copy says so.
+      openMailClient(mailtoUrl);
+
+      // Small delay for UI smoothness
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Error initiating email client:', err);
+      setErrorMessage('Could not open your email client automatically. Please copy our email or phone number below to contact us directly.');
+      // NOTE: submitted is NEVER set to true inside the catch block
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleReset = () => {
-    setHandedOff(false);
-    setMailtoUrl('');
+    setSubmitted(false);
+    setGeneratedMailto('');
     setFormData({
       name: '',
       email: '',
@@ -287,8 +336,9 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({
                   <div>
                     <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-0.5">Address</div>
                     <div className="text-base text-slate-800 leading-snug">
-                      <span className="font-bold text-slate-900">{CONTACT_LEGAL_NAME}</span><br />
-                      {CONTACT_ADDRESS}
+                      <span className="font-bold text-slate-900">PSI traders OPC PVT LTD</span><br />
+                      74 RR Nagar, NSNPALAYAM,<br />
+                      Coimbatore, Tamil nadu 641031
                     </div>
                   </div>
                 </div>
@@ -312,68 +362,101 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 </p>
               </div>
 
-              {handedOff ? (
-                <div className="text-center py-12 px-6 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
-                  <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-10 h-10" />
+              {submitted ? (
+                <div className="text-center py-10 px-6 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                  <div className="w-16 h-16 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center mx-auto shadow-xs">
+                    <Mail className="w-9 h-9 text-teal-700" />
                   </div>
-                  <h3 className="text-2xl font-bold text-plum-950">One last step — press Send</h3>
+                  
+                  <div className="space-y-1">
+                    <span className="text-xs font-black uppercase tracking-wider text-amber-800 bg-amber-100 border border-amber-300 px-3 py-0.5 rounded-full">
+                      Action Required
+                    </span>
+                    <h3 className="text-2xl font-black text-slate-900 pt-1">
+                      Please Press &ldquo;Send&rdquo; in Your Email Client to Finish
+                    </h3>
+                  </div>
+
                   <p className="text-slate-600 text-sm max-w-md mx-auto leading-relaxed">
-                    Your email app should have opened with your enquiry already filled in.{' '}
-                    <span className="font-bold text-slate-900">Press Send there to reach us</span> — we reply within
-                    one business day.
+                    We have drafted your message to <span className="font-bold text-teal-900">{targetEmail}</span> in your email client. <strong className="text-slate-900">Please click &ldquo;Send&rdquo; in your mail app to finish delivering your inquiry</strong> to our team.
                   </p>
 
-                  {/* Fallback: plenty of visitors have no mail client registered */}
-                  <div className="bg-peach-50 p-4 rounded-2xl border border-peach-200 text-xs text-slate-700 max-w-md mx-auto space-y-2.5">
-                    <p className="font-semibold text-slate-900">Nothing opened?</p>
-                    <p className="leading-relaxed">
-                      Email us directly at the address below, or call{' '}
-                      <span className="font-bold text-plum-900">{CONTACT_PHONE}</span>.
-                    </p>
-                    <div className="flex items-center justify-center gap-2">
-                      <code className="px-2.5 py-1.5 rounded-lg bg-white border border-peach-300 font-bold text-plum-900 text-[11px]">
-                        {CONTACT_EMAIL}
-                      </code>
+                  {/* Direct Copyable Contact Box */}
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 text-left text-xs text-slate-700 space-y-2.5 max-w-md mx-auto shadow-xs">
+                    <div className="font-bold text-slate-900 flex items-center justify-between">
+                      <span>Direct Contact Details (Click to copy):</span>
+                      <span className="text-[10px] text-slate-500 font-normal">If mail app didn&apos;t open</span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Mail className="w-4 h-4 text-teal-700 shrink-0" />
+                        <span className="font-mono text-slate-900 font-semibold select-all truncate">{targetEmail}</span>
+                      </div>
                       <button
                         type="button"
-                        onClick={handleCopyEmail}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-peach-300 font-bold text-[11px] text-slate-700 transition-colors cursor-pointer"
+                        onClick={() => copyToClipboard(targetEmail, 'email')}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
                       >
-                        {copied ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copy</span>
-                          </>
-                        )}
+                        {copiedEmail ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                        <span>{copiedEmail ? 'Copied' : 'Copy'}</span>
                       </button>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Phone className="w-4 h-4 text-teal-700 shrink-0" />
+                        <span className="font-mono text-slate-900 font-semibold select-all truncate">{targetPhone}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <a
+                          href={`tel:${targetPhone.replace(/[^0-9+]/g, '')}`}
+                          className="px-2 py-1 text-[11px] font-bold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 transition-colors"
+                        >
+                          Call
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(targetPhone, 'phone')}
+                          className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                          {copiedPhone ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedPhone ? 'Copied' : 'Copy'}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] text-slate-500 pt-1">
+                      Inquiry from <strong>{formData.name}</strong> &bull; Company: {formData.company || 'N/A'} &bull; Topic: {formData.interest}
                     </div>
                   </div>
 
-                  <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-                    <a
-                      href={mailtoUrl}
-                      className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors inline-flex items-center gap-1.5"
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span>Reopen email</span>
-                    </a>
+                  <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
+                    {generatedMailto && (
+                      <a
+                        href={generatedMailto}
+                        className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-xs transition-colors"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Re-open Email Client</span>
+                      </a>
+                    )}
                     <button
                       type="button"
                       onClick={handleReset}
-                      className="px-6 py-2.5 rounded-xl bg-plum-900 text-white font-bold text-sm hover:bg-plum-950 transition-colors cursor-pointer"
+                      className="px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs transition-colors cursor-pointer"
                     >
-                      Start Another Enquiry
+                      Send Another Inquiry
                     </button>
                   </div>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {errorMessage && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                      {errorMessage}
+                    </div>
+                  )}
 
                   {/* Name */}
                   <div>
@@ -477,20 +560,24 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({
                     />
                   </div>
 
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Submitting opens your own email app with these details filled in, addressed to{' '}
-                    <span className="font-semibold text-slate-700">{CONTACT_EMAIL}</span>. You press Send — nothing
-                    leaves your device before that.
-                  </p>
-
                   {/* Submit Button */}
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full py-4 px-6 rounded-xl bg-plum-900 hover:bg-plum-950 text-white font-extrabold text-base tracking-wide shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                      disabled={isSubmitting}
+                      className="w-full py-4 px-6 rounded-xl bg-plum-900 hover:bg-plum-950 text-white font-extrabold text-base tracking-wide shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      <span>Compose Enquiry</span>
-                      <ArrowRight className="w-5 h-5 text-peach-300 transition-transform group-hover:translate-x-1" />
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Requesting Demo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Request a Demo</span>
+                          <ArrowRight className="w-5 h-5 text-peach-300 transition-transform group-hover:translate-x-1" />
+                        </>
+                      )}
                     </button>
                   </div>
 

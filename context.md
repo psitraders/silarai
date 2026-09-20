@@ -49,10 +49,15 @@ A multi-tenant SaaS platform for boutique/small-business sellers (clothing, jewe
 │   │   ├── manifest.json, staticwebapp.config.json (Azure SWA config, also copied to dist/)
 │   └── api/manifest/[slug].js        Vercel serverless function — proxies per-tenant manifest.json
 ├── cloudflare-worker/storefront-proxy.js   edge proxy: bot/crawler OG-tag rendering, custom-domain routing, no-cache pass-through to Azure SWA
+├── landing_website/                  PUBLIC MARKETING SITE (silarai.com) — a SEPARATE static React 19 + Vite 6 app with its own build, deploy, context.md and changes.md. Not part of the dashboard SPA. See §5.9.
+├── imported_landing_website/         Google AI Studio export kept only as a merge reference for landing_website. GITIGNORED — never built, never deployed.
 ├── demo/                             demo data generation (jewellery-products.csv, generate.py, demo-store.html, RAG knowledge-base sample docs, chatbot demo SQL)
 ├── DM2OrderMigrationScript.sql        one-off raw DB/data migration script (order-system migration, not part of runtime)
 ├── Meta-Integration-Guide.html        standalone static doc: Meta (WhatsApp/IG/FB) integration guide
 ├── Teams-Sitefinity-SSO-Guide.html    standalone static doc, UNRELATED to this product's domain (Sitefinity/Teams SSO) — appears to be a stray file, not part of ReplyCart/Silarai functionality
+├── .github/workflows/                CI: azure-static-web-apps-lemon-sea-*.yml (frontend → app.silarai.com), azure-static-web-apps-black-mushroom-*.yml (landing_website → silarai.com), deploy-backend.yml (backend → Azure App Service)
+├── docs/                             design notes (currently only plan-chatbot-redis-session-memory.md)
+├── backend-fast-api/, _to_delete/    gitignored / untracked scratch — not part of any build
 └── global.json                       pins .NET SDK to 8.0.400
 ```
 
@@ -75,12 +80,13 @@ A multi-tenant SaaS platform for boutique/small-business sellers (clothing, jewe
 | Charts | Recharts v3 |
 | i18n | i18next / react-i18next, 12 locales |
 | Backend host | Azure App Service (`silarai`, South India region) |
-| Frontend host | Dual: Azure Static Web Apps **and** Vercel (both configs present). Canonical app domain is `https://app.silarai.com` — `www.silarai.com` is a separate WordPress marketing site and serves none of the SPA's files, so `VITE_APP_URL` (used to build the chatbot embed snippet) must point at `app.silarai.com`. |
+| Frontend host | Dual: Azure Static Web Apps **and** Vercel (both configs present). Canonical app domain is `https://app.silarai.com`. The apex `silarai.com` is the separate `landing_website/` marketing site (§5.9) and serves none of the SPA's files, so `VITE_APP_URL` (used to build the chatbot embed snippet) must point at `app.silarai.com`. `www.silarai.com` does not resolve (NXDOMAIN) — the WordPress marketing site that used to live there was retired 2026-09-04. |
 | File storage | Cloudinary (current), Local disk (`wwwroot/uploads/`) as fallback provider |
 | AI provider | OpenAI (`gpt-4o-mini`, current default) or Mock provider, swappable via config |
 | Cache / session store | Azure Managed Redis (StackExchange.Redis) — chatbot-client session memory, cart and catalogue cache only (§4.8). Optional: `Redis:Enabled=false` falls back to in-process + SQL. Everything else still uses `IMemoryCache`. |
 | Payments | Razorpay (primary, India), Stripe, PayPal — all per-tenant credentials stored on the `Business` entity |
-| Edge/CDN | Cloudflare Worker in front of custom domains + canonical domain (bot rendering, custom-domain routing) |
+| Edge/CDN | Cloudflare Worker in front of custom domains + canonical domain (bot rendering, custom-domain routing). DNS for `silarai.com` runs on Cloudflare. |
+| Marketing site | `landing_website/` — React 19 + Vite 6 + Tailwind v4, fully static, no backend, deployed to its own Azure Static Web App at `silarai.com` (§5.9) |
 
 ## 4. Backend architecture
 
@@ -170,6 +176,8 @@ EF Core discovers migrations across both folders/namespaces fine as long as each
 **Resolved 2026-08-17 — `AppDbContextModelSnapshot.cs` regenerated.** It had drifted because every migration from `20260529000001_AddChatbotClients` onwards was hand-written idempotent SQL rather than scaffolded. Regenerated via `dotnet ef migrations add SyncModelSnapshot`; the scaffolder's diff re-created 8 tables (`ChatbotClients`, `ChatbotProducts`, `ChatbotDocuments`, `ChatbotOrders`, `ChatbotTokenUsages`, `ChatbotSessions`, `ChatbotSessionMessages`, `StorefrontPages`) and 4 columns (`StorefrontSettings.B2BEnabled`/`SubCategoriesEnabled`, `Categories.IsFeatured`/`ParentCategoryId`) that the hand-written migrations already create, so `20260817174237_SyncModelSnapshot.Up()` was trimmed to the only two objects present in the model but in no migration — `IX_ChatbotProducts_ClientId` and `FK_Categories_Categories_ParentCategoryId` — written as guarded raw SQL. Its `.Designer.cs` and the regenerated snapshot are the scaffolder's output, unmodified. **From here on `dotnet ef migrations add` produces a correct diff and should be the normal way to add migrations again**; only fall back to hand-written raw SQL when a change genuinely can't be expressed through the model.
 
 **Production caveat**: if this schema was ever deployed to the production Azure SQL instance (§3), verify its `__EFMigrationsHistory` table before applying these changes there — specifically check whether `20260521115712_AddFaviconAndLoaderToStorefrontSettings` is already marked applied, since its trimmed content differs from what may have originally run.
+
+**Baselining scripts (untracked, working tree only):** `backend/baseline_01_verify_schema.sql` verifies that every object created by migrations up to `20260709000000` exists and must return **zero rows**; `backend/baseline_02_write_history.sql` then writes the 31 guarded `__EFMigrationsHistory` inserts. These are the scripts used for the 2026-08-17 production baselining (`changes.md` calls them throwaway). They are deliberately not committed — treat them as the reference procedure if the history table ever needs baselining again.
 
 `dotnet ef` commands (e.g. `dotnet ef database update`) don't go through `Program.cs`/DI — they use `Infrastructure/Persistence/AppDbContextFactory.cs` (`IDesignTimeDbContextFactory<AppDbContext>`), which has its own hardcoded connection string (defaults to the Dockerized SQL Server on `localhost,1433`, matching `appsettings.json`; override via `ConnectionStrings__DefaultConnection` env var). Run them from `backend/` as `dotnet ef database update --project src/ReplyCart.Infrastructure --startup-project src/ReplyCart.Api` — `backend/` itself holds only the solution. If this factory's connection string ever drifts from the real DB target, `dotnet ef` commands fail even though the app itself connects fine.
 
@@ -337,6 +345,19 @@ The cart is a **read-only mirror of the server cart** (§4.8): every mutation ro
 
 Sits in front of both the canonical domain and merchant custom domains. Three responsibilities: (1) serves per-tenant `sitemap.xml`/`robots.txt`/`manifest.json`/`favicon.svg` directly from the backend, bypassing the SPA; (2) detects social/search crawlers and returns a minimal server-rendered HTML page with Open Graph/Twitter Card tags (since the React SPA can't be crawled for link previews); (3) passes everything else through to the Azure Static Web App origin with edge caching explicitly disabled, so custom-domain visitors never get a stale JS bundle.
 
+### 5.9 Marketing website (`landing_website/`) — a separate application
+
+`silarai.com` is **not** served by `frontend/`. It is a standalone, fully static React 19 + Vite 6 + Tailwind v4 site in `landing_website/` with no backend of its own, deployed to its own Azure Static Web App by `.github/workflows/azure-static-web-apps-black-mushroom-050c17800.yml` (`app_location: ./landing_website`, `output_location: dist`, built by Oryx in CI; `SITE_URL` is injected there because Vite inlines `VITE_*`/build-time values inside the action).
+
+**It has its own authoritative `landing_website/context.md` and `landing_website/changes.md`. Read those before touching anything under `landing_website/`** — this section is only the pointer. Worth knowing from here:
+
+- Hand-rolled client routing (no router library); heavy SEO/GEO/AEO layer with build-time generation of `sitemap.xml`, `robots.txt`, `llms.txt`, `ai-manifest.json`, `.well-known/*` and `/ai/*.json` via `scripts/generate-static-discovery.mts`.
+- Enquiry forms are a **`mailto:` handoff** to the visitor's own mail client — no form service, no backend, and therefore no server-side record of leads.
+- Brand palette rebranded 2026-09-16 to Dark Teal `#245668` / Teal Green `#0D8F81` / Persimmon `#F47A38`; the legacy `plum-*`/`peach-*`/`coral-*` token names were kept and remapped onto the new ramps.
+- `imported_landing_website/` is a Google AI Studio export kept **only** as a merge reference. It is gitignored, still carries the retired Express/Vercel setup (`server.ts`, `api/`, `vercel.json`, express/nodemailer/@google/genai), and must never be built or deployed — see `landing_website/context.md` §4.0.
+
+**Do not conflate this with the dashboard's own in-app landing page** (`frontend/src/pages/landing/`, served at `app.silarai.com/` by `SmartRoot`, content editable by SuperAdmin via `LandingPageConfig`). They are different apps with different content stores.
+
 ## 6. Business logic highlights worth knowing before changing things
 
 - **Multi-tenancy is enforced by three cooperating mechanisms** (DB query filter + request middleware + plan filter) — changing tenant-scoping logic requires touching all three consistently; see §4.2.
@@ -354,7 +375,7 @@ Sits in front of both the canonical domain and merchant custom domains. Three re
 - README claims .NET 10/EF Core 9; actual code is net8.0/EF Core 8.0.0 everywhere including CI.
 - FluentValidation and Hangfire are referenced dependencies with no actual usage — don't build on the assumption either is wired up.
 - Two migration folders/namespaces coexist (`Infrastructure/Migrations/` and `Infrastructure/Persistence/Migrations/`) — a prior attempt to delete the older one and squash history was reverted; both are live history. See §4.6 for details and for the list of migrations that are deliberately left without `[Migration]` attributes (superseded duplicates, not bugs).
-- `appsettings.json` has real secrets committed — be careful not to further leak or duplicate this pattern in new config.
+- `appsettings.json` no longer contains secrets — they were blanked 2026-08-01 (§4.5.1). But they remain in **git history** on `main` and several feature branches, so the leak is not undone; rotation at the provider was the actual mitigation. Don't reintroduce the pattern in new config.
 - CORS `AllowFrontend` permits any `https://` origin with credentials — intentional (custom domains) but worth knowing before touching CORS.
 - `Teams-Sitefinity-SSO-Guide.html` at repo root is unrelated to this product's domain — likely a stray file, not a real feature doc.
 
@@ -364,4 +385,5 @@ Sits in front of both the canonical domain and merchant custom domains. Three re
 - Full entity list: `backend/src/ReplyCart.Domain/*/**.cs`.
 - Full migration history: `backend/src/ReplyCart.Infrastructure/Persistence/Migrations/`.
 - Config keys: `backend/src/ReplyCart.Api/appsettings.json`.
+- The marketing website at `silarai.com`: `landing_website/context.md` and `landing_website/changes.md` — authoritative for that app; this file only points at it (§5.9).
 - Chronological history of changes made to this codebase since context.md was introduced: `changes.md` (repo root).

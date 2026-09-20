@@ -133,33 +133,13 @@ export const AiCommercePlatformPages: React.FC<AiCommercePlatformPagesProps> = (
         siblingsLabel="Platform Module"
         badgeText="Unified Commerce Engine"
       />
-
+      
       {/* Hero / Header Section */}
       <div className="bg-plum-950 text-white relative overflow-hidden border-b border-plum-800 py-12 sm:py-16">
         <div className="absolute top-0 right-0 w-96 h-96 bg-plum-800/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          {/* Breadcrumbs & Back Button */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <button
-              onClick={onBackToHome}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-teal-300 text-xs font-bold transition-all border border-white/10 hover:border-white/20 cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Main Site</span>
-            </button>
-
-            <div className="flex items-center gap-2 text-xs text-plum-300 font-medium">
-              <span>Platform Overview</span>
-              <ChevronRight className="w-3.5 h-3.5 text-plum-500" />
-              <span className="text-peach-300 font-bold">AI Commerce &amp; Marketing</span>
-              <ChevronRight className="w-3.5 h-3.5 text-plum-500" />
-              <span className="text-white font-bold">Page {activePage} of 3</span>
-            </div>
-          </div>
-
           {/* Title Area */}
           <div className="max-w-3xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-peach-300/20 text-peach-300 font-extrabold text-xs tracking-wider uppercase border border-peach-300/30">

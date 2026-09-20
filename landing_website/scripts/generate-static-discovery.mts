@@ -19,6 +19,7 @@ import {
   SITE_ARCHITECTURE,
 } from '../src/data/siteArchitecture';
 import { D2C_KNOWLEDGE_GRAPH, D2C_KNOWLEDGE_GRAPH_ASCII } from '../src/server/knowledgeGraph';
+import { SECTORS } from '../src/data/sectors';
 import {
   AUTHORITATIVE_BACKLINKS,
   RAG_KNOWLEDGE_CHUNKS,
@@ -74,6 +75,14 @@ const sitemapUrls: { loc: string; priority: string; changefreq: string }[] = [
   { loc: `${BASE_URL}/industries/manufacturing/ai-shopping-sales-assistant`, priority: '0.85', changefreq: 'weekly' },
   { loc: `${BASE_URL}/industries/manufacturing/dealer-distributor-commerce`, priority: '0.85', changefreq: 'weekly' },
   { loc: `${BASE_URL}/fmcg-commerce`, priority: '0.85', changefreq: 'weekly' },
+  { loc: `${BASE_URL}/ai-commerce-marketing-platform`, priority: '0.90', changefreq: 'weekly' },
+  { loc: `${BASE_URL}/contact-us`, priority: '0.70', changefreq: 'monthly' },
+  // Sector landing pages — one per SECTORS entry, so adding a sector adds its URL here.
+  ...Object.values(SECTORS).map((sector) => ({
+    loc: `${BASE_URL}/sector/${sector.slug}`,
+    priority: '0.85',
+    changefreq: 'weekly',
+  })),
   // Use case detail routes
   ...['sales-assistant', 'lead-generation', 'conversion-engine', 'engagement-ai', 'product-discovery', 'b2b-commerce'].map(
     (slug) => ({ loc: `${BASE_URL}/use-cases/${slug}`, priority: '0.80', changefreq: 'weekly' })

@@ -4,22 +4,22 @@ import { TrendingUp, Users, Zap, Award } from 'lucide-react';
 
 export const CustomerMetrics: React.FC = () => {
   return (
-    <section className="py-16 md:py-20 bg-plum-950 text-white relative overflow-hidden">
+    <section className="py-10 md:py-12 bg-plum-950 text-white relative overflow-hidden border-t border-plum-900">
       {/* Background Subtle Accent Pattern */}
       <div className="absolute inset-0 opacity-10 bg-grid-pattern pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-          <span className="text-xs font-extrabold uppercase tracking-widest bg-peach-300 text-plum-950 px-3.5 py-1.5 rounded-full border border-peach-400">
+        <div className="text-center max-w-2xl mx-auto mb-8 space-y-1.5">
+          <span className="text-xs font-extrabold uppercase tracking-widest bg-peach-300 text-plum-950 px-3.5 py-1 rounded-full border border-peach-400">
             Proven Industry Outcomes
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-2">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-1">
             Impact That Speaks For Itself
           </h2>
         </div>
 
         {/* 4 KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {KPI_METRICS.map((kpi, idx) => (
             <div
               key={idx}

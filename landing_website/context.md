@@ -3,7 +3,7 @@
 > **Authoritative project reference.** Read this before implementing features, fixing bugs, or refactoring.
 > Update this file whenever architecture, behaviour, workflows, or features change.
 
-Last updated: 2026-09-14
+Last updated: 2026-09-20
 
 ---
 
@@ -32,6 +32,7 @@ Two primary business goals:
 | Animation | `motion` (Framer Motion successor) — only in `HeroSection`; `canvas-confetti` in `BookDemoModal` |
 | Form delivery | `mailto:` handoff to the visitor's own mail client — no backend, no form service |
 | Build tooling | `tsx` (runs the discovery generator only — not a runtime dependency) |
+| Images | `webp` throughout (converted 2026-09-20; ~13 MB of jpg → ~1.4 MB) |
 | Hosting | Azure Static Web Apps |
 
 ### Scripts
@@ -58,22 +59,27 @@ landing_website/
 │   ├── types.ts             # Shared content/domain interfaces
 │   ├── config/
 │   │   └── forms.ts         # Contact details + mailto: builder (single source of truth)
-│   ├── components/          # 36 components: sections, full pages, modals
+│   ├── components/          # 48 components: sections, full pages, modals, layout primitives
 │   ├── data/
 │   │   ├── content.ts       # All marketing copy/data (single source of truth)
 │   │   ├── siteArchitecture.ts     # Pillars, industries, keyword clusters, GEO blocks
 │   │   ├── seoMetaTable.ts  # Per-view/sub-page SEO meta records + findSeoMetaEntry()
-│   │   ├── internalLinkingClusters.ts  # Topical internal-link clusters + getInternalLinkingForPage()
+│   │   ├── internalLinkingClusters.ts  # 15 topical internal-link clusters + getInternalLinkingForPage()
+│   │   ├── sectors.ts       # 11 sector definitions driving /sector/:slug (SectorLandingPage)
+│   │   ├── pricingData.ts   # Plan/tier data consumed by PricingSection and content.ts
 │   │   └── authoritativeBacklinks.ts  # Semantic backlink corpus + helpers
 │   ├── lib/                 # ⚠️ DORMANT WordPress clients — see §4.6
 │   ├── server/              # Misnomer: build-time data only, no server runtime
 │   │   ├── knowledgeGraph.ts       # D2C knowledge graph (nodes/relationships + ASCII)
 │   │   └── ragDiscoveryEngine.ts   # RAG chunks, AEO Q&A, OpenAPI spec, plugin manifest
-│   └── assets/images/       # Logo concepts & hero imagery (jpg)
+│   └── assets/images/       # Logo concepts & hero imagery (webp — 29 files, ~1.4 MB)
 ├── scripts/
 │   └── generate-static-discovery.mts  # Build-time SEO/AI file generator
 ├── public/
-│   └── staticwebapp.config.json  # Azure SWA config (copied to dist/ by Vite)
+│   ├── staticwebapp.config.json  # Azure SWA config (copied to dist/ by Vite)
+│   ├── og-image.jpg         # Absolute OG/Twitter card image referenced by index.html
+│   └── assets/images/       # webp copies served at stable absolute URLs, for JSON-LD
+│                            #   `logo` fields that cannot use a bundled hashed path
 ├── vite.config.ts           # `@` alias → project root; HMR toggle via DISABLE_HMR
 └── .env.example             # SITE_URL (forms need no configuration)
 ```
@@ -94,15 +100,37 @@ pre-Azure architecture that was deliberately deleted here — `server.ts`, `api/
 hand-written `public/sitemap.xml` / `llms.txt` / `robots.txt` / `.well-known/*`, and a
 `package.json` depending on `express`, `nodemailer` and `@google/genai`.
 
-Its SEO/UI work was merged into `landing_website/` on 2026-09-14 (see `changes.md`).
-When merging anything else from it, three things must be adapted rather than copied:
+Its SEO/UI work was merged into `landing_website/` on 2026-09-14, again on 2026-09-16,
+and a full refresh on 2026-09-20 (see `changes.md`). When merging anything else from it,
+four things must be adapted rather than copied:
 
 1. **`/api/*` URLs are dead** — this build has no backend. Knowledge surfaces are the
-   generated `/ai/*.json` files (§4.4); forms hand off via `mailto:` (§4.7).
-2. **Forms must not report false success.** The import's `ContactUsPage` and
-   `BookDemoModal` both set `submitted = true` from a `catch` block.
+   generated `/ai/*.json` files (§4.4); forms hand off via `mailto:` (§4.7). The import
+   reintroduces `/api/*` in `ragDiscoveryEngine.ts`, `knowledgeGraph.ts` and
+   `authoritativeBacklinks.ts` on **every** round; these are published URLs baked into
+   the generated OpenAPI spec and citation backlinks, so a crawler following one gets
+   `index.html` with a 200 (the SWA navigation fallback) instead of JSON. Repoint them.
+2. **Forms must not report false success**, and must read contact details from
+   `src/config/forms.ts` rather than hardcoding them. The import hardcodes
+   `psitraders@outlook.com` and builds its own `mailto:` string with no length guard.
 3. **Static files under `public/`** are generated at build time here — copying the
-   import's versions would shadow the generator's output.
+   import's `sitemap.xml` / `llms.txt` / `robots.txt` / `ai/` / `.well-known/` would
+   shadow the generator's output. Its `public/api/` and `public/_headers` /
+   `public/_redirects` belong to the retired Express/Cloudflare setup.
+4. **`FloatingAiAssistantWidget` is deliberately not ported.** The import's version is a
+   real chatbot that calls `POST /api/chat` (Gemini) and `POST /api/leads`. This site's
+   widget stays the client-side canned-reply demo. Re-check this on every import round —
+   it is the single largest backend dependency in the import's `src/`.
+
+**Deliberately excluded from this site (user decision, reaffirmed 2026-09-20):** the
+import's author-facing SEO tooling — `BacklinkAuthorityHub`, `PartnerOutreachSuggester`,
+`PartnerEmailDrafter`, `SearchPreviewPane`, `SeoMetaTableModal`,
+`data/partnerOutreachMatrix.ts` and `server/seoMetaTableBackend.ts` (~3,700 lines). In the
+import these are lazy-loaded but publicly reachable at `/backlinks`, `/partners`,
+`/research` and `/seo-meta-table`, with a hidden Footer entry point. Shipping them would
+expose partner-outreach tooling on the marketing site. `AiDiscoveryModal` is **not**
+ported for the same reason: the import weaves `SearchPreviewPane` into it in three places,
+so this repo keeps its own version of that component.
 
 ### 4.1 Client routing (hand-rolled, no router library)
 
@@ -132,7 +160,7 @@ Note: `path.startsWith('/industries/')` is the **last** industry branch and acts
 
 | URL(s) | View / component |
 |---|---|
-| `/` | Home composition (Hero → Products → Integrations → Problems → HowItWorks → Industries → WhySilarAi → Metrics → UseCases → Pricing → FAQ → FinalCta) |
+| `/` | Home composition — see §6 for the current section order |
 | `/about`, `?page=about` | `AboutPage` |
 | `/contact-us`, `/contact`, `?page=contact-us` | `ContactUsPage` (mailto: handoff enquiry form) |
 | `/why-choose-us` | `WhyChoosePage` |
@@ -146,6 +174,8 @@ Note: `path.startsWith('/industries/')` is the **last** industry branch and acts
 | `/industries/wholesalers`, `?page=wholesalers` | `WholesalersIndustryPage` |
 | `/industries/manufacturing[/ai-commerce-platform\|/ai-shopping-sales-assistant\|/dealer-distributor-commerce]` and any other `/industries/*` | `ManufacturingIndustryPage` |
 | `/fmcg`, `/fmcg-commerce`, `/industries/fmcg` | `FmcgIndustryPage` |
+| `/ai-commerce-marketing-platform` | `AiCommerceMarketingPlatformPage` — pillar page for the "AI Commerce & Marketing Platform" cluster |
+| `/sector/:slug`, `?sector=:slug`, `?page=sector` | `SectorLandingPage`, one view per `data/sectors.ts` entry (11: boutiques, b2b2c, jeweller, home-sellers, beauty-brands, food-packaging, handicrafts, cosmetic-wellness, small-medium-fmcg, distributors, wholesalers). Defaults to `boutiques`. Note the in-app sector switcher pushes the `?sector=` form, while the sitemap publishes the `/sector/:slug` form; both resolve. |
 | `/use-cases/:slug` | Home with `UseCasesSection` deep-linked |
 
 SPA fallback is handled by `staticwebapp.config.json` — `navigationFallback` rewrites unmatched paths to `/index.html`, with exclusions so static assets and knowledge files are served as themselves.
@@ -155,7 +185,7 @@ SPA fallback is handled by `staticwebapp.config.json` — `navigationFallback` r
 A side-effect-only component. On every `currentView` / sub-page change it imperatively:
 
 - sets `document.title`, description, keywords, robots, author, publisher
-- sets GEO meta (`geo.region`, `geo.position`, ICBM — hardcoded San Francisco)
+- sets GEO meta (`geo.region`, `geo.position`)
 - sets OG + Twitter tags and the `<link rel="canonical">`
 - injects per-view **JSON-LD** schema
 
@@ -189,7 +219,7 @@ Generated output:
 
 | File | Contents |
 |---|---|
-| `sitemap.xml` | 50 URLs, built from `SITE_ARCHITECTURE` + sub-pages + use cases + discovery files |
+| `sitemap.xml` | 63 URLs, built from `SITE_ARCHITECTURE` + sub-pages + `SECTORS` + use cases + discovery files |
 | `robots.txt` | Crawl directives incl. explicit allows for GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot, Google-Extended, etc. |
 | `llms.txt`, `llms-full.txt` | GEO knowledge documents (also mirrored under `/.well-known/`) |
 | `ai-manifest.json` | AI agent discovery manifest |
@@ -205,7 +235,9 @@ Generated output:
 
 The old `/api/rag/search?q=` filtering is gone. Chunks are served complete and filtered client-side (`AiDiscoveryModal` already does this over the imported constants). This is not a functional loss: the old endpoint returned the entire corpus whenever a query missed, and AI crawlers fetch without a query anyway.
 
-**Source of truth:** `src/data/siteArchitecture.ts` (extracted from the deleted `server.ts`) holds `PRIMARY_PILLAR_KEYWORDS`, `KEYWORD_CLUSTERS`, `GEO_DEFINITION_ANSWER_BLOCKS` and `SITE_ARCHITECTURE`. Adding a pillar or industry there automatically flows into the sitemap, `llms.txt` and the JSON files.
+**Source of truth:** `src/data/siteArchitecture.ts` (extracted from the deleted `server.ts`) holds `PRIMARY_PILLAR_KEYWORDS`, `KEYWORD_CLUSTERS`, `GEO_DEFINITION_ANSWER_BLOCKS` and `SITE_ARCHITECTURE`. Adding a pillar or industry there automatically flows into the sitemap, `llms.txt` and the JSON files. The sector pages work the same way: the generator maps over `SECTORS` from `src/data/sectors.ts`, so adding a sector adds its `/sector/:slug` URL with no edit to the script.
+
+**Every URL published in the generated files must be a file this script actually emits.** The knowledge modules describe their own surfaces with `apiBacklink` / endpoint-map keys, and those strings end up in `openapi.json`, `ai-plugin.json` and the citation backlinks. A stale `/api/*` string there is worse than a broken link: the SWA navigation fallback answers it with `index.html` and a **200**, so a crawler records HTML as the body of a JSON endpoint rather than getting a 404. Checked on every import merge — see §4.0.
 
 ### 4.5 Knowledge data modules
 
@@ -231,8 +263,8 @@ To re-enable, either enable CORS on the WordPress host and call `wp-json` direct
 - `buildMailtoUrl()` trims trailing body lines to stay under ~1800 characters, since some clients truncate a long `mailto:` silently.
 - **There is no server-side record of an enquiry.** The reply in the inbox is the only record, and there is no way to measure form abandonment.
 - Spam handling is not applicable — no endpoint to abuse. The honeypot fields were removed along with the POST.
-- If the key is missing or the request fails, the modal now shows an **error state** and does not claim success. (The previous implementation set `submitted = true` in a `finally` block, so users saw "Demo Request Dispatched!" even when the POST failed.)
-- Free tier is 250 submissions/month.
+- If the mail client cannot be opened, both forms show an **error state** and do not claim success. `submitted` is never set from a `catch` block. This has regressed twice from the import (a `finally` block in the Web3Forms era, a `catch` block in the 2026-09-14 export), so treat it as a standing review point on every merge.
+- Each form also writes a copy of the submission to the visitor's own `localStorage` (`silarai_demo_enquiries` / `silarai_contact_inquiries`, capped at 50). That is a convenience record **on the visitor's device only** — nobody at SilarAI can read it, and it is not a delivery mechanism. Never word the UI as if it were.
 
 ---
 
@@ -254,7 +286,7 @@ Defined CSS-first in `src/index.css` with Tailwind v4 `@theme`.
 
 Base layer sets smooth scroll, body colour `#183a47` on `#F8F9FA`, and a custom `::selection`. Custom utilities: `.bg-grid-pattern`, `.bg-radial-glow`, `.shadow-sleek`, `.shadow-sleek-hover`, `.rounded-saas` (20px), plus a themed scrollbar.
 
-⚠️ `index.html` still declares `theme-color: #2b0f38` and a purple `#2b0f38` favicon — both legacy plum values that now clash with the Dark Teal brand. Worth updating to `#245668`.
+✅ Resolved 2026-09-20: `index.html` now declares `theme-color: #245668` and a Dark Teal / Persimmon inline SVG favicon, so the document chrome matches the brand. (It was the last legacy-plum holdout after the 2026-09-16 rebrand.)
 
 Styling is Tailwind utility classes inline in components — no CSS modules, no styled-components, no component library.
 
@@ -268,10 +300,24 @@ Styling is Tailwind utility classes inline in components — no CSS modules, no 
 - **`SilarAiBrandLogo.tsx`** — brand mark used by Navbar and Footer.
 
 ### Home sections (in render order)
-`HeroSection` (motion animations) → `ProductsSection` → `TrustedIntegrations` → `ProblemsSection` → `HowItWorks` → `IndustriesSection` → `WhySilarAi` → `CustomerMetrics` → `UseCasesSection` → `PricingSection` → `FaqSection` → `FinalCta`.
+`SmoothWaveBackground` → `HeroSection` (motion animations) → `SectionQuickNav` → `ProductsSection` → `HowItWorks` → `AllInOneSection` → `CustomDomainSection` → `TrustedIntegrations` → `IndustriesSection` → `WhySilarAi` → `CustomerMetrics` → `UseCasesSection` → `PricingSection` → `FaqSection` → `FinalCta`.
+
+As of 2026-09-20 **only `Navbar`, `HeroSection` and the three layout primitives below are eagerly imported.** Everything else — including `SeoHead`, `Footer` and every home section — is `React.lazy`, and each home section below the hero is additionally wrapped in a `DeferredSection`. After `<main>`, two render-nothing/`sr-only` components mount: `SectionSeoMetaSnippet` (applies `seoMetaTable` metadata, runs after `SeoHead`) and `InternalLinkingSection`.
+
+**Layout primitives (added 2026-09-20):**
+
+- **`DeferredSection`** — wraps a home section and defers mounting its children until it nears the viewport, so the initial paint carries the hero only. Takes `minHeight` (reserves space to avoid layout shift) and `id` (the anchor `SectionQuickNav` scrolls to).
+- **`SectionQuickNav`** — in-page jump nav across the home sections, sitting under the hero.
+- **`SmoothWaveBackground`** — decorative animated background; `isHeroOnly` limits it to the hero band.
+- **`HeroDashboardVisualizer`** — the hero's product visual (image tabs + lightbox), split out of `HeroSection`, which dropped from 728 to ~375 lines as a result.
+
+- **`AllInOneSection`** and **`CustomDomainSection`** (added 2026-09-16) — home sections below `HowItWorks`, each taking an `onBookDemo(plan)` callback into the demo modal.
 
 ### Full pages
-`AboutPage`, `WhyChoosePage`, `ShopifyComparisonPage`, `WoocommerceComparisonPage`, `AiShoppingAssistantPages` (3 sub-pages), `AiCommercePlatformPages` (3 sub-pages), and six industry pages (`RetailIndustryPage`, `D2cIndustryPage`, `DistributorsIndustryPage`, `WholesalersIndustryPage`, `ManufacturingIndustryPage`, `FmcgIndustryPage`). Industry pages are the largest files in the repo (1000–1950 lines each) and are largely self-contained copy + layout.
+`AboutPage`, `ContactUsPage`, `WhyChoosePage`, `ShopifyComparisonPage`, `WoocommerceComparisonPage`, `AiShoppingAssistantPages` (3 sub-pages), `AiCommercePlatformPages` (3 sub-pages), `AiCommerceMarketingPlatformPage`, and six industry pages (`RetailIndustryPage`, `D2cIndustryPage`, `DistributorsIndustryPage`, `WholesalersIndustryPage`, `ManufacturingIndustryPage`, `FmcgIndustryPage`). Industry pages are the largest files in the repo (1000–1950 lines each) and are largely self-contained copy + layout.
+
+- **`AiCommerceMarketingPlatformPage`** (added 2026-09-20, ~1,050 lines) — the pillar page for the "AI Commerce & Marketing Platform" keyword cluster. `SeoHead` had carried its metadata case since 2026-09-14 with no route behind it; the route now exists.
+- **`SectorLandingPage`** (added 2026-09-20, ~800 lines) — one templated page per `data/sectors.ts` entry, rendered for `/sector/:slug`. It is the only page driven entirely by data: adding a sector to `SECTORS` creates the page, its nav entry and its sitemap URL with no component change. Four industry pages and `SeoHead` also read `SECTORS`.
 
 ### Interactive
 - **`BookDemoModal`** — the main conversion flow. See §4.7.
@@ -379,16 +425,17 @@ Ordered by impact.
 
 1. **No MX record for `silarai.com` (live, 2026-09-04).** `info@silarai.com` cannot receive mail. **Enquiries are no longer affected** — forms now route to `psitraders@outlook.com`, an Outlook mailbox on a different domain. Still worth fixing so `@silarai.com` addresses work at all; needs an MX record in Cloudflare pointing at whatever host serves that mailbox (the `hostingermail-a/b/c` DKIM CNAMEs suggest Hostinger Email). See `DEPLOYMENT.md` status note.
 2. **`www.silarai.com` does not resolve (live, 2026-09-04).** NXDOMAIN. Needs a `CNAME www` → the SWA hostname in Cloudflare, set to redirect to the apex.
-3. **No prerendering.** All per-page metadata and JSON-LD is applied by JS after load, so non-JS crawlers (GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack) see homepage metadata on all ~50 routes. This undercuts the entire GEO/AEO strategy. Deliberately deferred to a separate change; it touches the router and build pipeline.
-4. **Three items from `imported_landing_website/` are not merged yet.** (a) `HeroSection` — adds two image tabs plus a lightbox; still blocked on `shopping_assistant_ui_1788795889801.jpg` and `commerce_cloud_platform_1788795904634.jpg`, which are not in `src/assets/images/`. (b) `AiCommerceMarketingPlatformPage` — new ~1,000-line pillar page; `SeoHead` carries its metadata case but no route is wired, so any link to `/ai-commerce-marketing-platform` currently soft-404s to the homepage. (c) `internalLinkingClusters.ts` holds 3 of the import's 16 clusters (`home`, `about`, `why-choose-us`); the other 13 page types fall back to the `home` cluster, which is valid but not page-specific.
-5. **`index.html` still lists `info@silarai.com`** in its static Organization JSON-LD, while `config/forms.ts`, `SeoHead` and both forms now use `psitraders@outlook.com`. Since `info@` has no MX record (gap 1), the static block is advertising an address that cannot receive mail — worth aligning.
-6. **Route logic duplicated** in `App.tsx` (`useState` initialiser vs `handlePopState`) — easy source of deep-link bugs.
+3. **No prerendering.** All per-page metadata and JSON-LD is applied by JS after load, so non-JS crawlers (GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack) see homepage metadata on all 63 routes. This undercuts the entire GEO/AEO strategy, and grew with the 11 sector pages added 2026-09-20 — they are templated from one component, so without prerendering they are indistinguishable to a non-JS crawler. Deliberately deferred to a separate change; it touches the router and build pipeline.
+4. **Deliberately not merged from `imported_landing_website/` (see §4.0):** the import's `FloatingAiAssistantWidget` (needs a `/api/chat` Gemini backend), its author-facing SEO tooling (~3,700 lines, publicly reachable in the import), and `AiDiscoveryModal` (the import weaves the excluded `SearchPreviewPane` into it). Re-check each on every import round — the export regenerates them every time. *The three items listed here previously — the hero rework, `AiCommerceMarketingPlatformPage` and the remaining internal-linking clusters — were all merged on 2026-09-20.*
+5. **Route logic duplicated** in `App.tsx` (`useState` initialiser vs `handlePopState`) — easy source of deep-link bugs.
 6. **`mailto:` handoff has inherent leakage.** A visitor with no mail client registered (webmail-only, managed device, some mobile browsers) sees nothing happen; the copyable fallback mitigates but does not eliminate this. There is also no record of enquiries that were composed but never sent, and no way to measure that drop-off. If lead volume matters more than avoiding a third party, a hosted form service is the fix.
 7. **No form validation beyond `required` on name/email.** Not a spam risk any more (no endpoint), but malformed input still reaches the mail body verbatim.
-8. **`FloatingAiAssistantWidget` is a mock** — hardcoded replies, no LLM backend. It presents as a live product demo.
+8. **`FloatingAiAssistantWidget` is a mock** — hardcoded client-side replies, no LLM backend. It presents as a live product demo. This is now a standing decision, not an oversight: the import ships a real `/api/chat` version each round and it is deliberately not taken, because the site has no backend (§4.0).
 9. **WordPress integration dormant** (§4.6) — ~620 lines retained but non-functional, and now more likely to stay that way since the blog itself was retired rather than fixed.
 10. **Dead components**: `DashboardSection.tsx`, `LogoConceptsModal.tsx`.
-11. **Bundle size** — was 1.72 MB (428 KB gzipped) in a single chunk. `App.tsx` now `React.lazy`-loads every page, below-the-fold home section and modal, so this should be substantially split; re-measure on the next build and update this line.
+11. **Bundle size** — measured 2026-09-20: `dist/` totals 4.8 MB across ~60 chunks, with a 425 KB (126 KB gzip) entry chunk. The two heaviest lazy chunks are `RoiCalculator` (434 KB — it pulls in recharts) and `D2cIndustryPage` (84 KB). The single-1.72 MB-chunk problem is gone; the remaining win is deferring recharts further, plus gap 14.
 12. **`src/server/` is a misleading directory name** — it contains build-time data only.
 13. **No tests, no ESLint**; `npm run lint` is a type-check only.
 14. **Knowledge data ships twice** — once in the JS bundle (imported by `AiDiscoveryModal` / `DistributorsBacklinkHub`) and once as static JSON. Fetching the JSON at runtime instead would cut bundle size.
+15. **`public/assets/images/` ships 30 webp files but only `silarai_official_logo.webp` is referenced** (by `SeoHead` and `ragDiscoveryEngine` JSON-LD `logo` fields, which need a stable absolute URL rather than a bundled hashed path). The rest came in with the 2026-09-20 import. Harmless (~1 MB) but prunable.
+16. **The sector switcher and the sitemap use different URL forms for the same page** — the in-app switcher pushes `?sector=:slug`, the sitemap publishes `/sector/:slug`. Both resolve, but a visitor who lands on the canonical path and then switches sectors ends up on the query form, so shared URLs are inconsistent. Worth normalising on `/sector/:slug`.

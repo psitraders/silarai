@@ -72,7 +72,7 @@ Distributors deal with complex part numbers, technical specifications, and custo
 - **Instant PunchOut & Order Submission**: Seamlessly adds items to procurement carts with automated ERP validation.
 
 ### Quantifiable Distribution Benefits
-Distributors using SilarAI report a **65% reduction in sales support call volume** and an **80% faster reorder cycle** for commercial buyers.
+Distributors using SilarAI report up to a **65% reduction in sales support call volume (tested benchmark)** and an **80% faster reorder cycle** for commercial buyers.
     `,
     keywords: ['AI Commerce Platform for Distributors', 'AI Shopping Assistant for Distributors', 'B2B Commerce Platform'],
   },
@@ -296,18 +296,6 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
-      {/* Top Breadcrumb Navigation */}
-      <Breadcrumbs
-        items={[
-          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
-          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
-          { label: 'AI Commerce Platform for Distributors', isCurrent: true, icon: Truck }
-        ]}
-        onBack={onBackToHome}
-        backButtonLabel="Back to Home"
-        badgeText="B2B Enterprise Specification v2.4"
-      />
-
       {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
       <script
         type="application/ld+json"
@@ -372,30 +360,16 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
       />
 
       {/* Top Banner & Breadcrumb Navigation */}
-      <div className="bg-slate-900 text-slate-300 py-3 px-4 sm:px-6 lg:px-8 text-xs border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onBackToHome}
-              className="hover:text-peach-300 transition-colors flex items-center gap-1 font-semibold cursor-pointer"
-            >
-              ← Back to Home
-            </button>
-            <span className="text-slate-600">/</span>
-            <span className="text-slate-400 font-medium">Industry Solutions</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-peach-300 font-extrabold flex items-center gap-1">
-              <Truck className="w-3.5 h-3.5" />
-              AI Commerce Platform for Distributors
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] bg-plum-800 text-peach-200 px-2.5 py-0.5 rounded-full font-bold border border-plum-700">
-              B2B Enterprise Specification v2.4
-            </span>
-          </div>
-        </div>
-      </div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
+          { label: 'AI Commerce Platform for Distributors', isCurrent: true, icon: Truck }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="B2B Enterprise Specification v2.4"
+      />
 
       {/* Hero Section */}
       <section className="relative pt-12 pb-20 bg-gradient-to-b from-plum-950 via-plum-900 to-slate-900 text-white overflow-hidden">
@@ -1058,30 +1032,24 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
         </div>
       </section>
 
-      {/* Section 6.5: SEO, AEO, AIO & GEO Semantic Backlink Matrix & Knowledge Graph */}
-      <section id="distributor-backlinks-matrix" className="py-16 bg-slate-950 text-white border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="text-xs font-black uppercase tracking-widest text-peach-300 bg-plum-900/80 px-3.5 py-1.5 rounded-full border border-peach-400/30">
-              Authority Backlinks &amp; Citation Network
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white">
-              SEO, AEO, AIO &amp; GEO Distributor Backlink Hub
-            </h2>
-            <p className="text-sm text-slate-300">
-              Explore 100+ machine-indexed semantic backlinks, verified schemas, and authoritative entity citations across distributors, B2B wholesale, and enterprise commerce platforms.
-            </p>
-          </div>
-
-          <DistributorsBacklinkHub
-            defaultFilter="Distributors"
-            onNavigateToPage={onNavigateToPage}
-            onSelectAiShoppingPage={onSelectAiShoppingPage}
-            onSelectAiCommercePage={onSelectAiCommercePage}
-            onSelectManufacturingPage={onSelectManufacturingPage}
-            onSelectD2cPage={onSelectD2cPage}
-          />
-        </div>
+      {/* Section 6.5: SEO, AEO, AIO & GEO Semantic Backlink Matrix & Knowledge Graph - Preserved in backend DOM for crawlers & search engines */}
+      <section
+        id="distributor-backlinks-matrix"
+        aria-label="Distributor Authority Backlinks & Semantic Citation Network"
+        className="sr-only"
+      >
+        <h2>SEO, AEO, AIO &amp; GEO Distributor Backlink Hub</h2>
+        <p>
+          Explore 100+ machine-indexed semantic backlinks, verified schemas, and authoritative entity citations across distributors, B2B wholesale, and enterprise commerce platforms.
+        </p>
+        <DistributorsBacklinkHub
+          defaultFilter="Distributors"
+          onNavigateToPage={onNavigateToPage}
+          onSelectAiShoppingPage={onSelectAiShoppingPage}
+          onSelectAiCommercePage={onSelectAiCommercePage}
+          onSelectManufacturingPage={onSelectManufacturingPage}
+          onSelectD2cPage={onSelectD2cPage}
+        />
       </section>
 
       {/* Section 7: Frequently Asked Questions */}

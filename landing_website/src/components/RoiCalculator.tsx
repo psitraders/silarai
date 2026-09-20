@@ -565,12 +565,12 @@ export const RoiCalculator: React.FC<RoiCalculatorProps> = ({ onBookDemo }) => {
                         <stop offset="95%" stopColor="#94a3b8" stopOpacity={0.05} />
                       </linearGradient>
                       <linearGradient id="colorLift" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#FCB666" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#FCB666" stopOpacity={0.15} />
+                        <stop offset="5%" stopColor="#F47A38" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#F47A38" stopOpacity={0.15} />
                       </linearGradient>
                       <linearGradient id="colorProjected" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#584053" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#584053" stopOpacity={0.1} />
+                        <stop offset="5%" stopColor="#245668" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#245668" stopOpacity={0.1} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -602,7 +602,7 @@ export const RoiCalculator: React.FC<RoiCalculatorProps> = ({ onBookDemo }) => {
                       type="monotone" 
                       dataKey="lift" 
                       name="SilarAI Monthly Revenue Lift" 
-                      stroke="#FCB666" 
+                      stroke="#F47A38" 
                       strokeWidth={3}
                       fillOpacity={1} 
                       fill="url(#colorLift)" 
@@ -614,7 +614,7 @@ export const RoiCalculator: React.FC<RoiCalculatorProps> = ({ onBookDemo }) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                     <XAxis 
                       dataKey={timeframeMonths > 6 ? "shortMonth" : "month"} 
-                      tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }}
+                      tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} 
                     />
                     <YAxis 
                       tick={{ fill: '#64748b', fontSize: 11 }} 
@@ -624,14 +624,14 @@ export const RoiCalculator: React.FC<RoiCalculatorProps> = ({ onBookDemo }) => {
                     <Tooltip content={<CustomTooltip />} />
                     <Legend wrapperStyle={{ paddingTop: '12px', fontSize: '12px', fontWeight: 'bold' }} />
                     <Bar dataKey="baseline" name="Current Baseline Revenue" fill="#94a3b8" radius={[4, 4, 0, 0]} stackId="a" />
-                    <Bar dataKey="lift" name="SilarAI Monthly Revenue Lift" fill="#584053" radius={[4, 4, 0, 0]} stackId="a" />
+                    <Bar dataKey="lift" name="SilarAI Monthly Revenue Lift" fill="#245668" radius={[4, 4, 0, 0]} stackId="a" />
                   </BarChart>
                 ) : (
                   <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                     <XAxis 
                       dataKey={timeframeMonths > 6 ? "shortMonth" : "month"} 
-                      tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }}
+                      tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} 
                     />
                     <YAxis 
                       tick={{ fill: '#64748b', fontSize: 11 }} 
@@ -641,7 +641,7 @@ export const RoiCalculator: React.FC<RoiCalculatorProps> = ({ onBookDemo }) => {
                     <Tooltip content={<CustomTooltip />} />
                     <Legend wrapperStyle={{ paddingTop: '12px', fontSize: '12px', fontWeight: 'bold' }} />
                     <Line type="monotone" dataKey="baseline" name="Current Baseline Revenue" stroke="#94a3b8" strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="projected" name="Projected Total Revenue" stroke="#584053" strokeWidth={3} dot={{ r: 5, fill: '#FCB666' }} />
+                    <Line type="monotone" dataKey="projected" name="Projected Total Revenue" stroke="#245668" strokeWidth={3} dot={{ r: 5, fill: '#F47A38' }} />
                   </LineChart>
                 )}
               </ResponsiveContainer>

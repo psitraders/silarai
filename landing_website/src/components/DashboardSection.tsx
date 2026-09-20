@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { DASHBOARD_FEATURES } from '../data/content';
 import { Bot, Layers, LineChart, Users, Tag, Search, Check, Sparkles, LayoutDashboard, BrainCircuit, ShoppingCart } from 'lucide-react';
-import aiBotCommerceImg from '../assets/images/ai_bot_commerce_dashboard_1785403446965.jpg';
-import aiCommerceEngineImg from '../assets/images/ai_commerce_platform_engine_1785488597071.jpg';
+import aiBotCommerceImg from '../assets/images/ai_bot_commerce_dashboard_1785403446965.webp';
+import aiCommerceEngineImg from '../assets/images/ai_commerce_platform_engine_1785488597071.webp';
 
 export const DashboardSection: React.FC = () => {
   const [selectedFeatureId, setSelectedFeatureId] = useState<string>('assistant');

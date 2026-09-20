@@ -92,11 +92,13 @@ export const D2C_KNOWLEDGE_GRAPH = {
             description: 'Semantic vector-based discovery pipeline matching shopper intent, natural language queries, and contextual filters to relevant products.',
             technicalCapabilities: [
               'Neural semantic embeddings for unstructured customer queries',
+              'Natural-language product search and intent parsing',
+              'Alternative products matching for out-of-stock or high-intent items',
               'Zero-result search page elimination',
               'Multi-attribute dynamic facet navigation',
               'Automated visual attribute tagging'
             ],
-            semanticKeywords: ['Product Discovery', 'AI Product Discovery', 'Semantic Product Finder', 'Contextual Discovery Engine'],
+            semanticKeywords: ['AI product discovery', 'Product Discovery', 'Natural-language product search', 'Alternative products', 'Semantic Product Finder', 'Contextual Discovery Engine'],
             kpis: ['+42% discovery-to-cart progression', '0% zero-result search rate', '3.1x faster item discovery'],
             connectedNodes: ['Product Catalog', 'Search', 'AI Shopping Assistant', 'Recommendations']
           },
@@ -107,12 +109,13 @@ export const D2C_KNOWLEDGE_GRAPH = {
             category: 'Ecommerce',
             description: 'Sub-second neural search engine supporting typo-tolerance, natural language intent comprehension, and multi-modal image query parsing.',
             technicalCapabilities: [
+              'Natural-language product search with dense vector embeddings',
               'Hybrid dense-vector & sparse-lexical keyword matching',
               'Typo tolerance and phonetics synonym mapping',
               'Multi-modal camera visual search parsing',
               'Context-aware query auto-completion'
             ],
-            semanticKeywords: ['Ecommerce Search', 'Semantic Search', 'Natural Language Search', 'Visual Image Search', 'Typo Tolerant Search'],
+            semanticKeywords: ['Natural-language product search', 'AI product discovery', 'Ecommerce Search', 'Semantic Search', 'Visual Image Search', 'Typo Tolerant Search'],
             kpis: ['<25ms search latency', '+28% search conversion rate', '99.4% intent match precision'],
             connectedNodes: ['Product Discovery', 'Product Catalog', 'AI Shopping Assistant']
           },
@@ -121,15 +124,17 @@ export const D2C_KNOWLEDGE_GRAPH = {
             name: 'Checkout',
             parent: 'Ecommerce',
             category: 'Ecommerce',
-            description: 'Frictionless 1-click agentic checkout pipeline with dynamic payment gateways, localized currencies, and automated tax calculations.',
+            description: 'Frictionless 1-click agentic checkout pipeline with dynamic payment gateways, localized currencies, cart assistance, and order assistance.',
             technicalCapabilities: [
               'Agentic 1-click checkout execution from chat',
+              'Real-time cart assistance and checkout error recovery',
+              'Post-purchase order assistance and instant confirmation',
               'Native Shopify Checkout API & WooCommerce cart routing',
               'Multi-gateway payment support (Stripe, Apple Pay, Google Pay, Razorpay)',
               'Real-time address validation & dynamic shipping rates'
             ],
-            semanticKeywords: ['1-Click Checkout', 'Agentic Checkout', 'Frictionless Ecommerce Checkout', 'D2C Checkout Pipeline'],
-            kpis: ['-38% checkout abandonment', '65% 1-click checkout adoption', '<12s completion time'],
+            semanticKeywords: ['Cart assistance', 'Order assistance', '1-Click Checkout', 'Agentic Checkout', 'Frictionless Ecommerce Checkout', 'D2C Checkout Pipeline'],
+            kpis: ['-38% checkout abandonment (benchmark)', '65% 1-click checkout adoption (tested benchmark)', '<12s completion time (observed benchmark)'],
             connectedNodes: ['AI Shopping Assistant', 'Conversational Commerce', 'Cart Recovery', 'Website']
           }
         ]
@@ -147,11 +152,40 @@ export const D2C_KNOWLEDGE_GRAPH = {
             description: '24/7 conversational buying agent guiding customers through catalog research, answering product questions, and completing purchases.',
             technicalCapabilities: [
               'LLM agentic reasoning engine with domain knowledge base',
+              'Natural-language product search and AI product discovery',
+              'Product recommendations and personalized recommendations',
+              'Side-by-side product comparison and alternative products retrieval',
+              'Instant conversational Product Q&A for specifications and usage',
+              'Dynamic cross-sell and upsell basket expansion',
+              'Real-time cart assistance and post-purchase order assistance',
+              'WhatsApp commerce automated ordering and customer support',
               '20+ language real-time voice and text interaction',
               'Direct cart addition and checkout payload generation',
               'Memory retention across shopper sessions'
             ],
-            semanticKeywords: ['AI Shopping Assistant', 'AI Shopping Agent', 'Conversational Shopping Bot', 'Autonomous Shopping Assistant'],
+            semanticKeywords: [
+              'AI shopping agent',
+              'ecommerce AI assistant',
+              'AI shopping assistant software',
+              'AI ecommerce assistant',
+              'AI product assistant',
+              'AI sales assistant ecommerce',
+              'AI product discovery',
+              'Natural-language product search',
+              'Product recommendations',
+              'Product comparison',
+              'Product Q&A',
+              'Personalized recommendations',
+              'Alternative products',
+              'Cross-sell',
+              'Upsell',
+              'Cart assistance',
+              'Order assistance',
+              'WhatsApp commerce',
+              'AI Shopping Assistant',
+              'Conversational Shopping Bot',
+              'Autonomous Shopping Assistant'
+            ],
             kpis: ['3.8x conversion rate lift', '75% customer inquiry automation', '4.8/5 shopper satisfaction rating'],
             connectedNodes: ['Product Catalog', 'Recommendations', 'Product Comparison', 'Conversational Commerce', 'Website', 'WhatsApp']
           },
@@ -164,10 +198,11 @@ export const D2C_KNOWLEDGE_GRAPH = {
             technicalCapabilities: [
               'Proactive buyer intent detection and hesitation prompts',
               'Real-time gross margin guardrails for personalized discounts',
+              'Automated cross-sell and upsell configuration during buyer interaction',
               'Consultative routine building and personalized regimen curation',
               'Escalation routing to human sales reps when required'
             ],
-            semanticKeywords: ['AI Sales Assistant', 'Digital Sales Copilot', 'Sales Enablement AI', 'Consultative Commerce Agent'],
+            semanticKeywords: ['AI sales assistant ecommerce', 'AI product assistant', 'AI Sales Assistant', 'Digital Sales Copilot', 'Sales Enablement AI', 'Consultative Commerce Agent', 'Cross-sell', 'Upsell'],
             kpis: ['+35% sales conversion lift', '2.4x higher lead-to-deal velocity', '+22% margin optimization'],
             connectedNodes: ['Conversion', 'AOV', 'Recommendations', 'AI Shopping Assistant']
           },
@@ -179,11 +214,13 @@ export const D2C_KNOWLEDGE_GRAPH = {
             description: 'Real-time collaborative and content-based recommendation engine generating hyper-personalized product pairings, bundles, and accessories.',
             technicalCapabilities: [
               'Sub-50ms real-time inference latency',
+              'Personalized recommendations based on shopper intent and browsing signals',
+              'Alternative products suggestions when items are unavailable or out of stock',
               'Behavioral clickstream clustering & affinity graphs',
-              'Contextual dynamic bundle generation at cart stage',
+              'Contextual dynamic cross-sell and upsell bundle generation at cart stage',
               'Cold-start vector similarity for new SKUs'
             ],
-            semanticKeywords: ['AI Product Recommendations', 'Personalized Product Engine', 'Dynamic Bundling AI', 'Ecommerce Recommender System'],
+            semanticKeywords: ['Product recommendations', 'Personalized recommendations', 'Alternative products', 'Cross-sell', 'Upsell', 'AI Product Recommendations', 'Personalized Product Engine', 'Dynamic Bundling AI', 'Ecommerce Recommender System'],
             kpis: ['+28% Average Order Value (AOV)', '+34% click-through on recommended items', '19% of total store GMV driven by AI bundles'],
             connectedNodes: ['Cross-sell', 'Upsell', 'AI Shopping Assistant', 'Product Catalog']
           },
@@ -195,11 +232,12 @@ export const D2C_KNOWLEDGE_GRAPH = {
             description: 'Autonomous spec and variant comparison matrix highlighting key ingredient differences, technical specifications, and value tradeoffs.',
             technicalCapabilities: [
               'Automated side-by-side specification matrix generator',
-              'Ingredient & formulation delta highlight calculation',
+              'Alternative products identification with trade-off scoring',
+              'Product Q&A breakdown for ingredient & formulation deltas',
               'Value tradeoff scoring based on customer stated budget',
               'Visual comparison card rendering in chat interface'
             ],
-            semanticKeywords: ['Product Comparison AI', 'Side-by-Side Spec Matrix', 'Automated Product Comparison', 'D2C Variant Matrix'],
+            semanticKeywords: ['Product comparison', 'Alternative products', 'Product Q&A', 'Product Comparison AI', 'Side-by-Side Spec Matrix', 'Automated Product Comparison', 'D2C Variant Matrix'],
             kpis: ['-45% buyer decision time', '+31% conversion on high-consideration SKUs', '92% user satisfaction on spec accuracy'],
             connectedNodes: ['Product Discovery', 'AI Shopping Assistant', 'Conversion']
           },
@@ -211,11 +249,13 @@ export const D2C_KNOWLEDGE_GRAPH = {
             description: 'Interactive natural-language shopping dialogue across text, voice, and visual inputs driving guided customer journeys to checkout.',
             technicalCapabilities: [
               'Multi-turn intent resolution with stateful dialogue memory',
+              'Instant Product Q&A answering detailed usage and compatibility questions',
+              'Conversational cart assistance and order assistance',
               'Zero-latency streaming responses via WebSocket / SSE',
-              'Omnichannel conversation state persistence across Web and WhatsApp',
+              'Omnichannel conversation state persistence across Web and WhatsApp commerce',
               'Structured visual action cards (carousel, buttons, quick replies)'
             ],
-            semanticKeywords: ['Conversational Commerce', 'Chatbot Ecommerce', 'Voice Commerce AI', 'Natural Language Shopping'],
+            semanticKeywords: ['Product Q&A', 'Cart assistance', 'Order assistance', 'WhatsApp commerce', 'Conversational Commerce', 'AI shopping agent', 'ecommerce AI assistant', 'Chatbot Ecommerce', 'Voice Commerce AI', 'Natural Language Shopping'],
             kpis: ['84% conversation completion rate', '2.8 min average engaged session length', '61% repeat buyer interaction rate'],
             connectedNodes: ['AI Shopping Assistant', 'Website', 'WhatsApp', 'Checkout']
           }
@@ -267,10 +307,11 @@ export const D2C_KNOWLEDGE_GRAPH = {
             technicalCapabilities: [
               'Affinity graph scoring across purchase histories',
               'Post-add-to-cart micro-modal cross-sell triggers',
+              'Personalized product recommendations and accessories',
               'Complete regimen / kit builder generation',
               'Variant-aware compatibility validation'
             ],
-            semanticKeywords: ['AI Cross-Selling', 'Automated Cross-Sell Recommendations', 'Complementary Product Cross-Sell', 'D2C Cross-Sell Engine'],
+            semanticKeywords: ['Cross-sell', 'Product recommendations', 'Personalized recommendations', 'AI Cross-Selling', 'Automated Cross-Sell Recommendations', 'Complementary Product Cross-Sell', 'D2C Cross-Sell Engine'],
             kpis: ['26% cross-sell take rate', '+18% incremental revenue per customer', '3.4 items per transaction average'],
             connectedNodes: ['Recommendations', 'AOV', 'AI Shopping Assistant']
           },
@@ -283,10 +324,10 @@ export const D2C_KNOWLEDGE_GRAPH = {
             technicalCapabilities: [
               'One-click post-purchase checkout upsell modals',
               'Tiered volume and subscription refill prompts',
-              'Premium variant value delta highlight',
+              'Alternative products premium tier delta highlights',
               'Pre-purchase cart upgrade notifications'
             ],
-            semanticKeywords: ['AI Upselling System', 'One-Click Post-Purchase Upsell', 'D2C Subscription Upsells', 'Ecommerce Upsell Engine'],
+            semanticKeywords: ['Upsell', 'Alternative products', 'Personalized recommendations', 'AI Upselling System', 'One-Click Post-Purchase Upsell', 'D2C Subscription Upsells', 'Ecommerce Upsell Engine'],
             kpis: ['22% post-purchase upsell conversion', '+14% margin expansion', '31% subscription conversion rate'],
             connectedNodes: ['Recommendations', 'AOV', 'Checkout']
           },
@@ -298,11 +339,13 @@ export const D2C_KNOWLEDGE_GRAPH = {
             description: 'Multi-channel cart abandonment recovery system delivering contextual reminders with personalized incentives across WhatsApp and web.',
             technicalCapabilities: [
               'Real-time abandonment trigger detection (<10 min delay)',
+              'In-chat cart assistance and checkout troubleshooting',
+              'Order assistance for tracking and payment status',
               'Personalized dynamic incentive and coupon generation',
               'Direct 1-click cart restoration deep links',
               'Multi-touch escalation (Web popup ➔ WhatsApp ➔ Email)'
             ],
-            semanticKeywords: ['AI Cart Recovery', 'Abandoned Cart Recovery', 'WhatsApp Cart Abandonment', 'D2C Checkout Recovery'],
+            semanticKeywords: ['Cart assistance', 'Order assistance', 'WhatsApp commerce', 'AI Cart Recovery', 'Abandoned Cart Recovery', 'WhatsApp Cart Abandonment', 'D2C Checkout Recovery'],
             kpis: ['32% abandoned cart recovery rate', '4.2x WhatsApp campaign ROAS', '$18,400 avg monthly recovered revenue'],
             connectedNodes: ['Conversion', 'WhatsApp', 'Website', 'Checkout']
           }
@@ -321,11 +364,12 @@ export const D2C_KNOWLEDGE_GRAPH = {
             description: 'Embedded online storefront widget and full-page conversational shopping interface natively integrated into Shopify, WooCommerce, or headless apps.',
             technicalCapabilities: [
               'Lightweight zero-lag embedded widget (<50KB gzip)',
+              'AI shopping assistant software embed with full catalog intelligence',
               'Full custom CSS theme injection matching brand guidelines',
               'Single-page application (SPA) and headless framework compatibility',
               'Session synchronization with browser storage and customer auth'
             ],
-            semanticKeywords: ['Website Shopping Assistant', 'Storefront AI Widget', 'Shopify AI App', 'WooCommerce AI Storefront', 'Embedded Commerce Chat'],
+            semanticKeywords: ['AI shopping assistant software', 'ecommerce AI assistant', 'AI ecommerce assistant', 'Website Shopping Assistant', 'Storefront AI Widget', 'Shopify AI App', 'WooCommerce AI Storefront', 'Embedded Commerce Chat'],
             kpis: ['<150ms script load time', '100% responsive on all mobile/desktop viewports', '42% visitor engagement rate'],
             connectedNodes: ['AI Shopping Assistant', 'Checkout', 'Cart Recovery', 'Conversational Commerce']
           },
@@ -337,11 +381,12 @@ export const D2C_KNOWLEDGE_GRAPH = {
             description: 'Official WhatsApp Business API integration enabling two-way catalog shopping, instant order updates, and conversational reorders.',
             technicalCapabilities: [
               'Official Meta WhatsApp Cloud API integration',
+              'WhatsApp commerce automated catalog discovery and 1-click checkout',
               'Interactive multi-product catalog messages and list pickers',
               'Automated 24/7 sales agent handling inquiries and payments',
-              'Instant shipment tracking and delivery notification broadcasts'
+              'Instant shipment tracking and order assistance delivery notification broadcasts'
             ],
-            semanticKeywords: ['WhatsApp AI Commerce', 'WhatsApp Shopping Assistant', 'WhatsApp Direct Sales', 'WhatsApp Cart Recovery', 'Meta WhatsApp Commerce'],
+            semanticKeywords: ['WhatsApp commerce', 'AI shopping agent', 'Order assistance', 'Cart assistance', 'WhatsApp AI Commerce', 'WhatsApp Shopping Assistant', 'WhatsApp Direct Sales', 'WhatsApp Cart Recovery', 'Meta WhatsApp Commerce'],
             kpis: ['98% message open rate', '45% response rate on recovery campaigns', '4.2x ROAS on broadcast flows'],
             connectedNodes: ['AI Shopping Assistant', 'Cart Recovery', 'Conversational Commerce']
           }

@@ -1,16 +1,3 @@
-/**
- * ⚠️ DORMANT — not wired to any rendered component.
- *
- * This module was written against the Express proxy routes (/api/wordpress/*)
- * that were removed when the site became a fully static Azure deployment.
- * The proxy existed to avoid CORS when calling the WordPress REST API.
- *
- * Before re-enabling, choose one of:
- *   a) enable CORS on the WordPress host and call wp-json directly, or
- *   b) reintroduce a proxy (Azure Function, or the existing .NET backend).
- *
- * See context.md § WordPress integration.
- */
 import { WpPostItem, FALLBACK_WP_POSTS, transformWpPost } from './wordpress';
 
 export interface WordPressCategory {
@@ -166,23 +153,11 @@ export class WordPressIntegrationManager {
         message: `Successfully connected to WordPress REST API! Found ${totalPosts} post(s).`
       };
     } catch (directErr: any) {
-      // Fallback via local Express proxy
-      try {
-        const proxyUrl = `/api/wordpress/test?wpUrl=${encodeURIComponent(targetUrl)}`;
-        const res = await fetch(proxyUrl);
-        const proxyData = await res.json();
-        return {
-          connected: !!proxyData.connected,
-          wpUrl: targetUrl,
-          message: proxyData.message || directErr.message
-        };
-      } catch (proxyErr: any) {
-        return {
-          connected: false,
-          wpUrl: targetUrl,
-          message: `Connection failed: ${directErr.message}`
-        };
-      }
+      return {
+        connected: false,
+        wpUrl: targetUrl,
+        message: `Direct connection failed (${directErr.message || 'CORS or unreachable'}). Use a CORS-enabled WordPress REST API or built-in SilarAI articles.`
+      };
     }
   }
 
@@ -254,28 +229,6 @@ export class WordPressIntegrationManager {
         message: `Successfully loaded ${posts.length} article(s) from WordPress.`
       };
     } catch (directErr: any) {
-      // Proxy fallback for CORS / server side fetching
-      try {
-        const proxyUrl = `/api/wordpress/posts?wpUrl=${encodeURIComponent(targetUrl)}&page=${page}&per_page=${perPage}${params?.category ? `&category=${encodeURIComponent(params.category)}` : ''}`;
-        const proxyRes = await fetch(proxyUrl);
-        const proxyData = await proxyRes.json();
-
-        if (proxyData.success && Array.isArray(proxyData.posts) && proxyData.posts.length > 0) {
-          const posts = proxyData.posts.map(transformWpPost);
-          return {
-            success: true,
-            posts,
-            totalPages: 1,
-            totalPosts: posts.length,
-            source: 'wordpress',
-            wpUrl: targetUrl,
-            message: `Loaded ${posts.length} post(s) via SilarAI WordPress Proxy.`
-          };
-        }
-      } catch (proxyErr) {
-        // Fallback below
-      }
-
       return {
         success: false,
         posts: FALLBACK_WP_POSTS,
@@ -283,7 +236,7 @@ export class WordPressIntegrationManager {
         totalPosts: FALLBACK_WP_POSTS.length,
         source: 'fallback',
         wpUrl: targetUrl,
-        message: `Could not reach WordPress REST API (${directErr.message}). Displaying fallback content.`
+        message: `Remote WordPress fetch note: ${directErr.message || 'CORS or unreachable'}. Loaded built-in SilarAI articles.`
       };
     }
   }

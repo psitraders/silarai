@@ -44,22 +44,13 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBackToHome, onBookDemo }
         badgeText="Company Mission & Overview"
       />
 
-      {/* Hero Header */}
+      {/* Top Hero Header */}
       <div className="bg-plum-950 text-white relative overflow-hidden border-b border-plum-800 py-16 lg:py-20">
         {/* Subtle Background Glows */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-plum-800/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Back Navigation Button */}
-          <button
-            onClick={onBackToHome}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-teal-300 text-xs font-bold transition-all mb-8 border border-white/10 hover:border-white/20"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Home</span>
-          </button>
-
           <div className="max-w-3xl space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-peach-300/20 text-peach-300 font-extrabold text-xs tracking-wider uppercase border border-peach-300/30">
               <Sparkles className="w-3.5 h-3.5" />
@@ -344,7 +335,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBackToHome, onBookDemo }
               Enterprise Trust, Compliance & Security Standards
             </h2>
             <p className="text-base text-slate-600 leading-relaxed">
-              SilarAi operates with bank-grade security protocols to safeguard customer catalogs, order data, and real-time transaction traffic.
+              SilarAI operates with bank-grade security protocols to safeguard customer catalogs, order data, and real-time transaction traffic.
             </p>
           </div>
 
@@ -448,7 +439,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBackToHome, onBookDemo }
               Executive Summary &amp; Benchmarks
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
-              SilarAi Executive Summary & Performance Metrics
+              SilarAI Executive Summary & Performance Metrics
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed">
               Verified benchmark metrics compiled from 500+ active merchant deployments between 2024–2026:

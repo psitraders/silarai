@@ -46,9 +46,7 @@ export const InternalLinkingSection: React.FC<InternalLinkingSectionProps> = ({
         </ul>
       </nav>
 
-      {/* Embedded Schema.org ItemList for Search Engine Bots.
-          Absolute URLs use the apex origin: www.silarai.com does not resolve and
-          index.html declares https://silarai.com/ as canonical. */}
+      {/* Embedded Schema.org ItemList for Search Engine Bots */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -57,7 +55,7 @@ export const InternalLinkingSection: React.FC<InternalLinkingSectionProps> = ({
             '@type': 'ItemList',
             name: `Topical Internal Link Cluster for ${cluster.pageTitle}`,
             description: cluster.description,
-            numberOfItems: cluster.links.length,
+            numberOfItems: 8,
             itemListElement: cluster.links.map((link, idx) => ({
               '@type': 'SiteNavigationElement',
               position: idx + 1,

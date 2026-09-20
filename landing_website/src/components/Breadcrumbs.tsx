@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Home,
   ChevronRight,
   ArrowLeft,
   Share2,

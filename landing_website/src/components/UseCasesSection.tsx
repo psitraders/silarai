@@ -157,7 +157,12 @@ export const UseCasesSection: React.FC<UseCasesSectionProps> = ({
                       Open Page <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </h3>
-                  <p className="text-xs font-bold text-plum-700 mt-0.5">
+                  {uc.subtitle && (
+                    <p className="text-xs font-bold text-plum-900 mt-1">
+                      {uc.subtitle}
+                    </p>
+                  )}
+                  <p className="text-xs font-medium text-slate-500 mt-0.5">
                     {uc.header}
                   </p>
                 </div>
@@ -246,6 +251,11 @@ export const UseCasesSection: React.FC<UseCasesSectionProps> = ({
                     <h2 className="text-xl sm:text-2xl font-extrabold text-white mt-1">
                       {activeModalUseCase.header}
                     </h2>
+                    {activeModalUseCase.subtitle && (
+                      <p className="text-sm font-semibold text-peach-200 mt-1">
+                        {activeModalUseCase.subtitle}
+                      </p>
+                    )}
                   </div>
                 </div>
 

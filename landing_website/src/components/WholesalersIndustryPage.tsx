@@ -285,18 +285,6 @@ export const WholesalersIndustryPage: React.FC<WholesalersIndustryPageProps> = (
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
-      {/* Top Breadcrumb Navigation */}
-      <Breadcrumbs
-        items={[
-          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
-          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
-          { label: 'AI Commerce Platform for Wholesalers', isCurrent: true, icon: Boxes }
-        ]}
-        onBack={onBackToHome}
-        backButtonLabel="Back to Home"
-        badgeText="Wholesale B2B Specification v2.4"
-      />
-
       {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
       <script
         type="application/ld+json"
@@ -361,30 +349,16 @@ export const WholesalersIndustryPage: React.FC<WholesalersIndustryPageProps> = (
       />
 
       {/* Top Banner & Breadcrumb Navigation */}
-      <div className="bg-slate-900 text-slate-300 py-3 px-4 sm:px-6 lg:px-8 text-xs border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onBackToHome}
-              className="hover:text-peach-300 transition-colors flex items-center gap-1 font-semibold cursor-pointer"
-            >
-              ← Back to Home
-            </button>
-            <span className="text-slate-600">/</span>
-            <span className="text-slate-400 font-medium">Industry Solutions</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-peach-300 font-extrabold flex items-center gap-1">
-              <Boxes className="w-3.5 h-3.5" />
-              AI Commerce Platform for Wholesalers
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] bg-plum-800 text-peach-200 px-2.5 py-0.5 rounded-full font-bold border border-plum-700">
-              Wholesale B2B Specification v2.4
-            </span>
-          </div>
-        </div>
-      </div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
+          { label: 'Industry Solutions', shortLabel: 'Industries', icon: Building2 },
+          { label: 'AI Commerce Platform for Wholesalers', isCurrent: true, icon: Boxes }
+        ]}
+        onBack={onBackToHome}
+        backButtonLabel="Back to Home"
+        badgeText="Wholesale B2B Specification v2.4"
+      />
 
       {/* Hero Section */}
       <section className="relative pt-12 pb-20 bg-gradient-to-b from-plum-950 via-plum-900 to-slate-900 text-white overflow-hidden">

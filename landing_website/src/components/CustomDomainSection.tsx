@@ -6,7 +6,10 @@ import {
   Briefcase,
   Smartphone,
   ArrowRight,
+  CheckCircle2,
   ShieldCheck,
+  Sparkles,
+  ExternalLink,
   Copy,
   Check,
 } from 'lucide-react';
@@ -22,28 +25,38 @@ export const CustomDomainSection: React.FC<CustomDomainSectionProps> = ({ onBook
   const domainBenefits = [
     {
       icon: Globe,
+      emoji: '🌐',
       title: 'Use any domain you already own',
       subtitle: 'GoDaddy, Namecheap, Google Domains, Cloudflare, Hostinger & more',
+      accent: 'blue',
     },
     {
       icon: Lock,
+      emoji: '🔒',
       title: 'Free SSL certificate included',
       subtitle: 'Your store is always encrypted with https:// and green padlock verification',
+      accent: 'emerald',
     },
     {
       icon: Zap,
+      emoji: '⚡',
       title: 'Goes live in minutes with a simple CNAME record',
       subtitle: 'Paste one simple DNS record and your store connects automatically',
+      accent: 'amber',
     },
     {
       icon: Briefcase,
+      emoji: '💼',
       title: 'Customers trust your brand domain more',
       subtitle: 'Higher buyer confidence, direct brand equity, and higher conversion rates',
+      accent: 'purple',
     },
     {
       icon: Smartphone,
+      emoji: '📱',
       title: 'Works perfectly on mobile & social shares',
       subtitle: 'Clean branded preview cards on WhatsApp shares, Instagram bios & social links',
+      accent: 'teal',
     },
   ];
 
@@ -70,7 +83,7 @@ export const CustomDomainSection: React.FC<CustomDomainSectionProps> = ({ onBook
       className="py-16 sm:py-24 bg-plum-950 text-white relative overflow-hidden"
     >
       {/* Background Decorative Mesh & Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_10%,#183a47_0%,transparent_70%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_10%,#1a4352_0%,transparent_70%)] pointer-events-none" />
       <div className="absolute top-1/4 -right-20 w-80 h-80 bg-peach-400/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 -left-20 w-80 h-80 bg-coral-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -87,7 +100,7 @@ export const CustomDomainSection: React.FC<CustomDomainSectionProps> = ({ onBook
             {/* Main Headline */}
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
               Sell on your own domain.{' '}
-              <span className="text-peach-300 block sm:inline">Not someone else&rsquo;s.</span>
+              <span className="text-peach-300 block sm:inline">Not someone else's.</span>
             </h2>
 
             {/* Description */}
@@ -164,7 +177,6 @@ export const CustomDomainSection: React.FC<CustomDomainSectionProps> = ({ onBook
                     value={domainInput}
                     onChange={(e) => setDomainInput(e.target.value)}
                     placeholder="yourbrand"
-                    aria-label="Preview your brand domain"
                     className="w-full bg-transparent text-xs sm:text-sm font-bold font-mono text-peach-300 focus:outline-hidden px-1"
                   />
                   <span className="text-xs sm:text-sm font-mono text-plum-400 shrink-0">.com</span>

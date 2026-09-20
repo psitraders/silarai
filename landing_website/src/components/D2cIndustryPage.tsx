@@ -374,7 +374,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
 
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-peach-300 selection:text-plum-950">
-      {/* Top Breadcrumb Navigation */}
+      {/* Top Header / Breadcrumbs */}
       <Breadcrumbs
         items={[
           { label: 'Home', shortLabel: 'Home', icon: Home, onClick: onBackToHome },
@@ -385,38 +385,6 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
         backButtonLabel="Back to Home"
         badgeText="Complete D2C Commerce & Growth Guide"
       />
-
-      {/* Top Header / Legacy Breadcrumbs */}
-      <div className="bg-plum-950 text-white border-b border-plum-800">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs text-plum-300">
-            <button
-              onClick={onBackToHome}
-              className="hover:text-white transition-colors flex items-center gap-1 font-semibold"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Home</span>
-            </button>
-            <span>/</span>
-            <span className="text-plum-400">Industries</span>
-            <span>/</span>
-            <span className="text-peach-300 font-bold">D2C Brands</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-plum-800/80 border border-peach-300/30 text-[11px] font-bold text-peach-300">
-              <Sparkles className="w-3 h-3 text-peach-300" />
-              <span>Complete D2C Commerce &amp; Growth Guide</span>
-            </span>
-            <button
-              onClick={() => onBookDemo('D2C Master Experience Header')}
-              className="px-4 py-1.5 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-lg transition-colors cursor-pointer"
-            >
-              Book Demo
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* TOP OF PAGE: Primary 3-Chapter Navigation & Exploration Switcher */}
       <div className="bg-plum-900/95 text-white border-b border-plum-700/80 shadow-lg sticky top-0 z-40 backdrop-blur-md">
@@ -721,7 +689,9 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                       key={idx}
                       onClick={() => {
                         setDemoQuery(preset.query);
-                        setDemoResponse({ ...preset, userText: preset.query });
+                        // Presets key the scenario as `query`; the response state field is `userText`.
+                        const { query, ...rest } = preset;
+                        setDemoResponse({ ...rest, userText: query });
                       }}
                       className={`p-3 rounded-xl text-left text-xs font-semibold transition-all border cursor-pointer space-y-1 ${
                         isSelected

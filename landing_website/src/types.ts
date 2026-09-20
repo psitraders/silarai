@@ -100,6 +100,7 @@ export interface UseCaseItem {
   slug: string; // e.g. 'sales-assistant'
   url: string; // e.g. '/use-cases/sales-assistant'
   title: string;
+  subtitle?: string;
   header: string;
   seoKeywords: string[];
   overview: string;

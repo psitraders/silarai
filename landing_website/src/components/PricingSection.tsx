@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { PRODUCTS_PRICING, WHY_SILARAI_BENEFITS } from '../data/content';
+import React, { useState, Suspense } from 'react';
+import { PRODUCTS_PRICING, WHY_SILARAI_BENEFITS } from '../data/pricingData';
 import { 
   Check, 
   X, 
@@ -17,9 +17,50 @@ import {
   RefreshCw, 
   CreditCard,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Globe
 } from 'lucide-react';
-import { RoiCalculator } from './RoiCalculator';
+
+type SupportedRegion = 'US' | 'EU' | 'GB' | 'AU' | 'IN' | 'SG' | 'MY';
+
+interface RegionConfig {
+  code: SupportedRegion;
+  country: string;
+  currency: string;
+  symbol: string;
+  rate: number;
+  taxNote: string;
+  flag: string;
+}
+
+const REGIONS: RegionConfig[] = [
+  { code: 'US', country: 'United States & Global', currency: 'USD', symbol: '$', rate: 1, taxNote: 'Excl. local sales taxes', flag: '🇺🇸' },
+  { code: 'EU', country: 'Europe / EMEA', currency: 'EUR', symbol: '€', rate: 0.92, taxNote: 'VAT compliant invoice', flag: '🇪🇺' },
+  { code: 'GB', country: 'United Kingdom', currency: 'GBP', symbol: '£', rate: 0.79, taxNote: 'UK VAT compliant', flag: '🇬🇧' },
+  { code: 'AU', country: 'Australia', currency: 'AUD', symbol: 'A$', rate: 1.52, taxNote: 'GST compliant invoicing', flag: '🇦🇺' },
+  { code: 'IN', country: 'India', currency: 'INR', symbol: '₹', rate: 85, taxNote: 'GST input tax credit invoice', flag: '🇮🇳' },
+  { code: 'SG', country: 'Singapore', currency: 'SGD', symbol: 'S$', rate: 1.34, taxNote: 'Singapore GST invoice ready', flag: '🇸🇬' },
+  { code: 'MY', country: 'Malaysia', currency: 'MYR', symbol: 'RM', rate: 4.45, taxNote: 'SST compliant invoicing', flag: '🇲🇾' },
+];
+
+const formatPrice = (usd: number | string, region: RegionConfig) => {
+  if (typeof usd !== 'number') return usd;
+  if (region.code === 'US') return `$${usd}`;
+  if (region.currency === 'INR') {
+    const inr = Math.round((usd * region.rate) / 10) * 10;
+    return `₹${inr.toLocaleString('en-IN')}`;
+  }
+  if (region.currency === 'MYR') {
+    const myr = Math.round((usd * region.rate) / 5) * 5;
+    return `RM${myr.toLocaleString()}`;
+  }
+  const converted = Math.round(usd * region.rate);
+  return `${region.symbol}${converted}`;
+};
+
+const RoiCalculator = React.lazy(() => 
+  import('./RoiCalculator').then(m => ({ default: m.RoiCalculator }))
+);
 
 interface PricingSectionProps {
   onSelectPlan: (planName: string) => void;
@@ -27,14 +68,16 @@ interface PricingSectionProps {
 
 export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) => {
   const [activeProductId, setActiveProductId] = useState<'shopping-assistant' | 'commerce-platform'>('shopping-assistant');
+  const [selectedRegionCode, setSelectedRegionCode] = useState<SupportedRegion>('US');
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [showInlineTerms, setShowInlineTerms] = useState(false);
 
+  const selectedRegion = REGIONS.find((r) => r.code === selectedRegionCode) || REGIONS[0];
   const selectedProduct = PRODUCTS_PRICING.find((p) => p.id === activeProductId) || PRODUCTS_PRICING[0];
 
   return (
-    <section id="pricing" className="py-20 bg-slate-50 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <section id="pricing" className="py-14 sm:py-18 bg-slate-50 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
@@ -46,8 +89,37 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) 
             Choose the product that's right for your business
           </h2>
           <p className="text-base sm:text-lg text-slate-600 font-medium">
-            AI Shopping Assistant starting at <strong className="text-plum-950 font-black">$10/month</strong>. No hidden fees. Upgrade or cancel anytime.
+            AI Shopping Assistant starting at <strong className="text-plum-950 font-black">{formatPrice(10, selectedRegion)}/month</strong>. No hidden fees. Upgrade or cancel anytime.
           </p>
+
+          {/* International Currency & Country Selector */}
+          <div className="pt-2 flex flex-col items-center justify-center gap-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+              <Globe className="w-4 h-4 text-plum-800" />
+              <span>Select Your Currency &amp; Regional Compliance:</span>
+            </div>
+            <div className="flex items-center justify-center flex-wrap gap-1.5 p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200 shadow-2xs max-w-3xl">
+              {REGIONS.map((reg) => (
+                <button
+                  key={reg.code}
+                  onClick={() => setSelectedRegionCode(reg.code)}
+                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    selectedRegionCode === reg.code
+                      ? 'bg-plum-950 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-slate-950 hover:bg-white'
+                  }`}
+                  title={`${reg.country} (${reg.currency})`}
+                >
+                  <span>{reg.flag}</span>
+                  <span>{reg.code}</span>
+                  <span className="opacity-80 text-[11px]">({reg.symbol})</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] font-medium text-slate-500">
+              {selectedRegion.flag} {selectedRegion.country} — {selectedRegion.taxNote}. Instant international card, PayPal, and wire payments.
+            </p>
+          </div>
         </div>
 
         {/* Quick Pricing Summary Table */}
@@ -55,7 +127,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div className="text-xs font-black text-slate-500 uppercase tracking-wider text-center sm:text-left flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-plum-700" />
-              Unified Pricing Matrix Across Products
+              Unified Pricing Matrix ({selectedRegion.currency} {selectedRegion.symbol})
             </div>
             <button
               onClick={() => setIsTermsModalOpen(true)}
@@ -83,10 +155,10 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) 
                     <span>AI Shopping Assistant</span>
                   </td>
                   <td className="py-3 px-3 bg-peach-100/70 rounded-xl text-plum-950 text-base sm:text-lg font-black">
-                    $10<span className="text-xs font-bold text-slate-600">/mo</span>
+                    {formatPrice(10, selectedRegion)}<span className="text-xs font-bold text-slate-600">/mo</span>
                   </td>
                   <td className="py-3 px-3 bg-plum-50/60 rounded-xl text-plum-900 text-base sm:text-lg">
-                    $50<span className="text-xs font-bold text-slate-600">/mo</span>
+                    {formatPrice(50, selectedRegion)}<span className="text-xs font-bold text-slate-600">/mo</span>
                   </td>
                   <td className="py-3 px-3 bg-slate-100/80 rounded-xl text-slate-900 text-xs sm:text-sm">
                     Custom Quote
@@ -98,10 +170,10 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) 
                     <span>AI Commerce Platform</span>
                   </td>
                   <td className="py-3 px-3 bg-plum-50/60 rounded-xl text-plum-900 text-base sm:text-lg">
-                    $25<span className="text-xs font-bold text-slate-600">/mo</span>
+                    {formatPrice(25, selectedRegion)}<span className="text-xs font-bold text-slate-600">/mo</span>
                   </td>
                   <td className="py-3 px-3 bg-plum-50/60 rounded-xl text-plum-900 text-base sm:text-lg">
-                    $50<span className="text-xs font-bold text-slate-600">/mo</span>
+                    {formatPrice(50, selectedRegion)}<span className="text-xs font-bold text-slate-600">/mo</span>
                   </td>
                   <td className="py-3 px-3 bg-slate-100/80 rounded-xl text-slate-900 text-xs sm:text-sm">
                     Custom Quote
@@ -226,7 +298,9 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) 
                     <div className="flex items-baseline gap-1">
                       {typeof plan.priceMonthly === 'number' ? (
                         <>
-                          <span className="text-4xl font-black text-slate-900">${plan.priceMonthly}</span>
+                          <span className="text-4xl font-black text-slate-900">
+                            {formatPrice(plan.priceMonthly, selectedRegion)}
+                          </span>
                           <span className="text-xs text-slate-500 font-bold">/ month</span>
                         </>
                       ) : (
@@ -236,7 +310,11 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) 
                     {plan.termsSummary && (
                       <div className="mt-2 text-[11px] text-plum-900 bg-peach-50 border border-peach-200 p-2 rounded-xl font-semibold flex items-start gap-1.5">
                         <Info className="w-3.5 h-3.5 text-coral-500 shrink-0 mt-0.5" />
-                        <span>{plan.termsSummary}</span>
+                        <span>
+                          {selectedRegion.code !== 'US' && typeof plan.priceMonthly === 'number'
+                            ? `${formatPrice(plan.priceMonthly, selectedRegion)}/mo billed monthly. ${selectedRegion.taxNote}. 14-day refund guarantee. Cancel anytime.`
+                            : plan.termsSummary}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -408,7 +486,14 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) 
         </div>
 
         {/* Interactive ROI Calculator with D3 & Recharts Visualizations */}
-        <RoiCalculator onBookDemo={(summary) => onSelectPlan(summary || 'ROI Projection Demo')} />
+        <Suspense fallback={
+          <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm text-center py-16 flex flex-col items-center justify-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-plum-900 border-t-transparent animate-spin" />
+            <span className="text-xs font-semibold text-slate-500">Loading Interactive ROI &amp; Revenue Projection Engine...</span>
+          </div>
+        }>
+          <RoiCalculator onBookDemo={(summary) => onSelectPlan(summary || 'ROI Projection Demo')} />
+        </Suspense>
 
         {/* Why SilarAI? Benefits Card & Enterprise Contact */}
         <div className="bg-gradient-to-r from-plum-950 via-plum-900 to-plum-950 text-white rounded-3xl p-8 sm:p-12 border border-plum-800 shadow-xl space-y-8">

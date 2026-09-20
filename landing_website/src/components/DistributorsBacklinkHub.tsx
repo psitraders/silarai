@@ -353,7 +353,7 @@ export const DistributorsBacklinkHub: React.FC<DistributorsBacklinkHubProps> = (
           </a>
           <span>•</span>
           <a href="/ai/semantic-backlinks.json" target="_blank" rel="noopener noreferrer" className="text-peach-300 hover:underline">
-            /ai/semantic-backlinks.json JSON
+            /ai/semantic-backlinks.json
           </a>
           <span>•</span>
           <a href="/ai/geo-knowledge.json" target="_blank" rel="noopener noreferrer" className="text-peach-300 hover:underline">

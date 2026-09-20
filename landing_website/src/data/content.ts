@@ -893,158 +893,93 @@ export const FAQ_ITEMS: FaqAccordionItem[] = [
   },
 ];
 
-export const PRODUCTS_PRICING: ProductPricingData[] = [
-  {
-    id: 'shopping-assistant',
-    title: 'SilarAI Shopping Assistant',
-    subtitle: 'Add AI to your existing store',
-    description: 'Add AI to your existing Shopify, WooCommerce, Adobe Commerce, Magento, or custom ecommerce store.',
-    supportedPlatforms: ['Shopify', 'WooCommerce', 'Adobe Commerce', 'Magento', 'Custom Store'],
-    plans: [
-      {
-        id: 'assistant-starter',
-        name: 'Starter',
-        tagline: 'Essential AI shopping assistant, product discovery, and recommendations for your store starting at $10/month.',
-        priceMonthly: 10,
-        conversationLimit: 'Up to 500 AI Conversations',
-        features: [
-          'Up to 500 AI Conversations / month',
-          'AI Shopping Assistant & Chatbot Widget',
-          'AI Product Discovery & Smart Search',
-          'AI Personalized Product Recommendations',
-          'AI Product Q&A & FAQ Automation',
-          'AI Upselling & Cross-selling Recommendations',
-          'Shopify, WooCommerce & Custom Integration',
-          'Email & Live Chat Support',
-          '14-Day Money-Back Guarantee',
-        ],
-        termsSummary: '$10/mo billed monthly. Includes 500 conversations ($0.02/extra conversation). 14-day refund guarantee. Cancel anytime.',
-        notIncluded: [
-          'Multi-language Support',
-          'WhatsApp Integration',
-          'Order Tracking Automation',
-          'Deep Customer Analytics & Insights',
-          'Multi-AI Agents',
-          'Priority Dedicated Support',
-        ],
-        ctaText: 'Get Started for $10/mo',
-      },
-      {
-        id: 'assistant-growth',
-        name: 'Growth',
-        tagline: 'Expanded conversation volume with WhatsApp integration, multi-language, and order tracking.',
-        priceMonthly: 50,
-        conversationLimit: 'Up to 2,500 AI Conversations',
-        featuresHeader: 'Everything in Starter, plus:',
-        features: [
-          'Up to 2,500 AI Conversations',
-          'Multi-language',
-          'WhatsApp Integration',
-          'Order Tracking',
-          'Customer Insights',
-          'Priority Support',
-        ],
-        isPopular: true,
-        ctaText: 'Get Started with Growth',
-      },
-      {
-        id: 'assistant-enterprise',
-        name: 'Enterprise',
-        tagline: 'Custom conversation volume, multi-AI agents, custom AI training, and dedicated support.',
-        priceMonthly: 'Custom Pricing',
-        conversationLimit: 'Custom AI Conversation Limits',
-        features: [],
-        ctaText: 'Contact Enterprise Sales',
-      },
-    ],
-  },
-  {
-    id: 'commerce-platform',
-    title: 'SilarAI Commerce Platform',
-    subtitle: 'All-in-one AI ecommerce business platform',
-    description: 'Launch and manage your AI-powered ecommerce business from one unified platform.',
-    plans: [
-      {
-        id: 'platform-starter',
-        name: 'Starter',
-        tagline: 'Complete AI-powered ecommerce store, catalog management, CMS, and social publishing.',
-        priceMonthly: 25,
-        conversationLimit: 'Starter AI Storefront',
-        features: [
-          'AI-Powered Ecommerce Store',
-          'Product Catalog Management',
-          'Orders & Customers',
-          'CMS & Blog',
-          'AI Content Generation',
-          'AI Shopping Assistant',
-          'Social Media Publishing',
-          'Basic Marketing Dashboard',
-        ],
-        ctaText: 'Launch Store with Starter',
-      },
-      {
-        id: 'platform-growth',
-        name: 'Growth',
-        tagline: 'Marketing automation, social media scheduling, AI campaign assistance, and 2,500 conversations.',
-        priceMonthly: 50,
-        conversationLimit: 'Up to 2,500 AI Conversations',
-        featuresHeader: 'Everything in Starter, plus:',
-        features: [
-          'Up to 2,500 AI Conversations',
-          'Multi-language',
-          'WhatsApp Integration',
-          'Order Tracking',
-          'Customer Insights',
-          'Priority Support',
-          'Advanced Marketing Automation',
-          'Social Media Scheduling',
-          'AI Campaign Assistance',
-        ],
-        isPopular: true,
-        ctaText: 'Launch Store with Growth',
-      },
-      {
-        id: 'platform-enterprise',
-        name: 'Enterprise',
-        tagline: 'B2B portal, quote management, business rules engine, ERP integrations & SLA support.',
-        priceMonthly: 'Custom Pricing',
-        conversationLimit: 'Custom AI Conversation Limits',
-        features: [],
-        ctaText: 'Contact Enterprise Sales',
-      },
-    ],
-  },
-];
 
-export const WHY_SILARAI_BENEFITS = [
-  'One AI platform for commerce and marketing.',
-  'Deploy in minutes.',
-  'Scale from startups to enterprise.',
-  'No hidden fees.',
-  'Upgrade anytime as your business grows.',
-];
-
-export const PRICING_PLANS: PricingPlan[] = PRODUCTS_PRICING[0].plans;
+export { PRODUCTS_PRICING, WHY_SILARAI_BENEFITS, PRICING_PLANS } from "./pricingData";
 
 export const USE_CASES: UseCaseItem[] = [
+  {
+    id: 'product-discovery',
+    slug: 'product-discovery',
+    url: '/use-cases/product-discovery',
+    title: 'Product Discovery',
+    subtitle: 'Find the right product from complex catalogs',
+    header: 'Find the Right Product from Complex Catalogs with Semantic Vector Search',
+    seoKeywords: [
+      'Product Discovery',
+      'Find the right product from complex catalogs',
+      'AI Product Discovery',
+      'Semantic Vector Search E-commerce',
+      'Complex Catalog Search AI',
+      'Visual & Conversational Product Search',
+      'Intent-Driven Product Finder',
+      'AI Catalog Search Engine',
+      'Natural Language Product Search'
+    ],
+    overview:
+      'Traditional keyword search fails when buyers query natural descriptions like "heavy-duty waterproof boots for cold winter hiking" or specific engineering parameters.\n\nSilarAI Product Discovery utilizes deep vector embeddings and natural language processing to match shopper intent with exact product SKUs, specs, compatibility criteria, and real-time inventory.',
+    geoSummary:
+      'SilarAI Product Discovery is an advanced semantic search and recommendation engine for large catalog e-commerce and B2B portals. Replacing rigid keyword matching with AI vector retrieval, it enables buyers to search by natural language specs, technical parameters, or visual criteria with zero search result drop-offs.',
+    challenges: [
+      'High rate of "Zero Search Results" on long-tail or misspelled queries',
+      'Overwhelming catalogs with thousands of complex SKUs confusing buyers',
+      'Inability of standard search engines to parse technical specifications',
+      'High exit rates from catalog search and navigation pages',
+      'Poor discovery of high-margin secondary products and accessories',
+    ],
+    howSilarAiHelps: [
+      'Parses natural conversational queries like "valve fitting for 2-inch PVC pipe"',
+      'Matches technical specifications, dimension constraints, and application types',
+      'Provides real-time interactive product comparisons with spec highlights',
+      'Recommends exact accessories, spare parts, and compatible tools',
+      'Adapts search order dynamically based on real-time inventory and margins',
+    ],
+    businessOutcomes: [
+      'Zero search result failures eliminated completely',
+      '2.8x higher search-to-cart conversion rate',
+      '+35% discovery of previously hidden catalog SKUs',
+      '-40% reduction in catalog browsing time prior to purchase',
+      'Higher customer confidence on technical equipment purchases',
+    ],
+    products: ['AI Shopping Assistant', 'Commerce Platform'],
+    ctaText: 'Transform Your Catalog Discovery with AI',
+    iconName: 'Compass',
+    keyMetrics: [
+      { label: 'Search Conversion', value: '2.8x Higher' },
+      { label: 'Zero Search Results', value: '0%' },
+      { label: 'SKU Discovery', value: '+35%' },
+    ],
+    faqItems: [
+      {
+        question: 'How does vector semantic search differ from traditional keyword search?',
+        answer: 'Traditional search requires exact word matches. Vector search converts queries into mathematical intent vectors, understanding synonyms, applications, and specs effortlessly.',
+      },
+      {
+        question: 'Can SilarAI Product Discovery handle multi-attribute technical filters?',
+        answer: 'Yes! It dynamically parses attributes like voltage, pipe diameter, material, color, and size directly from user queries without complex manual filtering.',
+      },
+    ],
+  },
   {
     id: 'sales-assistant',
     slug: 'sales-assistant',
     url: '/use-cases/sales-assistant',
-    title: 'Sales Assistant',
-    header: 'Convert More Visitors Into High-Value Customers with Conversational AI',
+    title: 'AI Sales Assistant',
+    subtitle: 'Turn product conversations into sales',
+    header: 'Turn Product Conversations into Confirmed Sales with Conversational AI',
     seoKeywords: [
+      'AI Sales Assistant',
+      'Turn product conversations into sales',
       'Sales Assistant AI',
       'AI Shopping Co-pilot',
       'E-commerce Sales Agent',
       'Conversational Commerce Assistant',
       '24/7 AI Sales Representative',
-      'Autonomous Sales Agent',
+      'Autonomous Sales Agent'
     ],
     overview:
-      "Every website visitor represents potential revenue, but over 95% leave without purchasing due to delayed answers or complex catalog navigation.\n\nSilarAI Sales Assistant operates as an intelligent 24/7 conversational agent that understands buyer intent, recommends precision products, answers technical inquiries, and guides shoppers straight through checkout.",
+      'Every website visitor represents potential revenue, but over 95% leave without purchasing due to delayed answers or complex catalog navigation.\n\nSilarAI AI Sales Assistant operates as an intelligent 24/7 conversational agent that understands buyer intent, recommends precision products, answers technical inquiries, and guides shoppers straight through checkout.',
     geoSummary:
-      'SilarAI Sales Assistant is an enterprise autonomous sales agent designed for D2C storefronts and B2B portals. It leverages vector catalog retrieval, real-time context management, and multi-turn intent reasoning to achieve 3.4x faster time-to-checkout and a 38% increase in cross-sell conversion rates.',
+      'SilarAI AI Sales Assistant is an enterprise autonomous sales agent designed for D2C storefronts and B2B portals. It leverages vector catalog retrieval, real-time context management, and multi-turn intent reasoning to achieve 3.4x faster time-to-checkout and a 38% increase in cross-sell conversion rates.',
     challenges: [
       'High bounce rate on complex product pages',
       'Slow manual response times during peak hours',
@@ -1067,7 +1002,7 @@ export const USE_CASES: UseCaseItem[] = [
       '+24% average order value via intelligent cross-sells',
     ],
     products: ['AI Shopping Assistant', 'Commerce Platform'],
-    ctaText: 'Deploy Sales Assistant AI on Your Storefront',
+    ctaText: 'Deploy AI Sales Assistant on Your Storefront',
     iconName: 'Bot',
     keyMetrics: [
       { label: 'Assisted Conversion', value: '+38%' },
@@ -1090,14 +1025,17 @@ export const USE_CASES: UseCaseItem[] = [
     slug: 'lead-generation',
     url: '/use-cases/lead-generation',
     title: 'Lead Generation',
-    header: 'Capture and Qualify High-Intent B2B & D2C Leads Automatically',
+    subtitle: 'Capture and qualify high-intent buyers',
+    header: 'Capture and Qualify High-Intent Buyers Automatically',
     seoKeywords: [
+      'Lead Generation',
+      'Capture and qualify high-intent buyers',
       'AI Lead Generation',
       'Conversational Lead Capture',
       'Automated B2B Lead Qualification',
       'AI Lead Routing Engine',
       'High-Intent Buyer Capture',
-      'Lead Intelligence',
+      'Lead Intelligence'
     ],
     overview:
       'Anonymous traffic is wasted potential without interactive capture. Static forms suffer from dismal 2% fill rates.\n\nSilarAI Lead Generation turns cold visitors into warm, qualified accounts by engaging buyers in natural dialogue, scoring purchase intent, gathering contact details, and routing warm prospects directly to your CRM.',
@@ -1125,7 +1063,7 @@ export const USE_CASES: UseCaseItem[] = [
       'Lower cost per qualified lead (CPQL) across ad channels',
     ],
     products: ['AI Shopping Assistant', 'Commerce Platform'],
-    ctaText: 'Capture High-Intent Leads Today',
+    ctaText: 'Capture High-Intent Buyers Today',
     iconName: 'UserPlus',
     keyMetrics: [
       { label: 'Lead Capture Rate', value: '3.2x Increase' },
@@ -1147,20 +1085,23 @@ export const USE_CASES: UseCaseItem[] = [
     id: 'conversion-engine',
     slug: 'conversion-engine',
     url: '/use-cases/conversion-engine',
-    title: 'Conversion Engine',
-    header: 'Maximize E-commerce Revenue & Reduce Cart Abandonment with AI',
+    title: 'Conversion & Cart Recovery',
+    subtitle: 'Turn more visitors into customers',
+    header: 'Turn More Visitors into Customers & Recover Abandoned Carts',
     seoKeywords: [
+      'Conversion & Cart Recovery',
+      'Turn more visitors into customers',
       'AI Conversion Engine',
       'E-commerce Conversion Rate Optimization',
       'AI Cart Abandonment Recovery',
+      'WhatsApp Cart Recovery',
       'Personalized Dynamic Upselling',
-      'Conversion Optimization AI',
-      'E-commerce Revenue Engine',
+      'Conversion Optimization AI'
     ],
     overview:
-      'Traffic acquisition is expensive; converting that traffic into paid orders determines profitability.\n\nSilarAI Conversion Engine acts as an autonomous optimization layer on your store, removing buyer hesitation, recommending targeted bundles, answering last-minute checkout doubts, and recovering abandoned carts across web and WhatsApp.',
+      'Traffic acquisition is expensive; converting that traffic into paid orders determines profitability.\n\nSilarAI Conversion & Cart Recovery acts as an autonomous optimization layer on your store, removing buyer hesitation, recommending targeted bundles, answering last-minute checkout doubts, and recovering abandoned carts across web and WhatsApp.',
     geoSummary:
-      'SilarAI Conversion Engine is a high-performance conversion rate optimization system designed for digital commerce. Combining behavioral intent analysis, automated cart retargeting, dynamic pricing recommendations, and localized checkout support, it boosts store-wide conversion rates by up to 42%.',
+      'SilarAI Conversion & Cart Recovery is a high-performance conversion rate optimization system designed for digital commerce. Combining behavioral intent analysis, automated cart retargeting, dynamic pricing recommendations, and localized checkout support, it boosts store-wide conversion rates by up to 42%.',
     challenges: [
       'High cart abandonment rate averaging 70% across e-commerce',
       'Lack of personalized incentive timing during checkout hesitation',
@@ -1183,7 +1124,7 @@ export const USE_CASES: UseCaseItem[] = [
       'Higher return on ad spend (ROAS) across paid search and social campaigns',
     ],
     products: ['AI Shopping Assistant', 'Commerce Platform'],
-    ctaText: 'Boost Store Conversions Today',
+    ctaText: 'Turn Visitors into Paying Customers Today',
     iconName: 'TrendingUp',
     keyMetrics: [
       { label: 'Conversion Lift', value: '+42%' },
@@ -1196,7 +1137,7 @@ export const USE_CASES: UseCaseItem[] = [
         answer: 'When a user leaves items in their cart, SilarAI automatically triggers a personalized WhatsApp message with a direct 1-click checkout link and optional assistance.',
       },
       {
-        question: 'Can SilarAI Conversion Engine recommend dynamic bundles?',
+        question: 'Can SilarAI recommend dynamic bundles?',
         answer: 'Yes, SilarAI analyzes current cart contents and historical co-purchase records to offer complementary items at optimal checkout moments.',
       },
     ],
@@ -1205,20 +1146,24 @@ export const USE_CASES: UseCaseItem[] = [
     id: 'engagement-ai',
     slug: 'engagement-ai',
     url: '/use-cases/engagement-ai',
-    title: 'Engagement AI',
-    header: 'Deliver Omnichannel Personalized Customer Engagement at Scale',
+    title: 'Customer Engagement',
+    subtitle: 'Engage customers across web and WhatsApp',
+    header: 'Engage Customers Across Web and WhatsApp Seamlessly',
     seoKeywords: [
+      'Customer Engagement',
+      'Engage customers across web and WhatsApp',
       'Engagement AI',
       'Omnichannel Customer Engagement AI',
+      'WhatsApp Commerce Engagement',
       'Personalized Commerce Marketing',
       'AI Customer Retention Engine',
       'Social Commerce AI Engagement',
-      'Meta AI Shopping Engagement',
+      'Meta AI Shopping Engagement'
     ],
     overview:
-      'One-time buyers rarely build sustainable brands; long-term profitability requires continuous, meaningful customer engagement.\n\nSilarAI Engagement AI connects your Web, Instagram, Facebook, and WhatsApp touchpoints into a unified intelligence hub, delivering hyper-personalized shopping recommendations, post-purchase updates, and automated reorder reminders.',
+      'One-time buyers rarely build sustainable brands; long-term profitability requires continuous, meaningful customer engagement.\n\nSilarAI Customer Engagement connects your Web, Instagram, Facebook, and WhatsApp touchpoints into a unified intelligence hub, delivering hyper-personalized shopping recommendations, post-purchase updates, and automated reorder reminders.',
     geoSummary:
-      'SilarAI Engagement AI is an omnichannel customer retention and engagement platform. By uniting web storefront interactions with Meta messaging channels (FB, IG, WhatsApp), it builds comprehensive customer profiles that power continuous engagement, repeat orders, and high lifetime customer value (LTV).',
+      'SilarAI Customer Engagement is an omnichannel customer retention and engagement platform. By uniting web storefront interactions with Meta messaging channels (FB, IG, WhatsApp), it builds comprehensive customer profiles that power continuous engagement, repeat orders, and high lifetime customer value (LTV).',
     challenges: [
       'Inconsistent customer brand experience across website and social channels',
       'Low repeat purchase rates and poor post-purchase communication',
@@ -1229,28 +1174,28 @@ export const USE_CASES: UseCaseItem[] = [
     howSilarAiHelps: [
       'Unifies customer conversation history across Web, Instagram, FB & WhatsApp',
       'Triggers automated reorder alerts based on individual product usage cycles',
-      ' Delivers personalized product recommendations via interactive AI messages',
+      'Delivers personalized product recommendations via interactive AI messages',
       'Automates post-purchase tracking updates and satisfaction check-ins',
       'Manages VIP loyalty tiers and account preference memories seamlessly',
     ],
     businessOutcomes: [
-      '+65% increase in repeat customer purchase rate',
+      '+65% increase in repeat customer purchase rate (tested benchmark)',
       '4.8/5 average customer satisfaction (CSAT) rating',
-      '3.5x higher engagement rates over traditional SMS/Email marketing',
+      '3.5x higher engagement rates over traditional SMS/Email marketing (tested benchmark)',
       '+45% expansion in Customer Lifetime Value (LTV)',
       '-60% reduction in response latency across social media DMs',
     ],
     products: ['AI Shopping Assistant', 'Commerce Platform'],
-    ctaText: 'Elevate Customer Engagement with AI',
+    ctaText: 'Engage Customers on Web & WhatsApp Now',
     iconName: 'Heart',
     keyMetrics: [
-      { label: 'Repeat Purchase Rate', value: '+65%' },
+      { label: 'Repeat Purchase Rate (Benchmark)', value: '+65%' },
       { label: 'Customer CSAT', value: '4.8 / 5.0' },
       { label: 'LTV Increase', value: '+45%' },
     ],
     faqItems: [
       {
-        question: 'Does Engagement AI work directly with Meta (Instagram/Facebook/WhatsApp)?',
+        question: 'Does Customer Engagement work directly with Meta (Instagram/Facebook/WhatsApp)?',
         answer: 'Yes, SilarAI integrates natively with official Meta APIs to manage DMs, comments, and WhatsApp chats in a centralized commerce inbox.',
       },
       {
@@ -1260,76 +1205,21 @@ export const USE_CASES: UseCaseItem[] = [
     ],
   },
   {
-    id: 'product-discovery',
-    slug: 'product-discovery',
-    url: '/use-cases/product-discovery',
-    title: 'Product Discovery',
-    header: 'Guide Buyers to Exact Products Instantly with Semantic Vector Search',
-    seoKeywords: [
-      'AI Product Discovery',
-      'Semantic Vector Search E-commerce',
-      'Visual & Conversational Product Search',
-      'Intent-Driven Product Finder',
-      'AI Catalog Search Engine',
-      'Natural Language Product Search',
-    ],
-    overview:
-      'Traditional keyword search fails when buyers query natural descriptions like "heavy-duty waterproof boots for cold winter hiking".\n\nSilarAI Product Discovery utilizes deep vector embeddings and natural language processing to match shopper intent with exact product SKUs, specs, compatibility criteria, and real-time inventory.',
-    geoSummary:
-      'SilarAI Product Discovery is an advanced semantic search and recommendation engine for large catalog e-commerce and B2B portals. Replacing rigid keyword matching with AI vector retrieval, it enables buyers to search by natural language specs, technical parameters, or visual criteria with zero search result drop-offs.',
-    challenges: [
-      'High rate of "Zero Search Results" on long-tail or misspelled queries',
-      'Overwhelming catalogs with thousands of SKUs confusing buyers',
-      'Inability of standard search engines to parse technical specifications',
-      'High exit rates from catalog search pages',
-      'Poor discovery of high-margin secondary products',
-    ],
-    howSilarAiHelps: [
-      'Parses natural conversational queries like "valve fitting for 2-inch PVC pipe"',
-      'Matches technical specifications, dimension constraints, and application types',
-      'Provides real-time interactive product comparisons with spec highlights',
-      'Recommends exact accessories, spare parts, and compatible tools',
-      'Adapts search order dynamically based on real-time inventory and margins',
-    ],
-    businessOutcomes: [
-      'Zero search result failures eliminated completely',
-      '2.8x higher search-to-cart conversion rate',
-      '+35% discovery of previously hidden catalog SKUs',
-      '-40% reduction in catalog browsing time prior to purchase',
-      'Higher customer confidence on technical equipment purchases',
-    ],
-    products: ['AI Shopping Assistant', 'Commerce Platform'],
-    ctaText: 'Transform Your Catalog Discovery',
-    iconName: 'Compass',
-    keyMetrics: [
-      { label: 'Search Conversion', value: '2.8x Higher' },
-      { label: 'Zero Search Results', value: '0%' },
-      { label: 'SKU Discovery', value: '+35%' },
-    ],
-    faqItems: [
-      {
-        question: 'How does vector semantic search differ from traditional keyword search?',
-        answer: 'Traditional search requires exact word matches. Vector search converts queries into mathematical intent vectors, understanding synonyms, applications, and specs effortlessly.',
-      },
-      {
-        question: 'Can SilarAI Product Discovery handle multi-attribute technical filters?',
-        answer: 'Yes! It dynamically parses attributes like voltage, pipe diameter, material, color, and size directly from user queries without complex manual filtering.',
-      },
-    ],
-  },
-  {
     id: 'b2b-commerce',
     slug: 'b2b-commerce',
     url: '/use-cases/b2b-commerce',
     title: 'B2B Commerce',
-    header: 'Streamline Complex B2B Wholesale, Net Terms & Contract Ordering',
+    subtitle: 'Connect buyers, dealers, distributors and sales teams.',
+    header: 'Connect Buyers, Dealers, Distributors and Sales Teams with AI',
     seoKeywords: [
+      'B2B Commerce',
+      'Connect buyers, dealers, distributors and sales teams',
       'B2B Commerce AI',
       'B2B Net Terms Portal',
       'Wholesale Ordering Engine',
       'Manufacturer & Distributor E-commerce',
       'Automated RFQ & Quote Generator',
-      'B2B Digital Transformation',
+      'B2B Digital Transformation'
     ],
     overview:
       'B2B transactions involve custom contract pricing, credit net terms, bulk tiered discounts, and multi-step approvals that broken consumer carts cannot support.\n\nSilarAI B2B Commerce provides a dedicated wholesale engine with account-specific portals, automated RFQ processing, credit term checkouts, and multi-user purchasing workflows.',
@@ -1357,7 +1247,7 @@ export const USE_CASES: UseCaseItem[] = [
       'Faster cash flow reconciliation with integrated digital PO checkouts',
     ],
     products: ['AI Shopping Assistant', 'Commerce Platform'],
-    ctaText: 'Digitize Your B2B Commerce Operations',
+    ctaText: 'Connect Buyers, Dealers & Sales Teams Today',
     iconName: 'Briefcase',
     keyMetrics: [
       { label: 'Order Processing Speed', value: '75% Faster' },
