@@ -32,6 +32,7 @@ public class BasicPlanAccessFilter(
         "/api/v1/chatbot-usage",          // token consumption report
         "/api/v1/activity",               // topbar notification feed
         "/api/v1/search",                 // topbar global search
+        "/api/v1/team",                   // TenantAdmin manages Business Admins
     ];
 
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)

@@ -9,6 +9,11 @@ public interface IEmailService
     Task SendPasswordResetAsync(string toEmail, string toName, string token, CancellationToken ct = default);
 
     /// <summary>
+    /// Invites a new Business Admin to a tenant. The email links to /accept-invite where they set their password.
+    /// </summary>
+    Task SendBusinessAdminInviteAsync(string toEmail, string toName, string storeName, string invitedByName, string token, CancellationToken ct = default);
+
+    /// <summary>
     /// Sends a 6-digit OTP to the given email for registration verification.
     /// From: support@silarai.app
     /// </summary>

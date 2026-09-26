@@ -103,6 +103,15 @@ public class AuthController(IMediator mediator) : ControllerBase
         return Ok(new { message = "Password reset successfully. Please login with your new password." });
     }
 
+    // ── Business Admin invitation ─────────────────────────────────────────────
+
+    [HttpPost("accept-invite")]
+    public async Task<IActionResult> AcceptInvite([FromBody] AcceptInviteRequest request, CancellationToken ct)
+    {
+        await mediator.Send(new AcceptInviteCommand(request.Token, request.Password), ct);
+        return Ok(new { message = "Invitation accepted. Please login with your new password." });
+    }
+
     // ── Profile & password (authenticated) ───────────────────────────────────
 
     [HttpPut("profile")]
@@ -201,6 +210,7 @@ public record VerifyEmailRequest(string Token);
 public record ForgotPasswordRequest(string Email);
 public record VerifyResetOtpRequest(string Email, string Otp);
 public record ResetPasswordRequest(string Token, string NewPassword);
+public record AcceptInviteRequest(string Token, string Password);
 public record UpdateProfileRequest(string Name, string? Phone, string? AvatarUrl);
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 public record TotpCodeRequest(string Code);

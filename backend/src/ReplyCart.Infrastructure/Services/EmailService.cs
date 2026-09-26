@@ -41,6 +41,20 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger, I
         await SendAsync(toEmail, toName, subject, html, ct);
     }
 
+    // ── Business Admin invitation ────────────────────────────────────────────
+
+    public async Task SendBusinessAdminInviteAsync(string toEmail, string toName, string storeName, string invitedByName, string token, CancellationToken ct = default)
+    {
+        var link = $"{_appUrl}/accept-invite?token={Uri.EscapeDataString(token)}";
+        var subject = $"You're invited to manage {storeName} on Silarai";
+        var html = BuildBusinessAdminInviteHtml(
+            System.Net.WebUtility.HtmlEncode(toName),
+            System.Net.WebUtility.HtmlEncode(storeName),
+            System.Net.WebUtility.HtmlEncode(invitedByName),
+            link);
+        await SendAsync(toEmail, toName, subject, html, ct);
+    }
+
     // â”€â”€ Registration OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public async Task SendRegistrationOtpAsync(string toEmail, string toName, string otp, CancellationToken ct = default)
@@ -293,6 +307,33 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger, I
       </td></tr>
       <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
         <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">Sent by <strong style="color:#0f766e;">ReplyCart</strong></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
+""";
+
+    private static string BuildBusinessAdminInviteHtml(string name, string storeName, string invitedByName, string link) => $$"""
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><title>You're invited</title></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.06);max-width:560px;width:100%;">
+      <tr><td style="background:linear-gradient(135deg,#0f766e,#0d9488);padding:28px 32px;color:#fff;font-size:20px;font-weight:800;">Silarai</td></tr>
+      <tr><td style="padding:36px 32px 28px;">
+        <p style="margin:0 0 8px;font-size:16px;font-weight:600;color:#1e293b;">Hi {{name}},</p>
+        <p style="margin:0 0 28px;font-size:14px;color:#64748b;line-height:1.6;">{{invitedByName}} has invited you to help manage <strong style="color:#1e293b;">{{storeName}}</strong> on Silarai as a Business Admin. Click the button below to set your password. This link expires in 7 days.</p>
+        <div style="text-align:center;margin-bottom:28px;">
+          <a href="{{link}}" style="display:inline-block;background:#0f766e;color:#fff;font-size:15px;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;">Accept Invitation</a>
+        </div>
+        <p style="margin:0;font-size:12px;color:#94a3b8;">If you weren't expecting this invitation, you can ignore this email.</p>
+      </td></tr>
+      <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #f1f5f9;">
+        <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">Sent by <strong style="color:#0f766e;">Silarai</strong></p>
       </td></tr>
     </table>
   </td></tr>

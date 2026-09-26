@@ -1,0 +1,28 @@
+﻿# build output tracked in git for the SWA deploy
+frontend/dist/
+
+# scratch / pending deletion
+_to_delete/
+
+# generated or one-off SQL, not source
+backend/ReplyCart_Database.sql
+DM2OrderMigrationScript.sql
+
+# EF scaffolder output: large and repetitive
+**/Migrations/*.Designer.cs
+**/AppDbContextModelSnapshot.cs
+
+# lockfiles and binary assets
+**/package-lock.json
+**/bun.lock
+**/*.webp
+**/*.jpg
+**/*.png
+
+# unrelated stray doc
+Teams-Sitefinity-SSO-Guide.html
+
+**/*.svg
+**/*.jpeg
+**/*.pdf
+.claude/

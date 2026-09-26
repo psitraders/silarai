@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ReplyCart.Application.Common.Exceptions;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Domain.Enums;
 using ReplyCart.Domain.Tenancy;
 using ReplyCart.Infrastructure.Persistence;
+using ReplyCart.Shared.Constants;
 
 namespace ReplyCart.Api.Controllers.v1;
 
@@ -128,6 +130,10 @@ public class SubscriptionsController(
     [HttpPost("select/{planId:guid}")]
     public async Task<IActionResult> SelectPlan(Guid planId, [FromBody] SelectPlanRequest req, CancellationToken ct)
     {
+        // Plan changes are owner-only; Business Admins can view the plan but not change it.
+        if (User.IsInRole(Roles.BusinessAdmin))
+            throw new ForbiddenException("Only the account owner can change the plan.");
+
         var tenantId = tenantContext.CurrentTenantId;
 
         var plan = await db.SubscriptionPlans.FindAsync([planId], ct);

@@ -23,6 +23,7 @@ Thumbs.db
 *.swo
 .idea/
 .vscode/settings.json
+.claude/
 
 # Secrets
 *.pfx
@@ -37,3 +38,6 @@ backend-fast-api/
 # Not built or deployed — it still carries the pre-Azure Express/Vercel setup.
 # See landing_website/context.md §4.0 before merging anything out of it.
 imported_landing_website/
+
+# Graphify related files
+graphify-out/

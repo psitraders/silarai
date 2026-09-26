@@ -6,6 +6,7 @@ public enum UserTokenType
 {
     EmailVerification = 1,
     PasswordReset = 2,
+    Invitation = 3,
 }
 
 public class UserToken : BaseEntity

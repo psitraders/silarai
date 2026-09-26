@@ -50,6 +50,10 @@ export const authApi = {
   resetPassword: (token: string, newPassword: string) =>
     apiClient.post('/auth/reset-password', { token, newPassword }).then((r) => r.data),
 
+  // Business Admin invitation (public)
+  acceptInvite: (token: string, password: string) =>
+    apiClient.post('/auth/accept-invite', { token, password }).then((r) => r.data),
+
   // Profile & security
   updateProfile: (data: { name: string; phone?: string; avatarUrl?: string }) =>
     apiClient.put('/auth/profile', data).then((r) => r.data),

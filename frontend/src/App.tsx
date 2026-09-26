@@ -32,6 +32,7 @@ const LoginPage           = React.lazy(() => import('./pages/auth/LoginPage').th
 const RegisterPage        = React.lazy(() => import('./pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const ForgotPasswordPage  = React.lazy(() => import('./pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage   = React.lazy(() => import('./pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const AcceptInvitePage    = React.lazy(() => import('./pages/auth/AcceptInvitePage').then(m => ({ default: m.AcceptInvitePage })));
 const VerifyEmailPage     = React.lazy(() => import('./pages/auth/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 
 // ── Lazy: landing / legal / public marketing ──────────────────────────────────
@@ -65,6 +66,7 @@ const StorefrontSettingsPage = React.lazy(() => import('./pages/settings/Storefr
 const PagesPage              = React.lazy(() => import('./pages/PagesPage'));
 const IntegrationsPage       = React.lazy(() => import('./pages/settings/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
 const AccountSecurityPage    = React.lazy(() => import('./pages/settings/AccountSecurityPage').then(m => ({ default: m.AccountSecurityPage })));
+const TeamPage               = React.lazy(() => import('./pages/settings/TeamPage').then(m => ({ default: m.TeamPage })));
 const SubscriptionPage       = React.lazy(() => import('./pages/subscription/SubscriptionPage').then(m => ({ default: m.SubscriptionPage })));
 
 // ── Lazy: AI tools ────────────────────────────────────────────────────────────
@@ -208,6 +210,13 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Owner-only pages (e.g. Team). Business Admins and others are sent back to the dashboard. */
+function TenantAdminGuard({ children }: { children: React.ReactNode }) {
+  const hasRole = useAuthStore(s => s.hasRole);
+  if (!hasRole('TenantAdmin')) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
 function GuestGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
   if (!_hasHydrated) return <PageLoader />;
@@ -262,6 +271,7 @@ export default function App() {
             <Route path="/register"         element={<GuestGuard><RegisterPage /></GuestGuard>} />
             <Route path="/forgot-password"  element={<GuestGuard><ForgotPasswordPage /></GuestGuard>} />
             <Route path="/reset-password"   element={<ResetPasswordPage />} />
+            <Route path="/accept-invite"    element={<AcceptInvitePage />} />
             <Route path="/verify-email"     element={<VerifyEmailPage />} />
 
             {/* Public routes (no auth) */}
@@ -312,6 +322,7 @@ export default function App() {
               {/* Settings */}
               <Route path="/settings"         element={<BusinessProfilePage />} />
               <Route path="/settings/account" element={<AccountSecurityPage />} />
+              <Route path="/settings/team"    element={<TenantAdminGuard><TeamPage /></TenantAdminGuard>} />
               <Route path="/storefront"       element={<StorefrontSettingsPage />} />
               <Route path="/pages"            element={<PagesPage />} />
               <Route path="/integrations"     element={<IntegrationsPage />} />

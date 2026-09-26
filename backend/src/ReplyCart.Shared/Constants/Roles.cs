@@ -4,6 +4,7 @@ public static class Roles
 {
     public const string SuperAdmin = "SuperAdmin";
     public const string TenantAdmin = "TenantAdmin";
-    public const string Manager = "Manager";
-    public const string Staff = "Staff";
+
+    /// <summary>Invited by a TenantAdmin; same tenant access except managing admins and changing the plan.</summary>
+    public const string BusinessAdmin = "BusinessAdmin";
 }

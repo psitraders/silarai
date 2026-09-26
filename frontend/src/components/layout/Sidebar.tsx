@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Inbox, Users, ShoppingBag, Package, Store,
   BarChart2, Settings, LogOut, MessageSquareQuote, X, Plug, Zap, Shield, Send, Sparkles,
   Tag, Star, ShoppingCart, Globe, UserCircle, Bot, MessagesSquare, Download, FlaskConical, FileText, MessageCircle,
-  Coins,
+  Coins, UsersRound,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/auth.store';
@@ -54,6 +54,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     { path: '/settings/account',        icon: UserCircle,        label: t('nav.accountSecurity') },
   ];
 
+  // Only the owner (TenantAdmin) manages Business Admins.
+  const isTenantAdmin = user?.roles.includes('TenantAdmin') ?? false;
+  const teamNavItem = { path: '/settings/team', icon: UsersRound, label: 'Team' };
+
   const { data: sub } = useQuery({
     queryKey: ['subscription'],
     queryFn: () => apiClient.get('/subscription').then(r => r.data),
@@ -70,7 +74,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     { path: '/settings/account', icon: UserCircle, label: t('nav.accountSecurity') },
   ];
 
-  const navItems = chatbotOnly ? chatbotNavItems : fullNavItems;
+  const baseNavItems = chatbotOnly ? chatbotNavItems : fullNavItems;
+  const navItems = isTenantAdmin ? [...baseNavItems, teamNavItem] : baseNavItems;
 
   const { data: storefront } = useQuery({
     queryKey: ['storefront-settings'],

@@ -1,6 +1,6 @@
 # ReplyCart / Silarai — Project Context
 
-> Authoritative reference for this codebase. Read this before implementing features, fixing bugs, or refactoring. Update it whenever functionality, architecture, or major flows change. Log every change in `changes.md`.
+> Authoritative reference for this codebase. Read this before implementing features, fixing bugs, or refactoring. Update it whenever functionality, architecture, or major flows change. Log every change in `changes.md`. Per-feature intent (purpose, scope, rules, planned changes) lives in `specs/` — see `specs/README.md`.
 
 Product name in code/branding is **Silarai** (the GitHub repo, package names, and some domain classes still say **ReplyCart** — the two names refer to the same product; "ReplyCart" is the original/legacy name). Repo: `github.com:psitraders/silarai.git`.
 
@@ -57,6 +57,7 @@ A multi-tenant SaaS platform for boutique/small-business sellers (clothing, jewe
 ├── Teams-Sitefinity-SSO-Guide.html    standalone static doc, UNRELATED to this product's domain (Sitefinity/Teams SSO) — appears to be a stray file, not part of ReplyCart/Silarai functionality
 ├── .github/workflows/                CI: azure-static-web-apps-lemon-sea-*.yml (frontend → app.silarai.com), azure-static-web-apps-black-mushroom-*.yml (landing_website → silarai.com), deploy-backend.yml (backend → Azure App Service)
 ├── docs/                             design notes (currently only plan-chatbot-redis-session-memory.md)
+├── specs/                            high-level per-feature specs (purpose/scope/rules/UI/planned changes) + cross-feature invariants; index in specs/README.md. Platform only — no landing_website specs.
 ├── backend-fast-api/, _to_delete/    gitignored / untracked scratch — not part of any build
 └── global.json                       pins .NET SDK to 8.0.400
 ```
@@ -106,14 +107,14 @@ Flat shared-schema multi-tenancy: almost every entity inherits `TenantEntity : B
 
 1. **Database**: `AppDbContext.OnModelCreating` reflects over every `TenantEntity` subtype and applies a global EF Core query filter — `!IsDeleted && (TenantFilterId == null || TenantId == TenantFilterId)` — evaluated per-query against the live DbContext instance (deliberately, to avoid stale-tenant-id bugs). Cross-tenant/admin queries must explicitly call `.IgnoreQueryFilters()`.
 2. **Request pipeline**: `TenantResolutionMiddleware` (runs after `UseAuthentication()`, before `UseAuthorization()`) reads the `tid` claim from the JWT for authenticated requests (caches slug lookups 15 min via `IMemoryCache`), or resolves tenant by `StorefrontSettings.Slug` for anonymous `/public/{slug}/...` routes, then populates the request-scoped `ITenantContext` (`TenantContextService`) that the DbContext filter reads from.
-3. **Plan gating** (business rule, not a security boundary): `BasicPlanAccessFilter`, a global `IAsyncAuthorizationFilter`, restricts tenants on the `"basic"` (chatbot-only) subscription plan to a fixed allow-list of route prefixes (auth, subscription, plans, business, chatbot-clients, chatbot-usage, activity, search) — everything else returns 403 `PLAN_CHATBOT_ONLY`.
+3. **Plan gating** (business rule, not a security boundary): `BasicPlanAccessFilter`, a global `IAsyncAuthorizationFilter`, restricts tenants on the `"basic"` (chatbot-only) subscription plan to a fixed allow-list of route prefixes (auth, subscription, plans, business, chatbot-clients, chatbot-usage, activity, search, team) — everything else returns 403 `PLAN_CHATBOT_ONLY`.
 
 Public/anonymous endpoints (webhooks, public storefront, chatbot widget, health check) bypass JWT auth entirely and resolve tenant scope via slug or API key instead.
 
 ### 4.3 Domain model by area
 
 - **Tenancy**: `Tenant` (root SaaS account — slug, contact info, custom-domain fields for Cloudflare), `SubscriptionPlan` (plan catalog: price, product/staff/lead/AI-suggestion limits, feature flags), `TenantSubscription` (tenant↔plan link with status/dates).
-- **Identity**: `User` (BCrypt password, TOTP fields), `Role`/`UserRole` (flat roles: `SuperAdmin`, `TenantAdmin`, `Manager`, `Staff` — no custom per-tenant roles), `UserRefreshToken` (hashed, device info, revocation reason), `UserToken` (email verification / password reset, hashed).
+- **Identity**: `User` (BCrypt password, TOTP fields), `Role`/`UserRole` (flat roles in `Shared.Constants.Roles`: `SuperAdmin`, `TenantAdmin`, `BusinessAdmin` — no custom per-tenant roles; `Role` rows are created on first use, not seeded), `UserRefreshToken` (hashed, device info, revocation reason), `UserToken` (email verification / password reset / Business Admin invitation, hashed). `User` is a `BaseEntity`, **not** a `TenantEntity` — queries on `Users` get no tenant filter and must scope by `TenantId` explicitly.
 - **Business**: `Business` (the merchant's profile — holds WhatsApp/Instagram/Facebook/Razorpay/Stripe/PayPal credentials directly on the entity, plus AI auto-reply config), `StorefrontSettings` (1:1, public storefront theming/SEO/GA4 config), `SocialLink`.
 - **Catalog**: `Category` (1-level subcategories via `ParentCategoryId`), `Product` (variants, images, tags, B2B min/max order qty fields), `ProductReview`, `Coupon` (Percentage/Flat/BuyXGetY).
 - **CRM/Sales**: `Customer` (CRM contact), `Lead` (pipeline: NewInquiry → PriceShared → Interested → FollowUpPending → OrderConfirmed / Lost / RepeatOpportunity, with `LeadNote`/`LeadActivity`), `Order` (New → Confirmed → PaymentPending → Paid → Packed → Delivered / Cancelled, with `OrderItem`/`Payment`/`OrderStatusHistory`).
@@ -128,7 +129,8 @@ Public/anonymous endpoints (webhooks, public storefront, chatbot widget, health 
 
 Grouped by area — see the backend for exact `[Route]` attributes:
 
-- **Auth**: `AuthController` (`/auth` — register/login/refresh/logout/me/2FA/profile/sessions), `OtpController` (`/auth/otp`).
+- **Auth**: `AuthController` (`/auth` — register/login/refresh/logout/me/2FA/profile/sessions, anonymous `accept-invite`), `OtpController` (`/auth/otp`).
+- **Team**: `TeamController` (`/team`, `[Authorize(Roles = "TenantAdmin")]` — list members, invite Business Admin, resend invite, activate/deactivate); handlers in `Application/Team/`.
 - **Merchant core**: `BusinessController` (`/business`), `CategoriesController`, `ProductsController`, `CouponsController`, `ReviewsController`, `CustomersController`, `LeadsController`, `OrdersController`, `ImportController` (bulk import preview/confirm).
 - **Marketing/AI**: `MarketingController`, `WaTemplatesController`, `AbandonedCartsController`, `AiSuggestionsController` (`/ai`), `AnalyticsController`, `ActivityController`, `SearchController` (global topbar search).
 - **B2B/Storefront config**: `B2BController`, `PagesController` (custom CMS pages), `IntegrationsController`, `SubscriptionsController`, `PlansController`, `CustomDomainController` (Cloudflare custom domain setup).
@@ -276,7 +278,7 @@ Thinking one-liners are generated **server-side from the tool call itself** (`Ch
 
 - **Custom-domain detection**: if `window.location.hostname` isn't localhost/`silarai`/`replycart`/`azurestaticapps`, the app assumes a merchant custom domain and renders a dedicated `<CustomDomainStorefront />` route tree (resolves slug via `GET /public/resolve-domain?domain=...`) instead of the normal routes.
 - **`SmartRoot`** (`/`): redirects authenticated users to `/dashboard`, otherwise shows the public `LandingPage`.
-- **`AuthGuard`** wraps the entire authenticated app shell; **`GuestGuard`** redirects already-authenticated users away from `/login`/`/register`/`/forgot-password`.
+- **`AuthGuard`** wraps the entire authenticated app shell; **`GuestGuard`** redirects already-authenticated users away from `/login`/`/register`/`/forgot-password`; **`TenantAdminGuard`** protects owner-only pages (`/settings/team`) and redirects everyone else to `/dashboard`. `/accept-invite` (Business Admin sets password from the invite email) is public, like `/reset-password`.
 - Authenticated routes (`/dashboard`, `/catalog/*`, `/leads/*`, `/orders/*`, `/customers/*`, `/ai/*`, `/analytics`, `/settings/*`, `/storefront`, `/pages`, `/integrations`, `/subscription`, `/marketing/*`, `/chatbot-clients*`, `/chatbot-usage`, `/b2b/quotes`, `/tools/qr-code`, `/admin/*`) are nested inside `<AppShell />` (sidebar + topbar layout).
 - Public storefront routes: `/{slug}`, `/{slug}/products/:productId`, `/{slug}/category/:categorySlug`, `/{slug}/order-confirmation/:orderId`, `/{slug}/p/:pageSlug` — each wrapped in a `SlugCartProvider` so cart state (`localStorage` key `cart_{slug}`) never bleeds across tenants.
 - Nearly all pages are `React.lazy`-loaded with manual Vite chunk groupings (see §5.6).
@@ -290,7 +292,7 @@ Thinking one-liners are generated **server-side from the tool call itself** (`Ch
 
 ### 5.3 API layer (`src/api/*.ts`)
 
-One module per backend feature area (`auth`, `catalog`, `leads`, `orders`, `customers`, `ai`, `analytics`, `b2b`, `business`, `abandonedCarts`, `coupons`, `customDomain`, `import`, `landing`, `marketing`, `notifications`, `pages`, `payment`, `platformLeads`, `reviews`, `search`), each mapping close to 1:1 with a backend controller. Shared axios instance (`api/client.ts`) attaches the JWT bearer token and implements a queued single-flight refresh-on-401 flow, falling back to `forceLogout()` (clears all auth storage + hard redirect to `/login`) if refresh fails — this exists specifically to avoid a login↔dashboard redirect loop after backend restarts invalidate stored refresh tokens.
+One module per backend feature area (`auth`, `catalog`, `leads`, `orders`, `customers`, `ai`, `analytics`, `b2b`, `business`, `abandonedCarts`, `coupons`, `customDomain`, `import`, `landing`, `marketing`, `notifications`, `pages`, `payment`, `platformLeads`, `reviews`, `search`, `team`), each mapping close to 1:1 with a backend controller. Shared axios instance (`api/client.ts`) attaches the JWT bearer token and implements a queued single-flight refresh-on-401 flow, falling back to `forceLogout()` (clears all auth storage + hard redirect to `/login`) if refresh fails — this exists specifically to avoid a login↔dashboard redirect loop after backend restarts invalidate stored refresh tokens.
 
 ### 5.4 Key components
 
@@ -364,6 +366,7 @@ Sits in front of both the canonical domain and merchant custom domains. Three re
 - **Order pricing must always be recomputed server-side from the live catalog**, never trusted from AI-provided or client-provided prices — this was fixed as a bug (see git history: "server is the price authority") and any change to order/checkout flows must preserve it. In the Chatbot-as-a-Service module this is stronger still: the AI cannot state a price at all, only product ids (§4.8).
 - **Two independent chatbot pipelines exist.** The tenant chatbot (§4.7: `RagContextBuilder` → `ConversationSession` → `IConversationMemoryService`, in-process) and the Chatbot-as-a-Service module (§4.8: `ChatbotPromptBuilder` → `IChatSessionStore`, Redis-backed). They share only `IAiProvider`. Changing one does not change the other, and merging them is not a small refactor.
 - **Two independent customer identities exist per tenant**: the internal `Customer` (CRM contact tracked by staff) and `StorefrontCustomer` (self-service public storefront login), optionally linked via `LinkedCrmCustomerId`. Don't conflate the two when working on customer-related features.
+- **Dashboard roles**: `SuperAdmin` (platform, Silarai team), `TenantAdmin` (store owner — created by register / chatbot onboarding / onboarding scripts) and `BusinessAdmin` (invited by the TenantAdmin from **Team**; email link → `/accept-invite` sets the password and verifies the email). A BusinessAdmin has the same tenant access as the TenantAdmin except team management (`TeamController` is TenantAdmin-only) and plan changes (`SubscriptionsController.SelectPlan` rejects BusinessAdmin; `SubscriptionPage` hides the change-plan card). Deactivating a BusinessAdmin revokes their refresh tokens (access token still valid ≤ 15 min). No limit on the number of admins (`MaxStaffUsers` is display-only). Emails are globally unique, so one person can't be a user of two tenants.
 - **Two independent auth systems on the frontend**: merchant dashboard auth (Zustand `auth.store`, JWT) and storefront customer auth (`StorefrontAuthContext`, separate token/session storage) — they use different axios paths and never share state.
 - **`ReplyCart.Shared.Constants.PlanLimits`** (Free/Starter/Growth/Pro) looks superseded by the DB-driven `SubscriptionPlan` table and the newer `"basic"` (chatbot-only) plan tier enforced by `BasicPlanAccessFilter` — don't assume the hardcoded constants reflect current plan behavior; check `SubscriptionPlan` rows and `BasicPlanAccessFilter` instead.
 - **WhatsApp templates are mid-migration** from a third-party BSP (AiSensy) to Meta's own Cloud API template submission flow (`WaTemplate.MetaTemplateId`/`MetaStatus`) — expect both code paths to still be present.
@@ -387,3 +390,4 @@ Sits in front of both the canonical domain and merchant custom domains. Three re
 - Config keys: `backend/src/ReplyCart.Api/appsettings.json`.
 - The marketing website at `silarai.com`: `landing_website/context.md` and `landing_website/changes.md` — authoritative for that app; this file only points at it (§5.9).
 - Chronological history of changes made to this codebase since context.md was introduced: `changes.md` (repo root).
+- Per-feature purpose, scope, business rules and planned changes: `specs/` (index `specs/README.md`, shared rules `specs/_invariants.md`).

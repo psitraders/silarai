@@ -9,7 +9,7 @@ import { useAuthStore } from '../../store/auth.store';
 import { setAppLanguage } from '../../i18n';
 
 // Routes a chatbot-only (Basic plan) tenant may still visit
-const CHATBOT_ONLY_ROUTES = ['/chatbot-clients', '/chatbot-usage', '/subscription', '/settings/account'];
+const CHATBOT_ONLY_ROUTES = ['/chatbot-clients', '/chatbot-usage', '/subscription', '/settings/account', '/settings/team'];
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

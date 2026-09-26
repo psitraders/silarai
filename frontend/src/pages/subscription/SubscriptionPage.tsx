@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import apiClient from '../../api/client';
 import { PageLoader } from '../../components/ui/Spinner';
+import { useAuthStore } from '../../store/auth.store';
 
 // Plan changes are handled by the Silarai team — no self-service checkout.
 const SUPPORT_WHATSAPP = 'https://wa.me/918849549690?text=' +
@@ -56,6 +57,8 @@ function fmt(n: number) {
 }
 
 export function SubscriptionPage() {
+  // Business Admins can view the plan but only the owner (TenantAdmin) can change it.
+  const isBusinessAdmin = useAuthStore(s => s.hasRole('BusinessAdmin'));
   const { data: sub, isLoading: subLoading } = useQuery<Subscription>({
     queryKey: ['subscription'],
     queryFn: () => apiClient.get('/subscription').then(r => r.data),
@@ -164,7 +167,13 @@ export function SubscriptionPage() {
         )}
       </div>
 
-      {/* Change plan — handled by the Silarai team */}
+      {isBusinessAdmin ? (
+        <div className="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+          <AlertCircle className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-slate-600">Only the store owner can change the plan. Ask them if you need an upgrade.</p>
+        </div>
+      ) : (
+      /* Change plan — handled by the Silarai team */
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
@@ -195,6 +204,7 @@ export function SubscriptionPage() {
           </a>
         </div>
       </div>
+      )}
 
       {/* Info box */}
       <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl p-5">
