@@ -9,7 +9,7 @@ context: "§4.3 Admin/Config, §4.4 SuperAdmin"
 Platform-level administration: tenants, platform settings, in-app landing content and marketing leads.
 
 ## Scope
-- **In:** tenant management (`TenantNote`, `SystemAnnouncement`), `PlatformSetting`, `LandingPageConfig`, `PlatformLead` (with UTM), the dashboard's in-app landing/about/blog/contact pages, legal pages.
+- **In:** tenant management (`TenantNote`, `SystemAnnouncement`), `PlatformSetting`, `LandingPageConfig`, `PlatformLead` (with UTM), the dashboard's in-app landing/about/blog/contact pages, legal pages, SuperAdmin accounts (created only by seeding/scripts — no UI or API).
 - **Out:** chatbot client admin (`chatbot-service`), the separate marketing site `landing_website/` (not covered by specs).
 
 ## Rules

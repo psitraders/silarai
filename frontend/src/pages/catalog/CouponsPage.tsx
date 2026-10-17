@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, Tag, ToggleLeft, ToggleRight, Pencil } from 'lucide-react';
+import { Plus, Trash2, Tag, ToggleLeft, ToggleRight, Pencil, Store } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -40,13 +40,13 @@ export function CouponsPage() {
   const { data: coupons = [], isLoading } = useQuery({ queryKey: ['coupons'], queryFn: couponsApi.getAll });
 
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<SaveCouponDto>({
-    defaultValues: { type: 'Percentage', isActive: true, value: 10 },
+    defaultValues: { type: 'Percentage', isActive: true, showOnStorefront: false, value: 10 },
   });
   const couponType = watch('type') as CouponType;
 
-  const openNew = () => { reset({ type: 'Percentage', isActive: true, value: 10 }); setEditing(null); setOpen(true); };
+  const openNew = () => { reset({ type: 'Percentage', isActive: true, showOnStorefront: false, value: 10 }); setEditing(null); setOpen(true); };
   const openEdit = (c: CouponDto) => {
-    reset({ code: c.code, type: c.type, value: c.value, minOrderAmount: c.minOrderAmount, maxUses: c.maxUses, validFrom: c.validFrom?.slice(0, 10), validTo: c.validTo?.slice(0, 10), isActive: c.isActive, buyQuantity: c.buyQuantity, getQuantity: c.getQuantity });
+    reset({ code: c.code, type: c.type, value: c.value, minOrderAmount: c.minOrderAmount, maxUses: c.maxUses, validFrom: c.validFrom?.slice(0, 10), validTo: c.validTo?.slice(0, 10), isActive: c.isActive, showOnStorefront: c.showOnStorefront, buyQuantity: c.buyQuantity, getQuantity: c.getQuantity });
     setEditing(c);
     setOpen(true);
   };
@@ -107,6 +107,11 @@ export function CouponsPage() {
                       {c.isActive ? <ToggleRight className="w-3.5 h-3.5" /> : <ToggleLeft className="w-3.5 h-3.5" />}
                       {c.isActive ? 'Active' : 'Inactive'}
                     </span>
+                    {c.showOnStorefront && (
+                      <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700" title="Listed in your storefront's coupon strip">
+                        <Store className="h-3.5 w-3.5" aria-hidden /> On storefront
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
@@ -160,6 +165,13 @@ export function CouponsPage() {
           <label className="flex items-center gap-2">
             <input type="checkbox" {...register('isActive')} className="rounded" />
             <span className="text-sm text-slate-700">Active</span>
+          </label>
+          <label className="flex items-start gap-2">
+            <input type="checkbox" {...register('showOnStorefront')} className="mt-0.5 rounded" />
+            <span>
+              <span className="block text-sm text-slate-700">Show on storefront</span>
+              <span className="block text-xs text-slate-600">Lists this code in your store’s coupon strip. Leave off for private codes.</span>
+            </span>
           </label>
           <div className="flex gap-3 pt-2">
             <Button type="submit" loading={saveMutation.isPending} className="flex-1">{editing ? 'Save Changes' : 'Create Coupon'}</Button>

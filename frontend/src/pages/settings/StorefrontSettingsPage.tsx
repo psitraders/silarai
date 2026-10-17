@@ -1,7 +1,8 @@
 ﻿import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Save, Download, QrCode, Upload, X, ImageIcon, Lock } from 'lucide-react';
+import { ExternalLink, Save, Download, QrCode, Upload, X, ImageIcon, Lock, Paintbrush } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
@@ -165,7 +166,6 @@ export function StorefrontSettingsPage() {
   const slug           = watch('slug');
   const themeColor     = watch('themeColor')     || '#0F766E';
   const secondaryColor = watch('secondaryColor') || '#134E4A';
-  const accentColor    = watch('accentColor')    || '';
   const logoUrl        = watch('logoUrl');
   const bannerUrl      = watch('bannerUrl');
   const faviconUrl     = watch('faviconUrl');
@@ -205,7 +205,7 @@ export function StorefrontSettingsPage() {
 
         <Card>
           <h2 className="font-semibold text-slate-900 mb-1">Announcement Bar</h2>
-          <p className="text-xs text-slate-400 mb-4">Shown at the top of your storefront. Leave empty to hide.</p>
+          <p className="text-xs text-slate-400 mb-4">Shown at the top of your storefront until you publish a design in Customise store — after that, edit it in the header settings there. Leave empty to hide.</p>
           <Input
             label="Announcement Text"
             placeholder="e.g. 🚚 Free delivery on orders above ₹999 · ✨ New arrivals every week"
@@ -217,105 +217,15 @@ export function StorefrontSettingsPage() {
           <h2 className="font-semibold text-slate-900 mb-1">Appearance</h2>
           <div className="space-y-6">
 
-            {/* Brand Colors */}
-            <div>
-              <p className="text-sm font-medium text-slate-700 mb-0.5">Brand Colors</p>
-              <p className="text-xs text-slate-400 mb-4">
-                Pick 2–3 colors from your logo. These are applied across your entire storefront — buttons, prices, gradients, and highlights.
+            {/* Brand colours moved to the storefront designer (storefront builder Phase 2). */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-900">Colours, fonts & layout</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Your palette, colour schemes, fonts and page layouts are set in the store designer. Publishing there also updates the brand colour used by your WhatsApp chat widget and app icon.
               </p>
-
-              <div className="space-y-4">
-                {/* Primary */}
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 block mb-1">
-                    Primary Color <span className="font-normal text-slate-400">— buttons, prices, links</span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={themeColor}
-                      onChange={e => setValue('themeColor', e.target.value, { shouldDirty: true })}
-                      className="w-10 h-10 rounded-xl border border-slate-200 cursor-pointer flex-shrink-0"
-                    />
-                    <Input {...register('themeColor')} className="font-mono" />
-                  </div>
-                </div>
-
-                {/* Secondary */}
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 block mb-1">
-                    Secondary Color <span className="font-normal text-slate-400">— hero gradient, backgrounds</span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={secondaryColor}
-                      onChange={e => setValue('secondaryColor', e.target.value, { shouldDirty: true })}
-                      className="w-10 h-10 rounded-xl border border-slate-200 cursor-pointer flex-shrink-0"
-                    />
-                    <Input {...register('secondaryColor')} className="font-mono" />
-                  </div>
-                </div>
-
-                {/* Accent */}
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 block mb-1">
-                    Accent Color <span className="font-normal text-slate-400">— optional 3rd highlight color</span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={accentColor || themeColor}
-                      onChange={e => setValue('accentColor', e.target.value, { shouldDirty: true })}
-                      className="w-10 h-10 rounded-xl border border-slate-200 cursor-pointer flex-shrink-0"
-                    />
-                    <Input {...register('accentColor')} className="font-mono" placeholder="Leave blank to skip" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Live preview strip */}
-              <div className="mt-5">
-                <p className="text-xs text-slate-400 mb-2">Preview</p>
-                <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-                  {/* Mini hero */}
-                  <div
-                    className="h-16 flex items-center justify-center"
-                    style={{ background: `linear-gradient(135deg, ${themeColor}, ${secondaryColor})` }}
-                  >
-                    <span className="text-white text-xs font-bold tracking-wide opacity-90">Your Store Name</span>
-                  </div>
-                  {/* Buttons row */}
-                  <div className="bg-white px-4 py-3 flex items-center gap-3 flex-wrap">
-                    <span
-                      className="text-xs font-bold px-3 py-1.5 rounded-lg text-white"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      Order on WhatsApp
-                    </span>
-                    <span
-                      className="text-xs font-bold px-3 py-1.5 rounded-lg border-2"
-                      style={{ borderColor: secondaryColor, color: secondaryColor }}
-                    >
-                      View Details
-                    </span>
-                    {accentColor && (
-                      <span
-                        className="text-xs font-bold px-3 py-1.5 rounded-lg text-white"
-                        style={{ backgroundColor: accentColor }}
-                      >
-                        Accent
-                      </span>
-                    )}
-                  </div>
-                  {/* Price row */}
-                  <div className="bg-slate-50 px-4 py-2 border-t border-slate-100 flex items-center gap-2">
-                    <span className="text-xs text-slate-500">Product price:</span>
-                    <span className="text-sm font-extrabold" style={{ color: themeColor }}>₹1,499</span>
-                    <span className="text-xs text-slate-400 line-through">₹1,999</span>
-                  </div>
-                </div>
-              </div>
+              <Link to="/storefront/editor" className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold theme-btn">
+                <Paintbrush className="h-4 w-4" aria-hidden /> Customise store
+              </Link>
             </div>
 
             <div className="border-t border-slate-100" />

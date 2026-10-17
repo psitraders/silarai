@@ -24,7 +24,7 @@ public class CouponsController(AppDbContext db, ITenantContext tenantContext) : 
             {
                 c.Id, c.Code, c.Type, c.Value, c.MinOrderAmount,
                 c.MaxUses, c.UsedCount, c.ValidFrom, c.ValidTo,
-                c.IsActive, c.BuyQuantity, c.GetQuantity, c.CreatedAt
+                c.IsActive, c.ShowOnStorefront, c.BuyQuantity, c.GetQuantity, c.CreatedAt
             })
             .ToListAsync(ct);
         return Ok(coupons);
@@ -51,6 +51,7 @@ public class CouponsController(AppDbContext db, ITenantContext tenantContext) : 
             ValidFrom = req.ValidFrom,
             ValidTo = req.ValidTo,
             IsActive = req.IsActive,
+            ShowOnStorefront = req.ShowOnStorefront,
             BuyQuantity = req.BuyQuantity,
             GetQuantity = req.GetQuantity
         };
@@ -73,6 +74,7 @@ public class CouponsController(AppDbContext db, ITenantContext tenantContext) : 
         coupon.ValidFrom = req.ValidFrom;
         coupon.ValidTo = req.ValidTo;
         coupon.IsActive = req.IsActive;
+        coupon.ShowOnStorefront = req.ShowOnStorefront;
         coupon.BuyQuantity = req.BuyQuantity;
         coupon.GetQuantity = req.GetQuantity;
 
@@ -102,7 +104,8 @@ public record SaveCouponRequest(
     DateTime? ValidTo,
     bool IsActive,
     int? BuyQuantity,
-    int? GetQuantity
+    int? GetQuantity,
+    bool ShowOnStorefront = false
 );
 
 

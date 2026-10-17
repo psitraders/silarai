@@ -14,6 +14,8 @@ public class Coupon : TenantEntity
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidTo { get; set; }
     public bool IsActive { get; set; } = true;
+    /// <summary>Listed publicly for the storefront coupon strip (off = code works but stays private).</summary>
+    public bool ShowOnStorefront { get; set; }
     // BuyXGetY fields
     public int? BuyQuantity { get; set; }
     public int? GetQuantity { get; set; }

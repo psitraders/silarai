@@ -20,9 +20,9 @@ Each tenant gets a public shop at `/{slug}` or its own custom domain, where cust
 - **SF-R5** — `AllowFrontend` CORS accepts any `https://` origin with credentials on purpose (custom domains).
 
 ## UI
-- `pages/storefront/` — PublicStorefrontPage, StorefrontCustomPage, OrderConfirmationPage.
+- `storefront-builder/` — public storefront pages (home, custom pages, catalogue, product deep links) via `StorefrontRoute` (spec `storefront-builder`); `pages/storefront/OrderConfirmationPage.tsx`.
 - `components/storefront/` — CartDrawer, CustomerAuthModal, MyAccountPanel, CustomDomainSettings.
-- `pages/settings/StorefrontSettingsPage.tsx`, `pages/PagesPage.tsx`.
+- `pages/settings/StorefrontSettingsPage.tsx` (store settings; colours and page design live in the storefront editor — see `storefront-builder`).
 
 ## Suggestions
 

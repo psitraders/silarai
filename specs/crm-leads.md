@@ -15,6 +15,7 @@ Track customers and sales inquiries through a pipeline until they become orders.
 ## Rules
 - **CRM-R1** — Lead pipeline: NewInquiry → PriceShared → Interested → FollowUpPending → OrderConfirmed / Lost / RepeatOpportunity.
 - **CRM-R2** — Leads can be created by staff or by the AI conversation flow (`ai-tenant-chatbot`).
+- **CRM-R3** — Storefront newsletter signups are Leads tagged `newsletter` (source Direct), one per email; storefront enquiry forms (incl. the custom cake request) create ordinary Leads.
 - See INV-4 (CRM `Customer` ≠ `StorefrontCustomer`).
 
 ## UI

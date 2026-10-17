@@ -7,14 +7,18 @@ import { PageLoader } from './components/ui/Spinner';
 import axios from 'axios';
 
 // ── Storefront — lazy so dashboard visitors don't parse storefront code ──
-const PublicStorefrontPage = React.lazy(() =>
-  import('./pages/storefront/PublicStorefrontPage').then(m => ({ default: m.PublicStorefrontPage }))
+// Storefront builder module — its index is the only public entry point (SB-R6).
+const StorefrontRoute = React.lazy(() =>
+  import('./storefront-builder').then(m => ({ default: m.StorefrontRoute }))
 );
+// Storefront builder editor (full-screen, dashboard side) — its own lazy chunk.
+const StorefrontEditor = React.lazy(() => import('./storefront-builder').then(m => m.loadEditor()));
+// Dev-only pack gallery (/__storefront/gallery) — not routed in production builds.
+const StorefrontDevGallery = import.meta.env.DEV
+  ? React.lazy(() => import('./storefront-builder').then(m => m.loadDevGallery()))
+  : null;
 const OrderConfirmationPage = React.lazy(() =>
   import('./pages/storefront/OrderConfirmationPage').then(m => ({ default: m.OrderConfirmationPage }))
-);
-const StorefrontCustomPage = React.lazy(() =>
-  import('./pages/storefront/StorefrontCustomPage').then(m => ({ default: m.StorefrontCustomPage }))
 );
 import { CartProvider } from './context/CartContext';
 
@@ -63,7 +67,6 @@ const CategoriesPage         = React.lazy(() => import('./pages/catalog/Categori
 const AnalyticsPage          = React.lazy(() => import('./pages/analytics/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 const BusinessProfilePage    = React.lazy(() => import('./pages/settings/BusinessProfilePage').then(m => ({ default: m.BusinessProfilePage })));
 const StorefrontSettingsPage = React.lazy(() => import('./pages/settings/StorefrontSettingsPage').then(m => ({ default: m.StorefrontSettingsPage })));
-const PagesPage              = React.lazy(() => import('./pages/PagesPage'));
 const IntegrationsPage       = React.lazy(() => import('./pages/settings/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
 const AccountSecurityPage    = React.lazy(() => import('./pages/settings/AccountSecurityPage').then(m => ({ default: m.AccountSecurityPage })));
 const TeamPage               = React.lazy(() => import('./pages/settings/TeamPage').then(m => ({ default: m.TeamPage })));
@@ -140,12 +143,12 @@ function CustomDomainStorefront() {
   return (
     <CartProvider storageKey={`cart_${slug}`}>
       <Routes>
-        <Route path="/" element={<PublicStorefrontPage overrideSlug={slug} />} />
-        <Route path="/products" element={<PublicStorefrontPage overrideSlug={slug} />} />
-        <Route path="/products/:productId" element={<PublicStorefrontPage overrideSlug={slug} />} />
-        <Route path="/category/:categorySlug" element={<PublicStorefrontPage overrideSlug={slug} />} />
+        <Route path="/" element={<StorefrontRoute kind="home" overrideSlug={slug} />} />
+        <Route path="/products" element={<StorefrontRoute kind="all-products" overrideSlug={slug} />} />
+        <Route path="/products/:productId" element={<StorefrontRoute kind="product" overrideSlug={slug} />} />
+        <Route path="/category/:categorySlug" element={<StorefrontRoute kind="category" overrideSlug={slug} />} />
         <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage overrideSlug={slug} />} />
-        <Route path="/p/:pageSlug" element={<StorefrontCustomPage overrideSlug={slug} />} />
+        <Route path="/p/:pageSlug" element={<StorefrontRoute kind="custom" overrideSlug={slug} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {/* Powered-by badge — shown on all custom domain pages */}
@@ -324,7 +327,7 @@ export default function App() {
               <Route path="/settings/account" element={<AccountSecurityPage />} />
               <Route path="/settings/team"    element={<TenantAdminGuard><TeamPage /></TenantAdminGuard>} />
               <Route path="/storefront"       element={<StorefrontSettingsPage />} />
-              <Route path="/pages"            element={<PagesPage />} />
+              <Route path="/pages"            element={<Navigate to="/storefront/editor?page=home" replace />} />
               <Route path="/integrations"     element={<IntegrationsPage />} />
               <Route path="/subscription"     element={<SubscriptionPage />} />
 
@@ -368,13 +371,18 @@ export default function App() {
               <Route path="/admin/chatbot-usage"      element={<AdminChatbotUsagePage />} />
             </Route>
 
+            {/* Storefront editor: full screen, outside the dashboard shell */}
+            <Route path="/storefront/editor" element={<AuthGuard><StorefrontEditor /></AuthGuard>} />
+
+            {StorefrontDevGallery && <Route path="/__storefront/gallery" element={<StorefrontDevGallery />} />}
+
             {/* Public storefront routes */}
-            <Route path="/:slug"                           element={<SlugCartProvider><PublicStorefrontPage /></SlugCartProvider>} />
-            <Route path="/:slug/products"                  element={<SlugCartProvider><PublicStorefrontPage /></SlugCartProvider>} />
-            <Route path="/:slug/products/:productId"       element={<SlugCartProvider><PublicStorefrontPage /></SlugCartProvider>} />
-            <Route path="/:slug/category/:categorySlug"    element={<SlugCartProvider><PublicStorefrontPage /></SlugCartProvider>} />
+            <Route path="/:slug"                           element={<SlugCartProvider><StorefrontRoute kind="home" /></SlugCartProvider>} />
+            <Route path="/:slug/products"                  element={<SlugCartProvider><StorefrontRoute kind="all-products" /></SlugCartProvider>} />
+            <Route path="/:slug/products/:productId"       element={<SlugCartProvider><StorefrontRoute kind="product" /></SlugCartProvider>} />
+            <Route path="/:slug/category/:categorySlug"    element={<SlugCartProvider><StorefrontRoute kind="category" /></SlugCartProvider>} />
             <Route path="/:slug/order-confirmation/:orderId" element={<SlugCartProvider><OrderConfirmationPage /></SlugCartProvider>} />
-            <Route path="/:slug/p/:pageSlug"               element={<StorefrontCustomPage />} />
+            <Route path="/:slug/p/:pageSlug"               element={<SlugCartProvider><StorefrontRoute kind="custom" /></SlugCartProvider>} />
 
             {/* 404 */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

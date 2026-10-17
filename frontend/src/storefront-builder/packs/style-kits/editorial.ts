@@ -1,0 +1,41 @@
+import type { StyleKitDef } from '../../core/types';
+
+const kit: StyleKitDef = {
+  id: 'editorial',
+  name: 'Editorial',
+  description: 'Magazine layout, serif headings, big images.',
+  options: {
+    corners: 'sharp',
+    imageCorners: 'sharp',
+    shadowDepth: 'none',
+    headingScale: 'large',
+    headingWeight: 'regular',
+    headingCase: 'normal',
+    headingTracking: 'normal',
+    bodySize: 17,
+    linkStyle: 'animated',
+    buttonShape: 'square',
+    buttonStyle: 'outline',
+    buttonSize: 'large',
+    buttonHover: 'darken',
+    buttonCase: 'upper',
+    cardStyle: 'flat',
+    cardPadding: 'tight',
+    cardHover: 'zoom',
+    productImageRatio: 'portrait',
+    productQuickAdd: false,
+    badgeShape: 'square',
+    inputStyle: 'underline',
+    iconStroke: 'thin',
+    pageWidth: 'wide',
+    sectionSpacing: 'airy',
+    gridGap: 'loose',
+    texture: 'none',
+    gradients: false,
+    motion: 'subtle',
+    scrollReveal: 'fade',
+    overlay: 'dark',
+  },
+};
+
+export default kit;

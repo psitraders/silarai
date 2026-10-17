@@ -280,8 +280,8 @@ export const businessApi = {
   sendWaCampaign: (id: string, data: SendWaCampaignRequest) =>
     apiClient.post<SendWaCampaignResult>(`/wa-templates/${id}/send`, data).then(r => r.data),
 
-  /** Upload logo, banner, or favicon; returns { url } */
-  uploadStoreImage: (file: File, type: 'logo' | 'banner' | 'favicon') => {
+  /** Upload logo, banner, favicon or a storefront-builder section image; returns { url } */
+  uploadStoreImage: (file: File, type: 'logo' | 'banner' | 'favicon' | 'section') => {
     const form = new FormData();
     form.append('file', file);
     return apiClient

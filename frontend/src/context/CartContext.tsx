@@ -17,13 +17,17 @@ interface CartContextValue {
   totalAmount: number;
   /** Adds qty units (default 1) — increments the line if it's already in the cart. */
   addItem: (item: Omit<CartItem, 'quantity'>, qty?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQty: (productId: string, quantity: number) => void;
+  /** Lines are keyed by product + variant; pass the line's `variantInfo` for variant lines. */
+  removeItem: (productId: string, variantInfo?: string) => void;
+  updateQty: (productId: string, quantity: number, variantInfo?: string) => void;
   clearCart: () => void;
   isInCart: (productId: string) => boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+const sameLine = (i: CartItem, productId: string, variantInfo?: string) =>
+  i.productId === productId && (i.variantInfo ?? '') === (variantInfo ?? '');
 
 export function CartProvider({
   children,
@@ -68,17 +72,17 @@ export function CartProvider({
     });
   }, []);
 
-  const removeItem = useCallback((productId: string) => {
-    setItems(prev => prev.filter(i => i.productId !== productId));
+  const removeItem = useCallback((productId: string, variantInfo?: string) => {
+    setItems(prev => prev.filter(i => !sameLine(i, productId, variantInfo)));
   }, []);
 
-  const updateQty = useCallback((productId: string, quantity: number) => {
+  const updateQty = useCallback((productId: string, quantity: number, variantInfo?: string) => {
     if (quantity <= 0) {
-      setItems(prev => prev.filter(i => i.productId !== productId));
+      setItems(prev => prev.filter(i => !sameLine(i, productId, variantInfo)));
       return;
     }
     setItems(prev =>
-      prev.map(i => i.productId === productId ? { ...i, quantity } : i)
+      prev.map(i => sameLine(i, productId, variantInfo) ? { ...i, quantity } : i)
     );
   }, []);
 

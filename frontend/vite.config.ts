@@ -65,9 +65,16 @@ export default defineConfig({
               id.includes('node_modules/victory-')) {
             return 'vendor-charts';
           }
-          // Storefront pages — public facing, split from dashboard
+          // Storefront pages — public facing, split from dashboard.
+          // Storefront-builder engine (core/ui/shell) joins this chunk; pack layouts
+          // are left out on purpose so each one stays its own lazy chunk, and so are
+          // the product-view parts (product blocks, checkout, popups) only those layouts use
+          // and the chatbot (loaded on demand by the shell), and the compare table (lazy dialog /
+          // Spec compare section only).
           if (id.includes('/pages/storefront/') ||
-              id.includes('/context/CartContext')) {
+              id.includes('/context/CartContext') ||
+              (/\/storefront-builder\/(core|ui|shell)\//.test(id) &&
+               !/\/storefront-builder\/(ui\/product\/|ui\/Overlay|ui\/CompareTable|core\/commerce\/(use|api|razorpay)|shell\/chatbot\/|shell\/compare\/CompareDialog)/.test(id))) {
             return 'chunk-storefront';
           }
           // Landing / legal / marketing pages — only needed pre-auth

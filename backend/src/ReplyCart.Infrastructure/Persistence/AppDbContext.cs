@@ -98,6 +98,7 @@ public class AppDbContext : DbContext, IAppDbContext
 
     // Custom pages (tenant storefront)
     public DbSet<StorefrontPage> StorefrontPages => Set<StorefrontPage>();
+    public DbSet<StorefrontTheme> StorefrontThemes => Set<StorefrontTheme>();
 
     // AI Autonomous Features
     public DbSet<ConversationSession> ConversationSessions => Set<ConversationSession>();

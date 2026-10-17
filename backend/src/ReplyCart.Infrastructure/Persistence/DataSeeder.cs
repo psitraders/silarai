@@ -14,11 +14,17 @@ using ReplyCart.Domain.Tenancy;
 namespace ReplyCart.Infrastructure.Persistence;
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  DataSeeder — creates admin + 3 demo stores (idempotent, keyed by fixed GUIDs)
+//  DataSeeder — creates admin + 5 extra SuperAdmins + 3 demo stores (idempotent, keyed by fixed GUIDs)
 //
 //  Credentials
 //  ──────────────────────────────────────────────────────────────────────────
 //  Admin (SuperAdmin)       admin@silarai.app      Admin@2024
+//  SuperAdmins              admin_one@silarai.com    admin@one2345
+//                           admin_two@silarai.com    admin@1two345
+//                           admin_three@silarai.com  admin@12three45
+//                           admin_four@silarai.com   admin@123four5
+//                           admin_five@silarai.com   admin@1234five
+//  (existing DBs: run backend/scripts/add_superadmins.sql — same IDs)
 //  Store 1 – Boutique       owner@priyaboutique.in   Demo@1234
 //  Store 2 – Bakery         hello@sugarcrumbs.in     Demo@1234
 //  Store 3 – Jewelry        hello@aradhyajewels.in   Demo@1234
@@ -30,6 +36,16 @@ public static class DataSeeder
     static readonly Guid AdminTenantId      = new("00000000-0000-0000-0000-000000000001");
     static readonly Guid SuperAdminRoleId   = new("00000000-0000-0000-0000-000000000010");
     static readonly Guid AdminUserId        = new("00000000-0000-0000-0000-000000000100");
+
+    // Extra SuperAdmins — IDs must match backend/scripts/add_superadmins.sql
+    static readonly (Guid UserId, Guid UserRoleId, string Name, string Email, string Password)[] ExtraSuperAdmins =
+    [
+        (new Guid("00000000-0000-0000-0000-000000000101"), new Guid("00000000-0000-0000-0000-000000000201"), "Silarai Admin One",   "admin_one@silarai.com",   "admin@one2345"),
+        (new Guid("00000000-0000-0000-0000-000000000102"), new Guid("00000000-0000-0000-0000-000000000202"), "Silarai Admin Two",   "admin_two@silarai.com",   "admin@1two345"),
+        (new Guid("00000000-0000-0000-0000-000000000103"), new Guid("00000000-0000-0000-0000-000000000203"), "Silarai Admin Three", "admin_three@silarai.com", "admin@12three45"),
+        (new Guid("00000000-0000-0000-0000-000000000104"), new Guid("00000000-0000-0000-0000-000000000204"), "Silarai Admin Four",  "admin_four@silarai.com",  "admin@123four5"),
+        (new Guid("00000000-0000-0000-0000-000000000105"), new Guid("00000000-0000-0000-0000-000000000205"), "Silarai Admin Five",  "admin_five@silarai.com",  "admin@1234five"),
+    ];
 
     // Store 1 — Priya's Boutique
     static readonly Guid S1TenantId   = new("11111111-1111-1111-1111-111111111111");
@@ -97,12 +113,14 @@ public static class DataSeeder
 
         await SeedSubscriptionPlansAsync(db, logger);
         await SeedAdminAsync(db, logger);
+        await SeedExtraSuperAdminsAsync(db, logger);
         await SeedStore1_BoutiqueAsync(db, logger);
         await SeedStore2_BakeryAsync(db, logger);
         await SeedStore3_JewelryAsync(db, logger);
 
         logger.LogInformation("=== DataSeeder complete ===");
         logger.LogInformation("  Admin:    admin@silarai.app      / Admin@2024");
+        logger.LogInformation("  + {Count} SuperAdmins admin_one..admin_five@silarai.com (see DataSeeder header)", ExtraSuperAdmins.Length);
         logger.LogInformation("  Store 1:  owner@priyaboutique.in   / Demo@1234  → /priya-boutique");
         logger.LogInformation("  Store 2:  hello@sugarcrumbs.in     / Demo@1234  → /sugar-crumbs");
         logger.LogInformation("  Store 3:  hello@aradhyajewels.in   / Demo@1234  → /aradhya-jewels");
@@ -182,11 +200,43 @@ public static class DataSeeder
         await db.SaveChangesAsync();
     }
 
+    // ── Extra SuperAdmins (idempotent per user — safe on DBs that already have the admin tenant) ──
+    static async Task SeedExtraSuperAdminsAsync(AppDbContext db, ILogger logger)
+    {
+        var roleId = await db.Roles.Where(r => r.Name == "SuperAdmin").Select(r => (Guid?)r.Id).FirstOrDefaultAsync()
+                     ?? SuperAdminRoleId;
+
+        var added = 0;
+        foreach (var a in ExtraSuperAdmins)
+        {
+            var email = a.Email.ToLowerInvariant();
+            if (await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Id == a.UserId || u.Email == email)) continue;
+
+            db.Users.Add(new User
+            {
+                Id = a.UserId, TenantId = AdminTenantId,
+                Name = a.Name, Email = email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(a.Password),
+                IsActive = true, IsEmailVerified = true, CreatedAt = DateTime.UtcNow,
+            });
+            db.UserRoles.Add(new UserRole
+            {
+                Id = a.UserRoleId, UserId = a.UserId, RoleId = roleId,
+                CreatedAt = DateTime.UtcNow,
+            });
+            added++;
+        }
+
+        if (added == 0) return;
+        logger.LogInformation("Seeding {Count} extra SuperAdmins...", added);
+        await db.SaveChangesAsync();
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     //  STORE 1 — Priya's Boutique (Women's Ethnic Fashion)
     //  URL:   /priya-boutique
     //  Login: owner@priyaboutique.in / Demo@1234
-    //  Theme: #DB2777 (boutique pink)
+    //  Design: storefront builder "Bloom" template, Rose Gold palette (DemoStorefrontDesigns)
     // ══════════════════════════════════════════════════════════════════════════
     static async Task SeedStore1_BoutiqueAsync(AppDbContext db, ILogger logger)
     {
@@ -237,7 +287,8 @@ public static class DataSeeder
         db.StorefrontSettings.Add(new StorefrontSettings
         {
             Id = Guid.NewGuid(), TenantId = S1TenantId, BusinessId = S1BizId,
-            Slug = "priya-boutique", ThemeColor = "#DB2777",
+            // Brand colours = the published Bloom palette (publishing copies them, SB-R16).
+            Slug = "priya-boutique", ThemeColor = "#BE185D", SecondaryColor = "#EC4899", AccentColor = "#D97706",
             SeoTitle = "Priya's Boutique — Ethnic & Fusion Wear for Women",
             SeoDescription = "Shop sarees, kurtis, lehengas and accessories. Handcrafted from Jaipur with love. Free shipping above ₹999.",
             WhatsAppCtaLabel = "Order on WhatsApp 💬",
@@ -347,6 +398,9 @@ public static class DataSeeder
         });
         db.OrderItems.Add(new OrderItem { Id = Guid.NewGuid(), TenantId = S1TenantId, OrderId = ord3Id, ProductId = p7.Id, ProductTitle = p7.Title, Quantity = 1, UnitPrice = 15999m, TotalPrice = 15999m, CreatedAt = now.AddDays(-1) });
 
+        // ── Storefront design: Bloom template (published) ────────────────────
+        DemoStorefrontDesigns.AddPriyaBloom(db, S1TenantId, now);
+
         await db.SaveChangesAsync();
         logger.LogInformation("Store 1 (Priya's Boutique) seeded.");
     }
@@ -355,7 +409,7 @@ public static class DataSeeder
     //  STORE 2 — Sugar & Crumbs Cake Studio (Premium Home Bakery)
     //  URL:   /sugar-crumbs
     //  Login: hello@sugarcrumbs.in / Demo@1234
-    //  Theme: #EA580C (warm orange)
+    //  Design: storefront builder "Crumb" template, Caramel palette (DemoStorefrontDesigns)
     // ══════════════════════════════════════════════════════════════════════════
     static async Task SeedStore2_BakeryAsync(AppDbContext db, ILogger logger)
     {
@@ -405,7 +459,8 @@ public static class DataSeeder
         db.StorefrontSettings.Add(new StorefrontSettings
         {
             Id = Guid.NewGuid(), TenantId = S2TenantId, BusinessId = S2BizId,
-            Slug = "sugar-crumbs", ThemeColor = "#EA580C",
+            // Brand colours = the published Crumb palette (publishing copies them, SB-R16).
+            Slug = "sugar-crumbs", ThemeColor = "#92400E", SecondaryColor = "#B45309", AccentColor = "#92400E",
             SeoTitle = "Sugar & Crumbs Cake Studio — Custom Cakes in Bengaluru",
             SeoDescription = "Order custom cakes, cupcakes, cookies and dessert hampers. 100% eggless available. Free delivery within 5km of Indiranagar, Bengaluru.",
             WhatsAppCtaLabel = "Order Your Cake 🎂",
@@ -437,6 +492,13 @@ public static class DataSeeder
         var bp9  = Prod(S2TenantId, b4.Id, "Diwali Dry Fruit Mithai Box — 500g",  "Handcrafted cashew barfi, kaju rolls and almond laddoos. Premium festive packaging. Order by Nov 1 to guarantee Diwali delivery.",            "FES-DIW-001",  699,   629, true,  20, 9);
         var bp10 = Prod(S2TenantId, b5.Id, "Birthday Celebration Hamper",         "Includes 1 small chocolate cake (300g) + 6 cupcakes + 9 brownies + personalised card. The perfect surprise package!",                        "HAM-BDY-001", 1499,  1299, true,  10, 10);
         db.Products.AddRange(bp1, bp2, bp3, bp4, bp5, bp6, bp7, bp8, bp9, bp10);
+
+        // Tags for the Crumb template's food marks — only where the description says eggless.
+        foreach (var bp in new[] { bp1, bp2, bp3, bp4, bp5, bp6, bp7, bp8, bp9, bp10 })
+            if (bp.Description?.Contains("eggless", StringComparison.OrdinalIgnoreCase) == true)
+                db.ProductTags.AddRange(
+                    new ProductTag { Id = Guid.NewGuid(), TenantId = S2TenantId, ProductId = bp.Id, Tag = "veg", CreatedAt = now },
+                    new ProductTag { Id = Guid.NewGuid(), TenantId = S2TenantId, ProductId = bp.Id, Tag = "eggless", CreatedAt = now });
 
         // ── Product Images ────────────────────────────────────────────────────
         db.ProductImages.AddRange(
@@ -498,6 +560,9 @@ public static class DataSeeder
         });
         db.OrderItems.Add(new OrderItem { Id = Guid.NewGuid(), TenantId = S2TenantId, OrderId = bo2Id, ProductId = bp10.Id, ProductTitle = bp10.Title, Quantity = 1, UnitPrice = 1299m, TotalPrice = 1299m, CreatedAt = now.AddDays(-1) });
 
+        // ── Storefront design: Crumb template (published) ────────────────────
+        DemoStorefrontDesigns.AddSugarCrumb(db, S2TenantId, now);
+
         await db.SaveChangesAsync();
         logger.LogInformation("Store 2 (Sugar & Crumbs) seeded.");
     }
@@ -506,7 +571,7 @@ public static class DataSeeder
     //  STORE 3 — Aradhya Jewels (Handmade Jewelry & Accessories)
     //  URL:   /aradhya-jewels
     //  Login: hello@aradhyajewels.in / Demo@1234
-    //  Theme: #7C3AED (premium violet)
+    //  Design: storefront builder "Noor" template, Black & Gold palette (DemoStorefrontDesigns)
     // ══════════════════════════════════════════════════════════════════════════
     static async Task SeedStore3_JewelryAsync(AppDbContext db, ILogger logger)
     {
@@ -557,7 +622,8 @@ public static class DataSeeder
         db.StorefrontSettings.Add(new StorefrontSettings
         {
             Id = Guid.NewGuid(), TenantId = S3TenantId, BusinessId = S3BizId,
-            Slug = "aradhya-jewels", ThemeColor = "#7C3AED",
+            // Brand colours = the published Noor palette (publishing copies them, SB-R16).
+            Slug = "aradhya-jewels", ThemeColor = "#1C1917", SecondaryColor = "#44403C", AccentColor = "#A16207",
             SeoTitle = "Aradhya Jewels — Handcrafted Silver & Oxidised Jewelry",
             SeoDescription = "Shop handcrafted oxidised silver jewelry, kundan sets, terracotta earrings and more. Nickel-free, ethically made. Ships Pan-India.",
             WhatsAppCtaLabel = "Chat & Order on WhatsApp ✨",
@@ -660,6 +726,9 @@ public static class DataSeeder
             new OrderItem { Id = Guid.NewGuid(), TenantId = S3TenantId, OrderId = jo2Id, ProductId = jp9.Id, ProductTitle = jp9.Title, Quantity = 1, UnitPrice = 249m,  TotalPrice = 249m,  CreatedAt = now.AddDays(-2) }
         );
         db.Payments.Add(new Payment { Id = Guid.NewGuid(), TenantId = S3TenantId, OrderId = jo2Id, Amount = 2048m, Method = "GPay", PaidAt = now.AddDays(-2).AddHours(3), CreatedAt = now.AddDays(-2) });
+
+        // ── Storefront design: Noor template (published) ─────────────────────
+        DemoStorefrontDesigns.AddAradhyaNoor(db, S3TenantId, now);
 
         await db.SaveChangesAsync();
         logger.LogInformation("Store 3 (Aradhya Jewels) seeded.");

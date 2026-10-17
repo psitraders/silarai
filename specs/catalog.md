@@ -18,6 +18,7 @@ Merchants manage what they sell: products, categories, reviews and coupons.
 - **CAT-R3** — Insufficient stock returns 422 (`InsufficientStockException`).
 - **CAT-R4** — Publishing a product can trigger an AI `AutoCampaign` (`marketing-ai-tools`).
 - **CAT-R5** — The catalog is the price source for every order (INV-2).
+- **CAT-R6** — Coupons are private by default; only coupons marked *Show on storefront* that are active, within their dates and not used up are listed publicly (storefront coupon strip).
 
 ## UI
 - `pages/catalog/` — Products, ProductForm, Categories, Coupons, Reviews, ImportProducts.

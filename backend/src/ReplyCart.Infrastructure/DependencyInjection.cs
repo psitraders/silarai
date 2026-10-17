@@ -8,6 +8,7 @@ using ReplyCart.Application.Chatbot.Agent;
 using ReplyCart.Application.Common.Interfaces;
 using ReplyCart.Application.Import;
 using ReplyCart.Application.Rag;
+using ReplyCart.Application.StorefrontBuilder;
 using ReplyCart.Infrastructure.Ai;
 using ReplyCart.Infrastructure.Configuration;
 using ReplyCart.Infrastructure.Import;
@@ -38,6 +39,11 @@ public static class DependencyInjection
             ));
 
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
+
+        // Storefront builder: sanitiser (thread-safe, singleton) + document processor / smart-value resolver
+        services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
+        services.AddSingleton<StorefrontLayoutProcessor>();
+        services.AddScoped<StorefrontSmartValueResolver>();
 
         services.AddScoped<ITenantContext, TenantContextService>();
         services.AddScoped<ICurrentUser, CurrentUserService>();

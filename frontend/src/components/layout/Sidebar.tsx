@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Inbox, Users, ShoppingBag, Package, Store,
   BarChart2, Settings, LogOut, MessageSquareQuote, X, Plug, Zap, Shield, Send, Sparkles,
   Tag, Star, ShoppingCart, Globe, UserCircle, Bot, MessagesSquare, Download, FlaskConical, FileText, MessageCircle,
-  Coins, UsersRound,
+  Coins, UsersRound, Paintbrush,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/auth.store';
@@ -34,7 +34,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     { path: '/catalog/reviews',         icon: Star,              label: t('nav.reviews') },
     { path: '/catalog/import',          icon: Download,          label: 'Import Products' },
     { path: '/storefront',              icon: Store,             label: t('nav.storefront') },
-    { path: '/pages',                  icon: FileText,          label: 'Custom Pages' },
+    { path: '/storefront/editor',       icon: Paintbrush,        label: 'Customise store' },
     { path: '/marketing',               icon: Send,              label: t('nav.marketing') },
 
     { path: '/marketing/abandoned-carts', icon: ShoppingCart,    label: t('nav.abandonedCarts') },

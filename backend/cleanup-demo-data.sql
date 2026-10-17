@@ -44,6 +44,10 @@ DELETE FROM AiUsageLogs   WHERE TenantId != @AdminTenantId;
 DELETE FROM ReplyTemplates WHERE TenantId != @AdminTenantId;
 PRINT 'AI data cleared.';
 
+-- Storefront builder (themes + pages)
+DELETE FROM StorefrontThemes WHERE TenantId != @AdminTenantId;
+DELETE FROM StorefrontPages  WHERE TenantId != @AdminTenantId;
+
 -- Business
 DELETE FROM StorefrontSettings WHERE TenantId != @AdminTenantId;
 DELETE FROM SocialLinks        WHERE TenantId != @AdminTenantId;

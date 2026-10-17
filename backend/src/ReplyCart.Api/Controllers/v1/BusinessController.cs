@@ -58,8 +58,8 @@ public class BusinessController(IMediator mediator, ITenantContext tenantContext
         if (!allowed.Contains(file.ContentType.ToLower()))
             return BadRequest(new { error = "Only JPEG, PNG, WebP, GIF, ICO, or SVG files are allowed." });
 
-        if (type is not ("logo" or "banner" or "favicon"))
-            return BadRequest(new { error = "type must be 'logo', 'banner', or 'favicon'." });
+        if (type is not ("logo" or "banner" or "favicon" or "section"))
+            return BadRequest(new { error = "type must be 'logo', 'banner', 'favicon' or 'section'." });
 
         var tenantId = tenantContext.CurrentTenantId;
         var ext      = Path.GetExtension(file.FileName).ToLower();
@@ -76,7 +76,8 @@ public class BusinessController(IMediator mediator, ITenantContext tenantContext
         var dir      = Path.Combine(webRoot, "uploads", "store", tenantId.ToString());
         Directory.CreateDirectory(dir);
 
-        var fileName = $"{type}{ext}";
+        // Storefront-builder section images are many per store, so they get unique names.
+        var fileName = type == "section" ? $"section-{Guid.NewGuid():N}{ext}" : $"{type}{ext}";
         var filePath = Path.Combine(dir, fileName);
 
         await using var stream = System.IO.File.Create(filePath);

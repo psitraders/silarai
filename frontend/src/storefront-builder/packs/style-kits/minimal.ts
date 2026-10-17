@@ -1,0 +1,41 @@
+import type { StyleKitDef } from '../../core/types';
+
+const kit: StyleKitDef = {
+  id: 'minimal',
+  name: 'Minimal',
+  description: 'Clean, lots of white space, thin lines.',
+  options: {
+    corners: 'subtle',
+    imageCorners: 'sharp',
+    shadowDepth: 'none',
+    headingScale: 'regular',
+    headingWeight: 'semibold',
+    headingCase: 'normal',
+    headingTracking: 'tight',
+    bodySize: 16,
+    linkStyle: 'underline',
+    buttonShape: 'square',
+    buttonStyle: 'filled',
+    buttonSize: 'regular',
+    buttonHover: 'darken',
+    buttonCase: 'upper',
+    cardStyle: 'flat',
+    cardPadding: 'tight',
+    cardHover: 'zoom',
+    productImageRatio: 'portrait',
+    badgeShape: 'square',
+    inputStyle: 'underline',
+    iconStroke: 'thin',
+    pageWidth: 'wide',
+    sectionSpacing: 'airy',
+    gridGap: 'normal',
+    texture: 'none',
+    gradients: false,
+    motion: 'subtle',
+    scrollReveal: 'fade',
+    surface: 'solid',
+    overlay: 'light',
+  },
+};
+
+export default kit;

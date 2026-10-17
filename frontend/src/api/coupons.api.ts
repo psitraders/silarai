@@ -11,6 +11,8 @@ export interface CouponDto {
   validFrom?: string;
   validTo?: string;
   isActive: boolean;
+  /** Listed in the storefront coupon strip. */
+  showOnStorefront: boolean;
   buyQuantity?: number;
   getQuantity?: number;
   createdAt: string;
@@ -25,6 +27,7 @@ export interface SaveCouponDto {
   validFrom?: string;
   validTo?: string;
   isActive: boolean;
+  showOnStorefront: boolean;
   buyQuantity?: number;
   getQuantity?: number;
 }

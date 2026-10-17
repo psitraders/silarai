@@ -294,6 +294,9 @@ public class PublicStorefrontController(
         [FromQuery] bool? inStockOnly = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
+        [FromQuery] decimal? minPrice = null,   // effective price (sale price, else base price)
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] bool? withPriceBounds = null, // adds { min, max } of the list before the price filter
         CancellationToken ct = default)
     {
         if (!tenantContext.IsResolved)
@@ -323,6 +326,21 @@ public class PublicStorefrontController(
 
         if (inStockOnly == true)
             query = query.Where(p => p.StockQuantity == null || p.StockQuantity > 0);
+
+        // Price bounds of the current list (category / search / stock applied, price filter not yet),
+        // so the storefront's price filter can show the real range.
+        object? priceBounds = null;
+        if (withPriceBounds == true)
+        {
+            var lowest  = await query.MinAsync(p => (decimal?)(p.DiscountedPrice ?? p.BasePrice), ct);
+            var highest = await query.MaxAsync(p => (decimal?)(p.DiscountedPrice ?? p.BasePrice), ct);
+            if (lowest.HasValue && highest.HasValue) priceBounds = new { min = lowest.Value, max = highest.Value };
+        }
+
+        if (minPrice.HasValue)
+            query = query.Where(p => (p.DiscountedPrice ?? p.BasePrice) >= minPrice.Value);
+        if (maxPrice.HasValue)
+            query = query.Where(p => (p.DiscountedPrice ?? p.BasePrice) <= maxPrice.Value);
 
         query = sort switch
         {
@@ -354,12 +372,14 @@ public class PublicStorefrontController(
                 // Lowest possible price considering variant price adjustments (null when no variants)
                 MinVariantPrice = p.Variants.Any()
                     ? (p.DiscountedPrice ?? p.BasePrice) + p.Variants.Min(v => v.PriceAdjustment ?? 0)
-                    : (decimal?)null
+                    : (decimal?)null,
+                // Merchant tags (e.g. "veg", "eggless") — cards can show food markers from them.
+                Tags = p.Tags.Select(t => t.Tag).ToList()
             })
             .ToListAsync(ct);
 
         Response.Headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=60";
-        return Ok(new { items = products, totalCount, page, pageSize });
+        return Ok(new { items = products, totalCount, page, pageSize, priceBounds });
     }
 
     // Accepts both a slug ("rose-bouquet") and a GUID for backward compatibility
@@ -1109,7 +1129,116 @@ public class PublicStorefrontController(
         });
     }
 
+    /// <summary>
+    /// Coupons the merchant chose to show on the storefront (coupon strip): active, inside their
+    /// validity window and not used up. Private coupons (ShowOnStorefront = false) are never listed.
+    /// </summary>
+    [HttpGet("coupons")]
+    public async Task<IActionResult> GetStorefrontCoupons(string slug, CancellationToken ct)
+    {
+        if (!tenantContext.IsResolved) return NotFound();
+
+        var now = DateTime.UtcNow;
+        var coupons = await db.Coupons
+            .Where(c => c.TenantId == tenantContext.CurrentTenantId
+                     && c.IsActive && c.ShowOnStorefront
+                     && (c.ValidFrom == null || c.ValidFrom <= now)
+                     && (c.ValidTo == null || c.ValidTo >= now)
+                     && (c.MaxUses == null || c.UsedCount < c.MaxUses))
+            .OrderByDescending(c => c.CreatedAt)
+            .Take(12)
+            .Select(c => new { c.Code, c.Type, c.Value, c.MinOrderAmount, c.ValidTo, c.BuyQuantity, c.GetQuantity })
+            .ToListAsync(ct);
+
+        Response.Headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=60";
+        return Ok(coupons);
+    }
+
+    /// <summary>
+    /// Storefront newsletter signup (builder "Newsletter" section). Subscribers are CRM Leads tagged
+    /// <c>newsletter</c> — no separate table (spec storefront-builder, D12). Signing up twice is a no-op.
+    /// </summary>
+    [HttpPost("newsletter")]
+    public async Task<IActionResult> SubscribeNewsletter(string slug, [FromBody] NewsletterSignupRequest request, CancellationToken ct)
+    {
+        if (!tenantContext.IsResolved) return NotFound();
+
+        var email = request.Email?.Trim() ?? string.Empty;
+        if (email.Length is 0 or > 256 || !System.Net.Mail.MailAddress.TryCreate(email, out var parsed) || parsed.Address != email)
+            return BadRequest(new { errors = new[] { "Enter a valid email address." } });
+
+        var name = request.Name?.Trim();
+        var already = await db.Leads.AnyAsync(l =>
+            l.CustomerEmail == email && l.Tags != null && l.Tags.Contains(NewsletterTag), ct);
+        if (!already)
+        {
+            db.Leads.Add(new Lead
+            {
+                TenantId         = tenantContext.CurrentTenantId,
+                CustomerName     = string.IsNullOrWhiteSpace(name) ? "Newsletter subscriber" : name.Length > 100 ? name[..100] : name,
+                CustomerEmail    = email,
+                SourceChannel    = SocialPlatform.Direct,
+                InquiryNote      = "Subscribed to the newsletter from the storefront.",
+                Tags             = NewsletterTag,
+                Priority         = 1,
+                LastActivityDate = DateTime.UtcNow,
+            });
+            await db.SaveChangesAsync(ct);
+        }
+        return Ok(new { subscribed = true });
+    }
+
+    private const string NewsletterTag = "newsletter";
+
     // â”€â”€ Product reviews (public) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    /// <summary>
+    /// Store-wide review summary for the storefront "Reviews" section: average, count and
+    /// star distribution of approved reviews on visible products, plus the latest ones.
+    /// Reviewer e-mail and phone are never returned.
+    /// </summary>
+    [HttpGet("reviews/summary")]
+    public async Task<IActionResult> GetReviewsSummary(string slug, [FromQuery] int limit = 6, [FromQuery] int minRating = 1, CancellationToken ct = default)
+    {
+        if (!tenantContext.IsResolved) return NotFound();
+
+        limit = Math.Clamp(limit, 0, 12);
+        minRating = Math.Clamp(minRating, 1, 5);
+
+        var approved = db.ProductReviews.Where(r => r.IsApproved
+            && (r.Product.Status == Domain.Enums.ProductStatus.Active || r.Product.Status == Domain.Enums.ProductStatus.OutOfStock));
+
+        var counts = await approved
+            .GroupBy(r => r.Rating)
+            .Select(g => new { Rating = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        var total = counts.Sum(c => c.Count);
+        var average = total == 0 ? 0.0 : (double)counts.Sum(c => c.Rating * c.Count) / total;
+
+        var latest = await approved
+            .Where(r => r.Rating >= minRating && r.Comment != null && r.Comment != "")
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(limit)
+            .Select(r => new
+            {
+                r.Id, r.ReviewerName, r.Rating, r.Comment, r.CreatedAt,
+                r.ProductId,
+                ProductTitle = r.Product.Title,
+                ProductImage = r.Product.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault(),
+            })
+            .ToListAsync(ct);
+
+        Response.Headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=300";
+        return Ok(new
+        {
+            averageRating = Math.Round(average, 1),
+            totalCount = total,
+            distribution = Enumerable.Range(1, 5).Reverse()
+                .Select(star => new { rating = star, count = counts.FirstOrDefault(c => c.Rating == star)?.Count ?? 0 }),
+            items = latest,
+        });
+    }
     [HttpGet("products/{productId:guid}/reviews")]
     public async Task<IActionResult> GetProductReviews(string slug, Guid productId, CancellationToken ct)
     {
@@ -1974,43 +2103,6 @@ public class PublicStorefrontController(
         Response.Headers["Cache-Control"] = "public, max-age=86400";
         return Content(svg.Trim(), "image/svg+xml");
     }
-
-    // ── Custom pages ──────────────────────────────────────────────────────────
-
-    /// <summary>Returns all published pages for nav/footer links.</summary>
-    [HttpGet("pages")]
-    public async Task<IActionResult> GetPages(string slug, CancellationToken ct)
-    {
-        var tenant = await ResolveTenant(slug, ct);
-        if (tenant == null) return NotFound();
-
-        var pages = await db.StorefrontPages
-            .Where(p => p.TenantId == tenant.Id && p.IsPublished)
-            .OrderBy(p => p.SortOrder).ThenBy(p => p.Title)
-            .Select(p => new { p.Id, p.Title, p.Slug, p.ShowInNav, p.ShowInFooter })
-            .ToListAsync(ct);
-
-        return Ok(pages);
-    }
-
-    /// <summary>Returns a single page by its slug.</summary>
-    [HttpGet("pages/{pageSlug}")]
-    public async Task<IActionResult> GetPage(string slug, string pageSlug, CancellationToken ct)
-    {
-        var tenant = await ResolveTenant(slug, ct);
-        if (tenant == null) return NotFound();
-
-        var page = await db.StorefrontPages
-            .Where(p => p.TenantId == tenant.Id && p.Slug == pageSlug && p.IsPublished)
-            .Select(p => new { p.Id, p.Title, p.Slug, p.Content, p.UpdatedAt })
-            .FirstOrDefaultAsync(ct);
-
-        if (page == null) return NotFound();
-        return Ok(page);
-    }
-
-    private async Task<Domain.Tenancy.Tenant?> ResolveTenant(string slug, CancellationToken ct) =>
-        await db.Tenants.FirstOrDefaultAsync(t => t.Slug == slug, ct);
 }
 
 // ── Category DTOs for public storefront ──────────────────────────────────────
@@ -2034,6 +2126,7 @@ public record PublicInquiryRequest(
 );
 public record CartItemRequest(string ProductTitle, decimal UnitPrice, int Quantity, string? VariantInfo);
 public record ValidateCouponRequest(string Code, decimal OrderTotal);
+public record NewsletterSignupRequest(string? Email, string? Name);
 public record SubmitReviewRequest(string ReviewerName, string? ReviewerEmail, string? ReviewerPhone, int Rating, string? Comment);
 public record CodOrderRequest(
     string CustomerName,

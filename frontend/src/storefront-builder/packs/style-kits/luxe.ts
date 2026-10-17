@@ -1,0 +1,43 @@
+import type { StyleKitDef } from '../../core/types';
+
+const kit: StyleKitDef = {
+  id: 'luxe',
+  name: 'Luxe',
+  description: 'Dark or ivory, gold accents, slow elegant motion.',
+  options: {
+    corners: 'sharp',
+    imageCorners: 'subtle',
+    shadowDepth: 'none',
+    headingScale: 'large',
+    headingWeight: 'regular',
+    headingCase: 'upper',
+    headingTracking: 'wide',
+    bodySize: 16,
+    linkStyle: 'animated',
+    buttonShape: 'square',
+    buttonStyle: 'outline',
+    buttonSize: 'large',
+    buttonHover: 'glow',
+    buttonCase: 'upper',
+    cardStyle: 'flat',
+    cardPadding: 'normal',
+    cardHover: 'zoom',
+    productImageRatio: 'portrait',
+    productQuickAdd: false,
+    badgeShape: 'square',
+    saleBadge: 'text',
+    inputStyle: 'underline',
+    iconStroke: 'thin',
+    pageWidth: 'regular',
+    sectionSpacing: 'airy',
+    gridGap: 'loose',
+    texture: 'none',
+    gradients: false,
+    motion: 'expressive',
+    scrollReveal: 'fade',
+    surface: 'solid',
+    overlay: 'dark',
+  },
+};
+
+export default kit;

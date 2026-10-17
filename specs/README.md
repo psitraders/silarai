@@ -17,6 +17,7 @@ High-level, per-feature specs for the Silarai platform (backend + dashboard + st
 | [ai-tenant-chatbot](ai-tenant-chatbot.md) | AIC | Tenant AI sales chatbot (autopilot) |
 | [chatbot-service](chatbot-service.md) | CBS | Chatbot-as-a-Service, embeddable widget |
 | [storefront](storefront.md) | SF | Public storefront, custom domains, storefront accounts |
+| [storefront-builder](storefront-builder.md) | SB | Section/block page builder: unlimited pages, header/footer/product/collection/cart layouts, 5 template packs, style kits, palettes, fonts, editor |
 | [b2b-wholesale](b2b-wholesale.md) | B2B | Wholesale tiers, quote requests |
 | [marketing-ai-tools](marketing-ai-tools.md) | MKT | Campaigns, templates, abandoned carts, AI content |
 | [analytics-dashboard](analytics-dashboard.md) | ANA | Dashboard, analytics, search, activity |
