@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Eye, EyeOff, PanelBottom, PanelTop, Plus } from 'lucide-react';
+import { ArrowDown, ArrowUp, Eye, EyeOff, PanelBottom, PanelTop, Plus, Sparkles } from 'lucide-react';
 import { editorPacks } from '../packs';
 import { sameTarget, useCurrentLayout, useEditor, type Target } from '../state/store';
 import { IconButton } from '../ui/controls';
@@ -10,7 +10,7 @@ export function OutlinePanel() {
   const layout = useCurrentLayout();
   const selection = useEditor(s => s.selection);
   const site = useEditor(s => s.site);
-  const { select, moveSection, updateInstance, openGallery } = useEditor.getState();
+  const { select, moveSection, updateInstance, openGallery, openAi } = useEditor.getState();
   const isSel = (t: Target) => sameTarget(selection?.target, t);
   const rowCls = (active: boolean) => `flex items-center gap-0.5 rounded-xl border py-1 pr-1 transition-colors ${active ? 'theme-border theme-bg border-2' : 'border-slate-200 bg-white hover:border-slate-300'}`;
   const layoutName = (kind: 'header' | 'footer' | 'section', type: string, layoutId?: string) => {
@@ -66,6 +66,9 @@ export function OutlinePanel() {
         )}
         <button type="button" disabled={!layout} onClick={() => openGallery()} className="theme-btn mt-3 inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-semibold disabled:opacity-50">
           <Plus className="h-4 w-4" aria-hidden /> Add section
+        </button>
+        <button type="button" disabled={!layout} onClick={() => openAi('sections')} className="mt-2 inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+          <Sparkles className="h-4 w-4" aria-hidden /> Add sections with AI
         </button>
       </div>
 

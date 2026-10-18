@@ -1,4 +1,4 @@
-import { ArrowLeft, Copy, Eye, EyeOff, MousePointerClick, Trash2, X } from 'lucide-react';
+import { ArrowLeft, BookmarkPlus, Copy, Eye, EyeOff, MousePointerClick, Trash2, X } from 'lucide-react';
 import { blockSettings } from '../../core/blocks';
 import type { SchemeId, Visibility } from '../../core/types';
 import { SchemaForm } from '../fields/SchemaForm';
@@ -43,7 +43,7 @@ function PanelHeader({ title, subtitle, onBack, onClose }: { title: string; subt
 function InstanceInspector({ selection }: { selection: Selection }) {
   const { target } = selection;
   const { instance, manifest } = useInstance(target);
-  const { select, updateInstance, duplicateSection, removeSection } = useEditor.getState();
+  const { select, updateInstance, duplicateSection, removeSection, openSaveSection } = useEditor.getState();
   if (!instance || !manifest) {
     return <div className="p-6 text-sm text-slate-600">This item no longer exists. <button type="button" className="theme-text cursor-pointer font-medium underline" onClick={() => select(null)}>Close</button></div>;
   }
@@ -88,6 +88,9 @@ function InstanceInspector({ selection }: { selection: Selection }) {
         <div className="flex flex-wrap gap-2 border-t border-slate-100 px-4 py-4">
           <button type="button" onClick={() => duplicateSection(target.id)} className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
             <Copy className="h-4 w-4" aria-hidden /> Duplicate
+          </button>
+          <button type="button" onClick={() => openSaveSection(target.id)} className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <BookmarkPlus className="h-4 w-4" aria-hidden /> Save for reuse
           </button>
           <button type="button" onClick={() => updateInstance(target, i => { i.hidden = !i.hidden || undefined; })} className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
             {instance.hidden ? <><Eye className="h-4 w-4" aria-hidden /> Show</> : <><EyeOff className="h-4 w-4" aria-hidden /> Hide</>}

@@ -28,6 +28,12 @@ public class StorefrontPage : TenantEntity
     public bool   ShowInFooter{ get; set; } = false;
     public int    SortOrder   { get; set; } = 0;
 
+    /// <summary>
+    /// <see cref="StorefrontPageType.AltProductTemplate"/> only: <c>{ "categoryIds": [...], "productIds": [...] }</c>.
+    /// Not a draft — assignments apply as soon as the design has been published (SB-R21).
+    /// </summary>
+    public string? AssignmentJson { get; set; }
+
     // Per-page SEO (falls back to store-level SEO when empty)
     public string? SeoTitle       { get; set; }
     public string? SeoDescription { get; set; }

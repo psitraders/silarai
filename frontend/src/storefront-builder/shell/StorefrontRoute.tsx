@@ -13,6 +13,8 @@ import { StorefrontContext, buildLinks, type StorefrontContextValue } from '../c
 import { resolveTheme } from '../core/theme/buildTheme';
 import type { PageLayout, SiteDoc, StoreInfo } from '../core/types';
 import { BrandedLoader, StoreNotFound } from './overlays';
+import { PreviewBanner } from './PreviewBanner';
+import { previewToken } from '../core/data/preview';
 import { StoreShell, type StorefrontRouteKind } from './StoreShell';
 
 export function StorefrontRoute({ kind, overrideSlug }: { kind: StorefrontRouteKind; overrideSlug?: string }) {
@@ -43,8 +45,10 @@ function StorefrontDataGate({ slug, isCustomDomain, kind }: { slug: string; isCu
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
+  // Draft and published sites are cached apart (preview links, SB-R22).
+  const inPreview = !!slug && !!previewToken(slug);
   const siteQuery = useQuery({
-    queryKey: ['public-site', slug],
+    queryKey: ['public-site', slug, inPreview ? 'draft' : 'live'],
     queryFn: () => storefrontApi.site(slug),
     enabled: !!slug,
     staleTime: 60 * 1000,
@@ -69,6 +73,8 @@ function StorefrontDataGate({ slug, isCustomDomain, kind }: { slug: string; isCu
         isPublished: !!published?.doc,
         navPages: published?.pages ?? [],
         links: buildLinks(slug, isCustomDomain),
+        productTemplates: published?.productTemplates ?? [],
+        preview: !!published?.preview,
       },
     };
   }, [store, published, slug, isCustomDomain]);
@@ -81,6 +87,7 @@ function StorefrontDataGate({ slug, isCustomDomain, kind }: { slug: string; isCu
   return (
     <StorefrontContext.Provider value={value.ctx}>
       <StoreShell kind={kind} starter={value.starter} hasPublishedHome={!!published?.hasHome} />
+      {(published?.preview || published?.previewExpired) && <PreviewBanner expired={!!published.previewExpired} />}
     </StorefrontContext.Provider>
   );
 }

@@ -6,8 +6,11 @@
 import { Loader2, PanelLeft, Settings2, Smartphone } from 'lucide-react';
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { AiPanel } from './ai/AiPanel';
+import { HistoryPanel } from './panels/HistoryPanel';
 import { Inspector } from './panels/Inspector';
 import { LeftPanel } from './panels/LeftPanel';
+import { SaveSectionDialog } from './panels/SaveSectionDialog';
 import { SectionGallery } from './panels/SectionGallery';
 import { TopBar } from './panels/TopBar';
 import { PreviewFrame } from './preview/PreviewFrame';
@@ -16,6 +19,7 @@ import { useAutosave } from './state/useAutosave';
 import { useEditorBoot } from './state/useEditorBoot';
 import { useCurrentPageLoader } from './state/usePageLayout';
 import { usePublish } from './state/usePublish';
+import { useUndoShortcuts } from './state/useUndoShortcuts';
 import { ToastHost } from './ui/Toast';
 import { TemplateWizard } from './wizard/TemplateWizard';
 
@@ -58,9 +62,13 @@ function EditorLayout() {
   const mobilePane = useEditor(s => s.mobilePane);
   const setMobilePane = useEditor(s => s.setMobilePane);
   const select = useEditor(s => s.select);
+  const historyOpen = useEditor(s => s.historyOpen);
+  const aiOpen = useEditor(s => !!s.aiPanel);
+  const panelOpen = historyOpen || aiOpen;
   const { saveNow } = useAutosave();
   const { publish, publishing } = usePublish(saveNow);
   useCurrentPageLoader();
+  useUndoShortcuts(document);
 
   // Keep ?page= in the URL so the editor can be deep-linked / reloaded on the same page.
   const urlPage = params.get('page');
@@ -83,15 +91,18 @@ function EditorLayout() {
     <div className="flex h-dvh flex-col overflow-clip bg-slate-50 text-slate-900">
       <TopBar onPublish={() => { void publish(); }} publishing={publishing} onRetry={() => { void saveNow(); }} onExit={async () => { await saveNow(); }} />
       <div className="flex min-h-0 flex-1">
-        <aside aria-label="Sections and style" className={`${pane('left')} w-full shrink-0 flex-col border-r border-slate-200 bg-white lg:flex lg:w-[300px] xl:w-[320px]`}>
-          <LeftPanel />
+        <aside aria-label={historyOpen ? 'Version history' : aiOpen ? 'Generate with AI' : 'Sections and style'} className={`${pane('left')} w-full shrink-0 flex-col border-r border-slate-200 bg-white lg:flex lg:w-[300px] xl:w-[320px]`}>
+          {historyOpen ? <HistoryPanel /> : aiOpen ? <AiPanel /> : <LeftPanel />}
         </aside>
         <main aria-label="Live preview" className={`${pane('preview')} min-w-0 flex-1 lg:flex`}>
           <PreviewFrame />
         </main>
-        <aside aria-label="Settings" className={`${pane('right')} w-full shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-white lg:flex lg:w-[340px]`}>
-          <Inspector />
-        </aside>
+        {/* A version being previewed is read-only, so the settings pane steps aside. */}
+        {!panelOpen && (
+          <aside aria-label="Settings" className={`${pane('right')} w-full shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-white lg:flex lg:w-[340px]`}>
+            <Inspector />
+          </aside>
+        )}
       </div>
 
       {/* Phones / small tablets: the three panes become tabs. */}
@@ -101,13 +112,14 @@ function EditorLayout() {
           { id: 'preview', label: 'Preview', Icon: Smartphone },
           { id: 'right', label: 'Settings', Icon: Settings2 },
         ] as const).map(({ id, label, Icon }) => (
-          <button key={id} type="button" aria-current={mobilePane === id} onClick={() => setMobilePane(id)} className={`flex min-h-14 cursor-pointer flex-col items-center justify-center gap-0.5 text-xs font-medium ${mobilePane === id ? 'theme-text' : 'text-slate-500'}`}>
+          <button key={id} type="button" aria-current={mobilePane === id} disabled={panelOpen && id === 'right'} onClick={() => setMobilePane(id)} className={`flex min-h-14 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 flex-col items-center justify-center gap-0.5 text-xs font-medium ${mobilePane === id ? 'theme-text' : 'text-slate-500'}`}>
             <Icon className="h-5 w-5" aria-hidden /> {label}
           </button>
         ))}
       </nav>
 
       <SectionGallery />
+      <SaveSectionDialog />
       <ToastHost />
     </div>
   );

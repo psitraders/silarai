@@ -21,3 +21,11 @@ export function sectionFromPreset(manifest: EditorPack, preset?: SectionPreset):
     blocks,
   };
 }
+
+/** A fresh copy of a saved section for inserting (new section and block ids, so it can be added many times). */
+export function sectionFromSaved(saved: SectionInstance): SectionInstance {
+  const copy = clone(saved);
+  copy.id = newId(copy.type);
+  copy.blocks = copy.blocks?.map(b => ({ ...b, id: newId(b.type) }));
+  return copy;
+}

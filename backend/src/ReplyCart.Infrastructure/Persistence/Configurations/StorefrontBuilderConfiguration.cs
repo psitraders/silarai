@@ -9,7 +9,29 @@ public class StorefrontThemeConfiguration : IEntityTypeConfiguration<StorefrontT
     public void Configure(EntityTypeBuilder<StorefrontTheme> builder)
     {
         builder.Property(t => t.DraftJson).IsRequired();
+        builder.Property(t => t.PreviewToken).HasMaxLength(64);
         builder.HasIndex(t => t.TenantId).IsUnique();
+    }
+}
+
+public class StorefrontVersionConfiguration : IEntityTypeConfiguration<StorefrontVersion>
+{
+    public void Configure(EntityTypeBuilder<StorefrontVersion> builder)
+    {
+        builder.Property(v => v.SiteJson).IsRequired();
+        builder.Property(v => v.PagesJson).IsRequired();
+        builder.HasIndex(v => new { v.TenantId, v.PublishedAt });
+    }
+}
+
+public class StorefrontSavedSectionConfiguration : IEntityTypeConfiguration<StorefrontSavedSection>
+{
+    public void Configure(EntityTypeBuilder<StorefrontSavedSection> builder)
+    {
+        builder.Property(s => s.Name).HasMaxLength(100).IsRequired();
+        builder.Property(s => s.SectionType).HasMaxLength(60).IsRequired();
+        builder.Property(s => s.SectionJson).IsRequired();
+        builder.HasIndex(s => s.TenantId);
     }
 }
 

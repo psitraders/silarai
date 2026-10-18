@@ -26,6 +26,7 @@ export function useEditorBoot(initialPage: PageKey) {
   const ready = useEditor(s => s.ready);
   const init = useEditor(s => s.init);
   const setNavPages = useEditor(s => s.setNavPages);
+  const setProductDesignIds = useEditor(s => s.setProductDesignIds);
 
   const settings = useQuery({ queryKey: ['storefront-settings'], queryFn: businessApi.getStorefrontSettings, staleTime: 5 * 60_000 });
   const slug = settings.data?.slug ?? '';
@@ -37,7 +38,7 @@ export function useEditorBoot(initialPage: PageKey) {
     if (ready || !store.data || !theme.data || !pages.data) return;
     const starter = starterFor(store.data);
     const systemIds = Object.fromEntries(SYSTEM_PAGE_KEYS.map(k => [k, pages.data.find(p => p.pageType === SYSTEM_PAGES[k].pageType)?.id]));
-    const known = isSystemPage(initialPage) || pages.data.some(p => p.id === initialPage && p.pageType === 'Custom');
+    const known = isSystemPage(initialPage) || pages.data.some(p => p.id === initialPage && (p.pageType === 'Custom' || p.pageType === 'AltProductTemplate'));
     init({
       slug,
       store: store.data,
@@ -52,6 +53,8 @@ export function useEditorBoot(initialPage: PageKey) {
 
   const navPages = useMemo(() => toNavPages(pages.data ?? []), [pages.data]);
   useEffect(() => { setNavPages(navPages); }, [navPages, setNavPages]);
+  const designIds = useMemo(() => (pages.data ?? []).filter(p => p.pageType === 'AltProductTemplate').map(p => p.id), [pages.data]);
+  useEffect(() => { setProductDesignIds(designIds); }, [designIds, setProductDesignIds]);
 
   const error = settings.error || store.error || theme.error || pages.error;
   return { error, retry: () => { void settings.refetch(); void store.refetch(); void theme.refetch(); void pages.refetch(); } };

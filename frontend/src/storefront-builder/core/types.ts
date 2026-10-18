@@ -304,6 +304,13 @@ export interface NavPage {
   showInFooter: boolean;
 }
 
+/** A published extra product design and what uses it (SB-R21: product pick > category pick > default). */
+export interface ProductTemplateRule {
+  id: string;
+  categoryIds: string[];
+  productIds: string[];
+}
+
 // ── Packs ────────────────────────────────────────────────────────────────────
 
 export type PackKind =

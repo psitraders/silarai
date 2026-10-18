@@ -27,7 +27,8 @@ export function useCurrentPageLoader() {
     if (id && !detail.data) return;
     const fromServer = detail.data?.draftLayout ?? detail.data?.publishedLayout;
     const starter = starterFor(store);
-    const fallback = isSystemPage(key) ? starter[key] : EMPTY_LAYOUT;
+    // An extra product design without a saved layout starts from the Starter product page.
+    const fallback = isSystemPage(key) ? starter[key] : useEditor.getState().productDesignIds.includes(key) ? starter.product : EMPTY_LAYOUT;
     loadLayout(key, structuredClone(fromServer ?? fallback));
   }, [loaded, store, id, detail.data, key, loadLayout]);
 

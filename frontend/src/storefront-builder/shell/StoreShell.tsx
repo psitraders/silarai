@@ -24,7 +24,7 @@ import { COMPARE_MAX, useCompare } from './compare/useCompare';
 import { AddedToast, BackToTop, MobileBottomBar, ReturnPolicyModal, StoreNotFound } from './overlays';
 import { applyHead, storeHead, useFavicon, useGa4, useProductJsonLd, useStoreHead } from './seo';
 import { ShellFrame } from './ShellFrame';
-import { POPUP_CONTEXT, popupContent } from './productTemplate';
+import { POPUP_CONTEXT, pickProductTemplate, popupContent } from './productTemplate';
 import type { StarterLayouts } from './StorefrontRoute';
 
 const CustomerAuthModal = React.lazy(() =>
@@ -39,7 +39,10 @@ const MyAccountPanel = React.lazy(() =>
 export type StorefrontRouteKind = 'home' | 'custom' | 'product' | 'category' | 'all-products';
 
 export function StoreShell({ kind, starter, hasPublishedHome }: { kind: StorefrontRouteKind; starter: StarterLayouts; hasPublishedHome: boolean }) {
-  const { slug, store, site, version, links, brandColor } = useStorefront();
+  const { slug, store, site, version, links, brandColor, productTemplates, preview } = useStorefront();
+  const draftKey = preview ? 'draft' : 'live';
+  // Saved designs exist once the store has published — or, in a preview, as drafts.
+  const hasDesigns = version > 0 || !!preview;
   const { pageSlug, productId } = useParams<{ pageSlug?: string; productId?: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -73,26 +76,17 @@ export function StoreShell({ kind, starter, hasPublishedHome }: { kind: Storefro
   const pageRequest: { key: string; load: () => Promise<{ layout: PageLayout; seoTitle?: string | null; seoDescription?: string | null; ogImageUrl?: string | null; title?: string } | null> } | null =
     kind === 'custom' && pageSlug ? { key: `page:${pageSlug}`, load: () => storefrontApi.page(slug, pageSlug, version) }
     : (kind === 'home' || (kind === 'product' && !isProductPage)) && hasPublishedHome ? { key: 'page:home', load: () => storefrontApi.page(slug, 'home', version) }
-    : (kind === 'category' || kind === 'all-products') && version > 0 ? { key: 'tpl:collection', load: () => storefrontApi.template(slug, 'collection', version) }
+    : (kind === 'category' || kind === 'all-products') && hasDesigns ? { key: 'tpl:collection', load: () => storefrontApi.template(slug, 'collection', version) }
     : null;
 
   const pageQuery = useQuery({
-    queryKey: ['sb-page', slug, pageRequest?.key ?? 'starter', version],
+    queryKey: ['sb-page', slug, pageRequest?.key ?? 'starter', version, draftKey],
     queryFn: () => pageRequest!.load(),
     enabled: !!pageRequest,
     staleTime: 60 * 1000,
   });
 
-  // Product template: the product page, and the blocks every product popup shows.
   const [product, setProduct] = useState<StoreProduct | null>(null);
-  const productTemplateQuery = useQuery({
-    queryKey: ['sb-page', slug, 'tpl:product', version],
-    queryFn: () => storefrontApi.template(slug, 'product', version),
-    enabled: version > 0 && (isProductPage || !!product),
-    staleTime: 60 * 1000,
-  });
-  const productLayout = productTemplateQuery.data?.layout ?? starter.product;
-  const productTemplateReady = version === 0 || !productTemplateQuery.isLoading;
 
   // Standalone product page: the product from the URL (the card's copy shows while the full one loads).
   const routeProduct = (location.state as { product?: StoreProduct } | null)?.product;
@@ -105,6 +99,20 @@ export function StoreShell({ kind, starter, hasPublishedHome }: { kind: Storefro
     placeholderData: routeProduct && (routeProduct.id === productId || routeProduct.slug === productId) ? (routeProduct as ProductDetail) : undefined,
   });
   const pageProduct = isProductPage ? pageProductQuery.data ?? null : null;
+
+  // Product template: the product page, and the blocks every product popup shows. A product can use an
+  // extra design (SB-R21); with such designs, the page waits for the product so it knows which one.
+  const designFor = product ?? pageProduct;
+  const templateId = pickProductTemplate(productTemplates, designFor);
+  const needsProduct = !!productTemplates?.length;
+  const productTemplateQuery = useQuery({
+    queryKey: ['sb-page', slug, `tpl:product:${templateId ?? 'default'}`, version, draftKey],
+    queryFn: () => storefrontApi.template(slug, 'product', version, templateId),
+    enabled: hasDesigns && (isProductPage || !!product) && (!needsProduct || !!designFor),
+    staleTime: 60 * 1000,
+  });
+  const productLayout = productTemplateQuery.data?.layout ?? starter.product;
+  const productTemplateReady = !hasDesigns || !productTemplateQuery.isLoading;
 
   const starterLayout = kind === 'category' || kind === 'all-products' ? starter.collection : starter.home;
   const page = pageQuery.data;

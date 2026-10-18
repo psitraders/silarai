@@ -5,7 +5,7 @@
  */
 import { createContext, useCallback, useContext } from 'react';
 import { readLink } from './smart';
-import type { NavPage, SiteDoc, StoreInfo, StoreProduct } from './types';
+import type { NavPage, ProductTemplateRule, SiteDoc, StoreInfo, StoreProduct } from './types';
 
 export interface StorefrontLinks {
   home: () => string;
@@ -34,6 +34,10 @@ export interface StorefrontContextValue {
   isPublished: boolean;
   navPages: NavPage[];
   links: StorefrontLinks;
+  /** Published extra product designs (SB-R21); none = every product uses the default product page. */
+  productTemplates?: ProductTemplateRule[];
+  /** Showing the merchant's draft through a preview link (SB-R22). */
+  preview?: boolean;
 }
 
 export const StorefrontContext = createContext<StorefrontContextValue | null>(null);

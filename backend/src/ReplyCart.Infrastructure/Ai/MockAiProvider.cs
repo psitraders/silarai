@@ -239,6 +239,29 @@ public class MockAiProvider : IAiProvider, IAgentAiProvider
             ? "I'd be happy to share the pricing details. Could you let me know which specific product you're interested in?"
             : "I'm here to help! Could you please share more details about what you're looking for?";
     }
+
+    /// <summary>
+    /// Fixed storefront page so AI page generation works without an API key: generic sections with
+    /// their defaults (the editor fills in the rest).
+    /// </summary>
+    public Task<AiJsonResult> GenerateJsonAsync(
+        string systemPrompt,
+        string userPrompt,
+        int maxTokens,
+        CancellationToken cancellationToken = default)
+    {
+        const string json = """
+            {
+              "title": "Our story",
+              "sections": [
+                { "type": "rich-text", "settings": { "heading": "Our story", "body": { "$richtext": "<p>[Tell shoppers how your shop started and what you care about.]</p>" } } },
+                { "type": "product-collection", "settings": { "heading": "Shop our favourites", "products": { "$products": { "source": "featured", "limit": 8 } } } },
+                { "type": "faq", "settings": { "heading": "Questions" } }
+              ]
+            }
+            """;
+        return Task.FromResult(new AiJsonResult(json, 0, 0));
+    }
 }
 
 

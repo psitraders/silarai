@@ -86,6 +86,16 @@ public interface IAiProvider
     /// Generates social-media captions + hashtags + CTA for an auto-campaign
     /// triggered when a product is published.
     /// </summary>
+    /// <summary>
+    /// One JSON-mode completion: the model must answer with a single JSON object. Used by the
+    /// storefront builder's AI page generation (the caller validates the result).
+    /// </summary>
+    Task<AiJsonResult> GenerateJsonAsync(
+        string systemPrompt,
+        string userPrompt,
+        int maxTokens,
+        CancellationToken cancellationToken = default);
+
     Task<AutoCampaignContent> GenerateAutoCampaignContentAsync(
         string productName,
         string? productDescription,
@@ -150,6 +160,9 @@ public record ConversationReply(
     /// </summary>
     string? ExtractedCartOpsJson = null
 );
+
+/// <summary>Raw JSON from <see cref="IAiProvider.GenerateJsonAsync"/> plus billed tokens (0 when unknown).</summary>
+public record AiJsonResult(string Json, int PromptTokens, int CompletionTokens);
 
 /// <summary>AI-generated content for an auto-campaign post.</summary>
 public record AutoCampaignContent(

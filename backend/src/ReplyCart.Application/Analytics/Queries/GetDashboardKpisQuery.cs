@@ -51,10 +51,12 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
         var periodStart    = now.AddDays(-request.PeriodDays);
         var prevPeriodStart = periodStart.AddDays(-request.PeriodDays);
 
-        // ── Run all independent queries in parallel to minimise round-trips ──
+        // ── Queries run one after another: a DbContext allows only one operation at a time,
+        //    so starting them together and awaiting Task.WhenAll throws InvalidOperationException.
+        //    Each query aggregates server-side and the result is cached for CacheTtl. ──
 
         // Leads counts (current + prev period in one query each)
-        var leadsCurrentTask = db.Leads
+        var lc = await db.Leads
             .Where(l => l.TenantId == tenantId && l.CreatedAt >= periodStart)
             .GroupBy(_ => 1)
             .Select(g => new
@@ -64,7 +66,7 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
             })
             .FirstOrDefaultAsync(cancellationToken);
 
-        var leadsPrevTask = db.Leads
+        var lp = await db.Leads
             .Where(l => l.TenantId == tenantId && l.CreatedAt >= prevPeriodStart && l.CreatedAt < periodStart)
             .GroupBy(_ => 1)
             .Select(g => new
@@ -75,13 +77,13 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
             })
             .FirstOrDefaultAsync(cancellationToken);
 
-        var pendingFollowUpsTask = db.Leads
+        var pendingFollowUps = await db.Leads
             .CountAsync(l => l.TenantId == tenantId
                           && l.Status == LeadStatus.FollowUpPending
                           && l.FollowUpDate <= now.AddDays(3), cancellationToken);
 
         // Orders: current period count + prev period count + pipeline — all in one query
-        var orderStatsTask = db.Orders
+        var os = await db.Orders
             .Where(o => o.TenantId == tenantId)
             .GroupBy(_ => 1)
             .Select(g => new
@@ -99,7 +101,7 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
             .FirstOrDefaultAsync(cancellationToken);
 
         // Repeat customer rate — fully server-side
-        var repeatRateTask = db.Orders
+        var rr = await db.Orders
             .Where(o => o.TenantId == tenantId && o.CustomerId != null)
             .GroupBy(o => o.CustomerId)
             .Select(g => new { Count = g.Count() })
@@ -112,7 +114,7 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
             .FirstOrDefaultAsync(cancellationToken);
 
         // Sales chart (last 7 days)
-        var salesTask = db.Orders
+        var sales = await db.Orders
             .Where(o => o.TenantId == tenantId && o.CreatedAt >= now.AddDays(-7))
             .GroupBy(o => o.CreatedAt.Date)
             .Select(g => new SalesDataPoint(
@@ -122,7 +124,7 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
             .ToListAsync(cancellationToken);
 
         // Top products
-        var topProductsTask = db.OrderItems
+        var topProducts = await db.OrderItems
             .Where(i => i.TenantId == tenantId)
             .GroupBy(i => i.ProductId)
             .Select(g => new { ProductId = g.Key, Count = g.Count() })
@@ -135,7 +137,7 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
             .ToListAsync(cancellationToken);
 
         // Recent leads
-        var recentLeadsTask = db.Leads
+        var recentLeads = await db.Leads
             .Where(l => l.TenantId == tenantId)
             .OrderByDescending(l => l.CreatedAt)
             .Take(5)
@@ -144,7 +146,7 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
             .ToListAsync(cancellationToken);
 
         // Low stock products
-        var lowStockTask = db.Products
+        var lowStock = await db.Products
             .Where(p => p.TenantId == tenantId
                      && p.Status == ProductStatus.Active
                      && p.StockQuantity != null
@@ -157,23 +159,11 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
                 p.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault()))
             .ToListAsync(cancellationToken);
 
-        // ── Await all in parallel ──
-        await Task.WhenAll(
-            leadsCurrentTask, leadsPrevTask, pendingFollowUpsTask,
-            orderStatsTask, repeatRateTask,
-            salesTask, topProductsTask, recentLeadsTask, lowStockTask);
-
-        var lc   = leadsCurrentTask.Result;
-        var lp   = leadsPrevTask.Result;
-        var os   = orderStatsTask.Result;
-        var rr   = repeatRateTask.Result;
-
         var newInquiries        = lc?.Total ?? 0;
         var prevInquiries       = lp?.Total ?? 0;
         var convertedLeads      = lc?.Converted ?? 0;
         var prevConverted       = lp?.Converted ?? 0;
         var prevPendingFU       = lp?.FollowUpPending ?? 0;
-        var pendingFollowUps    = pendingFollowUpsTask.Result;
 
         var ordersThisWeek = os?.CurrentPeriod ?? 0;
         var prevOrders     = os?.PrevPeriod ?? 0;
@@ -203,11 +193,11 @@ public class GetDashboardKpisQueryHandler(IAppDbContext db, ITenantContext tenan
             Math.Round(conversionRate, 1),
             Math.Round(conversionRate - prevConversionRate, 1),
             totalRevenue,
-            topProductsTask.Result,
-            recentLeadsTask.Result,
+            topProducts,
+            recentLeads,
             pipeline,
-            salesTask.Result,
-            lowStockTask.Result,
+            sales,
+            lowStock,
             repeatRate,
             totalCustomers,
             repeatCustomers);

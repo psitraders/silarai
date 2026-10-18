@@ -63,7 +63,8 @@ export function ProductsField({ label, helper, value, onChange, max = 24 }: { la
   );
 }
 
-function ManualPicker({ ids, max, onChange }: { ids: string[]; max: number; onChange: (ids: string[]) => void }) {
+/** Searchable, ordered product picker (also used to assign products to a product design). */
+export function ManualPicker({ ids, max, onChange }: { ids: string[]; max: number; onChange: (ids: string[]) => void }) {
   const [search, setSearch] = useState('');
   const { data: results } = useProductSearch(search);
   const { data: picked = [] } = useProductsByIds(ids);

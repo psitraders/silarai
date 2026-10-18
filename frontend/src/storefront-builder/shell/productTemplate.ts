@@ -1,6 +1,14 @@
 import { effectiveSettings } from '../core/renderer/lazyLayout';
 import { registry } from '../core/registry';
-import type { PageLayout, RenderContext, Settings } from '../core/types';
+import type { PageLayout, ProductTemplateRule, RenderContext, Settings, StoreProduct } from '../core/types';
+
+/** Which extra product design a product uses: its own pick, else its category's, else null (= the default design). */
+export function pickProductTemplate(rules: ProductTemplateRule[] | undefined, product: Pick<StoreProduct, 'id' | 'categoryId'> | null): string | null {
+  if (!rules?.length || !product) return null;
+  return rules.find(r => r.productIds.includes(product.id))?.id
+    ?? (product.categoryId ? rules.find(r => r.categoryIds.includes(product.categoryId!))?.id : undefined)
+    ?? null;
+}
 
 export const POPUP_CONTEXT: RenderContext = { mode: 'live', isFirst: false, page: 'product' };
 

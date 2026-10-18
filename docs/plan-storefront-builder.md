@@ -1,6 +1,6 @@
 # Plan — Storefront Builder (templates, sections, multi-colour themes)
 
-Status: **v3 — decisions agreed (2026-10-11). Phase 1 shipped 2026-10-11; Phase 2 (builder core) shipped 2026-10-13; Phase 3 (commerce layouts) shipped 2026-10-13; Phase 3 quick wins + Phase 4a (wizard, apply-template, Noor, Mandi) shipped 2026-10-16; Phase 4b (Bloom, Crumb, Volt, newsletter, compare, food marks) shipped 2026-10-17** (details in `context.md` §4.9 / §5.10).
+Status: **v3 — decisions agreed (2026-10-11). Phase 1 shipped 2026-10-11; Phase 2 (builder core) shipped 2026-10-13; Phase 3 (commerce layouts) shipped 2026-10-13; Phase 3 quick wins + Phase 4a (wizard, apply-template, Noor, Mandi) shipped 2026-10-16; Phase 4b (Bloom, Crumb, Volt, newsletter, compare, food marks) shipped 2026-10-17; Phase 5a (undo/redo, version history, saved sections) shipped 2026-10-17; Phase 5b (alternate product templates, preview link, AI page generation) shipped 2026-10-18. Development paused 2026-10-18; next: Phase 6 (pending list in `specs/storefront-builder.md` → Changes to be done)** (details in `context.md` §4.9 / §5.10).
 
 **Phase 4a notes:** templates are code packs with a tiny eager manifest and a lazily loaded `build.ts`; the server only stores what the editor sends (`POST apply-template`, drafts only). D12 for Phase 3 follow-ups: price filter, reviews summary and live coupons built; newsletter will store subscribers as CRM Leads tagged `newsletter` when it is built. See the catalogue §10 note for differences from the plan.
 
@@ -325,7 +325,8 @@ The bundle size of the storefront chunk is checked before and after (`vite build
 | **3 — Commerce layouts** | Product view mode · 15 popup + 15 page layouts · product blocks · 10 card styles · 8 collection layouts · 5 cart styles · remaining core sections | Chooses how products look and open |
 | **4 — Templates** | Wizard + gallery · **4a: Noor + Mandi** · **4b: Bloom + Crumb + Volt** · signature widgets (unlockable in any template) · apply-template (keep/replace content) · demo stores re-seeded on Bloom / Crumb / Noor | Picks a premium look in a minute |
 | **5 — Pro** | Undo/redo, version history, saved sections, per-product alternate templates, AI "generate a page from a prompt" (sections JSON), shareable preview link, SuperAdmin template data manager, paid-plan tiers when you decide them | Power features |
-| **6 — Freeform (later)** | Free-form canvas section (§11) | Places blocks freely inside a section |
+| **6 — Styles & polish** | Audit + fix of every layout (phone / tablet / desktop), shared spacing rhythm, screenshot checks · per-section *Design* controls (spacing, width, alignment, background, radius, per-device) · AI styling of a section or page (added 2026-10-18) | Fixes and fine-tunes how each section looks |
+| **7 — Freeform (later)** | Free-form canvas section (§11) | Places blocks freely inside a section |
 
 Each phase ends with:
 - `context.md`, spec and `changes.md` updated
@@ -349,7 +350,7 @@ Each phase ends with:
 | D8 | Shareable preview link | Phase 5 |
 | D9 | Signature widgets in other templates | ✅ **Unlockable in any template**; listed first under their own template |
 | D10 | Existing stores | ✅ **None yet** — clean cut-over, old storefront code removed, demo seed data re-applied |
-| D11 | Free-form canvas | ✅ Not in v1; **planned as Phase 6** (§11) |
+| D11 | Free-form canvas | ✅ Not in v1; **planned as Phase 7** (§11; was Phase 6 until Styles & polish was added 2026-10-18) |
 | D12 | Features needing new backend data (🔌 in catalogue: recently viewed, reorder favourites, newsletter list, reviews summary) | ❓ Recommend Phases 3–5, one at a time — confirm when we reach them |
 
 ---
@@ -369,7 +370,7 @@ Each phase ends with:
 
 ---
 
-## 11. Later: free-form canvas (Phase 6)
+## 11. Later: free-form canvas (Phase 7)
 
 You want more freedom here later, so the v1 design keeps the door open:
 - It will be **one more section pack** (`freeform`): a grid canvas *inside a section* where blocks can be placed and resized freely, with a separate mobile arrangement (like Squarespace Fluid Engine). Nothing else in the builder changes.

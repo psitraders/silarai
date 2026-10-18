@@ -15,6 +15,17 @@ export type Device = 'desktop' | 'tablet' | 'mobile';
 export type LeftTab = 'sections' | 'theme' | 'pages' | 'menus';
 export type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
+/** One undoable edit: the whole document before and after (documents are immutable, so these are cheap references). */
+export interface HistoryEntry {
+  key: 'site' | PageKey;
+  before: SiteDoc | PageLayout;
+  after: SiteDoc | PageLayout;
+  at: number;
+}
+
+/** Edits to the same document closer together than this become one undo step (typing, dragging a slider). */
+const COALESCE_MS = 500;
+const MAX_HISTORY = 100;
 
 interface EditorData {
   ready: boolean;
@@ -24,6 +35,8 @@ interface EditorData {
   /** True once the theme row exists on the server (publish needs it). */
   themeOnServer: boolean;
   navPages: NavPage[];
+  /** Page ids of the extra product designs (edited like the Product page, with a sample product). */
+  productDesignIds: string[];
   layouts: Record<PageKey, PageLayout>;
   /** Server ids of the system pages (created on first save). */
   systemIds: Partial<Record<SystemPageKey, string>>;
@@ -52,12 +65,22 @@ interface EditorData {
   templatePreview: { site: SiteDoc; layouts: Record<PageKey, PageLayout> } | null;
   /** Saves pending edits right away (registered by the autosave hook). */
   flush: () => Promise<boolean>;
+  /** Section being saved for reuse (opens the name dialog). */
+  savingSection: SectionInstance | null;
+  /** Version history drawer. */
+  historyOpen: boolean;
+  /** AI generation panel (SB-R23): a new page, or sections for the open page. */
+  aiPanel: { mode: 'page' | 'sections' } | null;
+  /** Undo / redo stacks for this editor visit (not saved; cleared when documents are replaced). */
+  past: HistoryEntry[];
+  future: HistoryEntry[];
 }
 
 interface EditorActions {
   reset: () => void;
   init: (data: Pick<EditorData, 'slug' | 'store' | 'site' | 'themeOnServer' | 'systemIds' | 'currentPage' | 'wizard'>) => void;
   setNavPages: (pages: NavPage[]) => void;
+  setProductDesignIds: (ids: string[]) => void;
   loadLayout: (key: PageKey, layout: PageLayout) => void;
   setCurrentPage: (key: PageKey) => void;
   select: (selection: Selection | null, opts?: { scroll?: boolean }) => void;
@@ -94,6 +117,15 @@ interface EditorActions {
    * pages so they reload from their new drafts.
    */
   applyTemplateDocs: (data: { site: SiteDoc; layouts: Record<PageKey, PageLayout>; systemIds: Partial<Record<SystemPageKey, string>>; dropCustomLayouts: boolean }) => void;
+  undo: () => void;
+  redo: () => void;
+  /** Opens the "Save section" dialog for a section of the current page (null closes it). */
+  openSaveSection: (id: string | null) => void;
+  setHistoryOpen: (open: boolean) => void;
+  /** Opens the AI panel (null closes it and drops its preview). */
+  openAi: (mode: 'page' | 'sections' | null) => void;
+  /** Forgets a deleted custom page (its cached layout, save counters and undo steps). */
+  forgetPage: (key: PageKey) => void;
 }
 
 const initial: EditorData = {
@@ -103,6 +135,7 @@ const initial: EditorData = {
   site: null,
   themeOnServer: false,
   navPages: [],
+  productDesignIds: [],
   layouts: {},
   systemIds: {},
   currentPage: 'home',
@@ -120,6 +153,11 @@ const initial: EditorData = {
   wizard: null,
   templatePreview: null,
   flush: async () => true,
+  savingSection: null,
+  historyOpen: false,
+  aiPanel: null,
+  past: [],
+  future: [],
 };
 
 const move = <T,>(list: T[], from: number, to: number) => {
@@ -129,10 +167,28 @@ const move = <T,>(list: T[], from: number, to: number) => {
   return next;
 };
 
+/** Adds an edit to the undo stack, merging it into the previous step when it is a quick follow-up on the same document. */
+function record(past: HistoryEntry[], key: HistoryEntry['key'], before: HistoryEntry['before'], after: HistoryEntry['after']): HistoryEntry[] {
+  const now = Date.now();
+  const last = past[past.length - 1];
+  if (last && last.key === key && now - last.at < COALESCE_MS) return [...past.slice(0, -1), { ...last, after, at: now }];
+  return [...past, { key, before, after, at: now }].slice(-MAX_HISTORY);
+}
+
+/** Drops the selection (or just its block) when an undo / redo removed what it pointed at. */
+function validSelection(selection: Selection | null, site: SiteDoc | null, layout: PageLayout | undefined): Selection | null {
+  if (!selection) return null;
+  const t = selection.target;
+  const instance = t.kind === 'header' ? site?.header : t.kind === 'footer' ? site?.footer : layout?.sections.find(s => s.id === t.id);
+  if (!instance) return null;
+  if (selection.blockId && !instance.blocks?.some(b => b.id === selection.blockId)) return { target: t };
+  return selection;
+}
+
 export const useEditor = create<EditorData & EditorActions>()((set, get) => {
   /** Mutates a copy of the current page layout and marks it dirty. */
   const editLayout = (fn: (layout: PageLayout) => void) => {
-    const { currentPage, layouts, rev } = get();
+    const { currentPage, layouts, rev, past } = get();
     const current = layouts[currentPage];
     if (!current) return;
     const next = clone(current);
@@ -141,16 +197,45 @@ export const useEditor = create<EditorData & EditorActions>()((set, get) => {
       layouts: { ...layouts, [currentPage]: next },
       rev: { ...rev, [currentPage]: (rev[currentPage] ?? 0) + 1 },
       saveState: 'dirty',
+      past: record(past, currentPage, current, next),
+      future: [],
     });
   };
 
   const editSite = (fn: (site: SiteDoc) => void) => {
-    const site = get().site;
+    const { site, rev, past } = get();
     if (!site) return;
     const next = clone(site);
     fn(next);
-    const rev = get().rev;
-    set({ site: next, rev: { ...rev, site: (rev.site ?? 0) + 1 }, saveState: 'dirty' });
+    set({ site: next, rev: { ...rev, site: (rev.site ?? 0) + 1 }, saveState: 'dirty', past: record(past, 'site', site, next), future: [] });
+  };
+
+  /** Moves one step between the stacks, writing `before` (undo) or `after` (redo) back as a new edit to save. */
+  const step = (direction: 'undo' | 'redo') => {
+    const s = get();
+    const from = direction === 'undo' ? s.past.slice() : s.future.slice();
+    let entry = from.pop();
+    // Skip steps on pages that are no longer loaded (deleted, or replaced by a template).
+    while (entry && entry.key !== 'site' && !s.layouts[entry.key]) entry = from.pop();
+    if (!entry) { set(direction === 'undo' ? { past: from } : { future: from }); return; }
+
+    const doc = direction === 'undo' ? entry.before : entry.after;
+    const done = { ...entry, at: 0 }; // at 0: the next edit never merges into an undone / redone step
+    const rev = { ...s.rev, [entry.key]: (s.rev[entry.key] ?? 0) + 1 };
+    const site = entry.key === 'site' ? doc as SiteDoc : s.site;
+    const layouts = entry.key === 'site' ? s.layouts : { ...s.layouts, [entry.key]: doc as PageLayout };
+    // A page edit takes the merchant to that page so they can see what changed.
+    const currentPage = entry.key === 'site' ? s.currentPage : entry.key;
+    set({
+      site,
+      layouts,
+      rev,
+      saveState: 'dirty',
+      currentPage,
+      tryOn: null,
+      selection: validSelection(currentPage === s.currentPage ? s.selection : null, site, layouts[currentPage]),
+      ...(direction === 'undo' ? { past: from, future: [...s.future, done] } : { future: from, past: [...s.past, done] }),
+    });
   };
 
   const editInstance = (target: Target, fn: (instance: SectionInstance) => void) => {
@@ -162,8 +247,9 @@ export const useEditor = create<EditorData & EditorActions>()((set, get) => {
   return {
     ...initial,
     reset: () => set({ ...initial }),
-    init: data => set({ ...data, ready: true }),
+    init: data => set({ ...data, ready: true, past: [], future: [] }),
     setNavPages: navPages => set({ navPages }),
+    setProductDesignIds: productDesignIds => set({ productDesignIds }),
     loadLayout: (key, layout) => set(s => ({ layouts: { ...s.layouts, [key]: layout } })),
     setCurrentPage: key => set({ currentPage: key, selection: null, tryOn: null, popupPreview: false }),
     select: (selection, opts) => set(s => ({
@@ -267,10 +353,43 @@ export const useEditor = create<EditorData & EditorActions>()((set, get) => {
         tryOn: null,
         templatePreview: null,
         wizard: null,
+        past: [],
+        future: [],
+      };
+    }),
+    openSaveSection: id => set(s => ({
+      savingSection: id ? s.layouts[s.currentPage]?.sections.find(x => x.id === id) ?? null : null,
+    })),
+    setHistoryOpen: historyOpen => set(s => (historyOpen
+      ? { historyOpen, aiPanel: null, selection: null, tryOn: null, popupPreview: false, gallery: null, mobilePane: 'left' }
+      : { historyOpen, templatePreview: null, mobilePane: s.mobilePane })),
+    openAi: mode => set(mode
+      ? { aiPanel: { mode }, historyOpen: false, selection: null, tryOn: null, popupPreview: false, gallery: null, mobilePane: 'left' }
+      : { aiPanel: null, templatePreview: null }),
+    undo: () => step('undo'),
+    redo: () => step('redo'),
+    forgetPage: key => set(s => {
+      const drop = <T,>(r: Record<string, T>) => Object.fromEntries(Object.entries(r).filter(([k]) => k !== key));
+      const rev = drop(s.rev);
+      const savedRev = drop(s.savedRev);
+      const dirty = Object.keys(rev).some(k => (rev[k] ?? 0) > (savedRev[k] ?? 0));
+      return {
+        layouts: drop(s.layouts),
+        rev,
+        savedRev,
+        saveState: s.saveState === 'error' ? 'error' : dirty ? 'dirty' : s.saveState === 'saving' ? 'saving' : 'saved',
+        past: s.past.filter(e => e.key !== key),
+        future: s.future.filter(e => e.key !== key),
       };
     }),
   };
 });
+
+/** Version history or the AI panel is in the left pane: the preview is read-only, editing pauses. */
+export const sidePanelOpen = (s: Pick<EditorData, 'historyOpen' | 'aiPanel'>) => s.historyOpen || !!s.aiPanel;
+
+/** True for the Product page and every extra product design. */
+export const isProductKey = (key: PageKey, productDesignIds: string[]) => key === 'product' || productDesignIds.includes(key);
 
 /** The current page's layout (null while loading). */
 export const useCurrentLayout = () => useEditor(s => s.layouts[s.currentPage] ?? null);

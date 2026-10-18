@@ -670,6 +670,46 @@ public class OpenAiProvider : IAiProvider, IAgentAiProvider
             .GetProperty("content")
             .GetString() ?? "";
     }
+
+    /// <inheritdoc />
+    public async Task<AiJsonResult> GenerateJsonAsync(
+        string systemPrompt,
+        string userPrompt,
+        int maxTokens,
+        CancellationToken cancellationToken = default)
+    {
+        var payload = new
+        {
+            model           = _model,
+            messages        = new[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user",   content = userPrompt },
+            },
+            max_tokens      = maxTokens,
+            temperature     = 0.6,
+            response_format = new { type = "json_object" },
+        };
+
+        var body     = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("v1/chat/completions", body, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var err = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new InvalidOperationException($"OpenAI JSON error {(int)response.StatusCode}: {err}");
+        }
+
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+        var json = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? "{}";
+
+        int promptTokens = 0, completionTokens = 0;
+        if (doc.RootElement.TryGetProperty("usage", out var usage))
+        {
+            if (usage.TryGetProperty("prompt_tokens",     out var pt))  promptTokens     = pt.GetInt32();
+            if (usage.TryGetProperty("completion_tokens", out var ctk)) completionTokens = ctk.GetInt32();
+        }
+        return new AiJsonResult(json, promptTokens, completionTokens);
+    }
 }
 
 

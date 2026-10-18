@@ -4,7 +4,7 @@
  * section toolbar. Reads and writes the same editor store as the panels.
  */
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, Copy, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, BookmarkPlus, Copy, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { Suspense, useEffect, useMemo, type ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { CartProvider } from '../../../context/CartContext';
@@ -19,8 +19,9 @@ import type { PageLayout, QuickviewProps, RenderContext, SectionInstance, SiteDo
 import { popupContent } from '../../shell/productTemplate';
 import { ShellFrame } from '../../shell/ShellFrame';
 import { EMPTY_LAYOUT, starterFor } from '../state/starter';
-import { sameTarget, targetKey, useEditor, type Target } from '../state/store';
+import { isProductKey, sameTarget, targetKey, useEditor, type Target } from '../state/store';
 import { isSystemPage, SYSTEM_PAGES } from '../state/systemPages';
+import { useUndoShortcuts } from '../state/useUndoShortcuts';
 import { useSampleProduct } from './sampleProduct';
 
 const PREVIEW_SCOPE = 'sb-editor-preview';
@@ -33,8 +34,11 @@ export function PreviewApp({ queryClient, frameDoc }: { queryClient: QueryClient
   const slug = useEditor(s => s.slug);
   const currentPage = useEditor(s => s.currentPage);
   const navPages = useEditor(s => s.navPages);
+  const isDesign = useEditor(s => s.productDesignIds.includes(s.currentPage));
   const pageSlug = navPages.find(p => p.id === currentPage)?.slug;
-  const path = isSystemPage(currentPage) ? SYSTEM_PAGES[currentPage].path(slug) : `/${slug}/p/${pageSlug ?? 'page'}`;
+  const path = isSystemPage(currentPage) ? SYSTEM_PAGES[currentPage].path(slug)
+    : isDesign ? SYSTEM_PAGES.product.path(slug)
+    : `/${slug}/p/${pageSlug ?? 'page'}`;
   return (
     <QueryClientProvider client={queryClient}>
       <MemoryRouter key={path} initialEntries={[path]}>
@@ -62,7 +66,7 @@ function PreviewStore({ frameDoc }: { frameDoc: Document }) {
   const layout = useEditor(s => (s.templatePreview ? s.templatePreview.layouts[s.currentPage] ?? EMPTY_LAYOUT : s.layouts[s.currentPage] ?? null));
   const popupPreview = useEditor(s => s.popupPreview && !s.templatePreview);
   const productLayout = useEditor(s => (s.templatePreview ? s.templatePreview.layouts.product ?? null : s.layouts.product ?? null));
-  const isProductPage = currentPage === 'product';
+  const isProductPage = useEditor(s => isProductKey(s.currentPage, s.productDesignIds));
   const sample = useSampleProduct(slug, isProductPage || popupPreview);
 
   const effectiveSite = useMemo<SiteDoc | null>(() => site && {
@@ -84,12 +88,13 @@ function PreviewStore({ frameDoc }: { frameDoc: Document }) {
   }, [store, effectiveSite, slug, navPages]);
 
   usePreviewGuards(frameDoc);
+  useUndoShortcuts(frameDoc);
   useScrollToSelection(frameDoc);
   // A different page starts at the top.
   useEffect(() => { frameDoc.defaultView?.scrollTo({ top: 0 }); }, [currentPage, frameDoc]);
 
   if (!ctx || !effectiveSite) return null;
-  const page: RenderContext['page'] = isSystemPage(currentPage) ? SYSTEM_PAGES[currentPage].page : 'custom';
+  const page: RenderContext['page'] = isSystemPage(currentPage) ? SYSTEM_PAGES[currentPage].page : isProductPage ? 'product' : 'custom';
 
   return (
     <StorefrontContext.Provider value={ctx}>
@@ -197,12 +202,13 @@ function Editable({ target, label, children, index, count, hidden }: {
 }
 
 function SectionToolbar({ id, index, count, hidden }: { id: string; index: number; count: number; hidden: boolean }) {
-  const { moveSection, duplicateSection, removeSection, updateInstance } = useEditor.getState();
+  const { moveSection, duplicateSection, removeSection, updateInstance, openSaveSection } = useEditor.getState();
   return (
     <div className="sb-toolbar" role="toolbar" aria-label="Section actions">
       <button type="button" title="Move up" aria-label="Move section up" disabled={index === 0} onClick={() => moveSection(id, index - 1)}><ArrowUp size={16} /></button>
       <button type="button" title="Move down" aria-label="Move section down" disabled={index === count - 1} onClick={() => moveSection(id, index + 1)}><ArrowDown size={16} /></button>
       <button type="button" title="Duplicate" aria-label="Duplicate section" onClick={() => duplicateSection(id)}><Copy size={16} /></button>
+      <button type="button" title="Save for reuse" aria-label="Save section for reuse" onClick={() => openSaveSection(id)}><BookmarkPlus size={16} /></button>
       <button type="button" title={hidden ? 'Show' : 'Hide'} aria-label={hidden ? 'Show section' : 'Hide section'} onClick={() => updateInstance({ kind: 'section', id }, s => { s.hidden = !hidden || undefined; })}>
         {hidden ? <Eye size={16} /> : <EyeOff size={16} />}
       </button>

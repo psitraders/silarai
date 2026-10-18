@@ -5,7 +5,8 @@
 import axios from 'axios';
 import { normaliseDetail, type RawDetail } from '../commerce/normalise';
 import type { ProductDetail } from '../commerce/types';
-import type { NavPage, PageLayout, SiteDoc, StoreCategory, StoreCoupon, StoreInfo, StoreProduct, StoreReviewsSummary } from '../types';
+import { clearPreviewToken, previewToken } from './preview';
+import type { NavPage, PageLayout, ProductTemplateRule, SiteDoc, StoreCategory, StoreCoupon, StoreInfo, StoreProduct, StoreReviewsSummary } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -15,6 +16,12 @@ export interface PublishedSite {
   doc: SiteDoc | null;
   hasHome: boolean;
   pages: NavPage[];
+  /** Extra product designs and their categories / products (absent on older APIs). */
+  productTemplates?: ProductTemplateRule[];
+  /** True when this is the merchant's draft, opened through a preview link. */
+  preview?: boolean;
+  /** Set (client-side) when the preview link was turned off — the published store is shown instead. */
+  previewExpired?: boolean;
 }
 
 export interface PublishedPage {
@@ -56,20 +63,35 @@ const notFoundToNull = (err: unknown) => {
   throw err;
 };
 
+const isGone = (err: unknown) => axios.isAxiosError(err) && err.response?.status === 410;
+/** `?preview=` for site reads while a preview link is open (SB-R22). */
+const pv = (slug: string) => previewToken(slug) || undefined;
+
 export const storefrontApi = {
   store: (slug: string) =>
     axios.get<StoreInfo>(`${BASE_URL}/public/${slug}`).then(r => r.data),
 
-  /** Published builder site; `doc` is null when the store never published (→ Starter). */
-  site: (slug: string) =>
-    axios.get<PublishedSite>(`${BASE_URL}/public/${slug}/site`).then(r => r.data).catch(notFoundToNull),
+  /**
+   * Published builder site; `doc` is null when the store never published (→ Starter). With a preview
+   * link open it is the saved draft; a turned-off link falls back to the published site.
+   */
+  site: (slug: string): Promise<PublishedSite | null> =>
+    axios.get<PublishedSite>(`${BASE_URL}/public/${slug}/site`, { params: { preview: pv(slug) } })
+      .then(r => r.data)
+      .catch(async err => {
+        if (!isGone(err)) return notFoundToNull(err);
+        clearPreviewToken(slug);
+        const live = await axios.get<PublishedSite>(`${BASE_URL}/public/${slug}/site`).then(r => r.data).catch(notFoundToNull);
+        return live && { ...live, previewExpired: true };
+      }),
 
   page: (slug: string, pageSlug: string, version: number) =>
-    axios.get<PublishedPage>(`${BASE_URL}/public/${slug}/site/pages/${encodeURIComponent(pageSlug)}`, { params: { v: version } })
+    axios.get<PublishedPage>(`${BASE_URL}/public/${slug}/site/pages/${encodeURIComponent(pageSlug)}`, { params: { v: version, preview: pv(slug) } })
       .then(r => r.data).catch(notFoundToNull),
 
-  template: (slug: string, kind: 'product' | 'quickview' | 'collection', version: number) =>
-    axios.get<PublishedPage>(`${BASE_URL}/public/${slug}/site/templates/${kind}`, { params: { v: version } })
+  /** `id` = an extra product design (falls back to the default product page on the server). */
+  template: (slug: string, kind: 'product' | 'quickview' | 'collection', version: number, id?: string | null) =>
+    axios.get<PublishedPage>(`${BASE_URL}/public/${slug}/site/templates/${kind}`, { params: { v: version, id: id || undefined, preview: pv(slug) } })
       .then(r => r.data).catch(notFoundToNull),
 
   categories: (slug: string) =>

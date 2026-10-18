@@ -16,4 +16,10 @@ public class StorefrontTheme : TenantEntity
 
     /// <summary>Incremented on every publish; used by the storefront to bust caches.</summary>
     public int Version { get; set; }
+
+    /// <summary>
+    /// Secret for the shareable draft preview link (<c>?preview=…</c>). Null = no link.
+    /// Works until the merchant revokes or regenerates it (SB-R22).
+    /// </summary>
+    public string? PreviewToken { get; set; }
 }
