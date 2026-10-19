@@ -356,7 +356,7 @@ Sits in front of both the canonical domain and merchant custom domains. Three re
 - Hand-rolled client routing (no router library); heavy SEO/GEO/AEO layer with build-time generation of `sitemap.xml`, `robots.txt`, `llms.txt`, `ai-manifest.json`, `.well-known/*` and `/ai/*.json` via `scripts/generate-static-discovery.mts`.
 - Enquiry forms are a **`mailto:` handoff** to the visitor's own mail client — no form service, no backend, and therefore no server-side record of leads.
 - Brand palette rebranded 2026-09-16 to Dark Teal `#245668` / Teal Green `#0D8F81` / Persimmon `#F47A38`; the legacy `plum-*`/`peach-*`/`coral-*` token names were kept and remapped onto the new ramps.
-- `imported_landing_website/` is a Google AI Studio export kept **only** as a merge reference. It is gitignored, still carries the retired Express/Vercel setup (`server.ts`, `api/`, `vercel.json`, express/nodemailer/@google/genai), and must never be built or deployed — see `landing_website/context.md` §4.0.
+- `imported_landing_website/` is a Google AI Studio export kept **only** as a merge reference. It is gitignored, still carries the retired Express/Vercel setup (`server.ts`, `api/`, `vercel.json`, express/nodemailer/@google/genai), and must never be built or deployed — see `landing_website/context.md` §4.0. The step-by-step porting checklist is `landing_website/PORTING.md`.
 
 **Do not conflate this with the dashboard's own in-app landing page** (`frontend/src/pages/landing/`, served at `app.silarai.com/` by `SmartRoot`, content editable by SuperAdmin via `LandingPageConfig`). They are different apps with different content stores.
 

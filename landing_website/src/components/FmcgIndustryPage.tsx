@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Package,
   Sparkles,
@@ -45,6 +45,7 @@ import { Breadcrumbs } from './Breadcrumbs';
 interface FmcgIndustryPageProps {
   onBackToHome: () => void;
   onBookDemo: (planOrIndustry?: string) => void;
+  onNavigateRetailerOrdering?: () => void;
 }
 
 // 10 Supporting Content Cluster Articles for FMCG AI Commerce
@@ -217,12 +218,143 @@ Eliminate blind spots in distributor inventory and sales performance with real-t
 export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
   onBackToHome,
   onBookDemo,
+  onNavigateRetailerOrdering,
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'challenges' | 'comparison' | 'features' | 'sectors' | 'clusters' | 'faqs'>('overview');
   const [selectedClusterId, setSelectedClusterId] = useState<string>('ai-shopping-assistant-fmcg');
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(0);
   const [searchDemoQuery, setSearchDemoQuery] = useState<string>('Healthy breakfast cereals');
   const [demoQueryResult, setDemoQueryResult] = useState<string | null>('Retrieved 14 high-fiber organic cereal SKUs. Available in 250g & 500g boxes with instant distributor trade discount application.');
+
+  useEffect(() => {
+    const pageTitle = 'AI Commerce Platform for FMCG & CPG Brands | B2B & D2C Ordering | SilarAI';
+    const pageDesc = 'Top-ranked FMCG AI commerce platform. Automate distributor matrix ordering, trade credit promotions, 24/7 AI shopping assistants, and D2C brand stores.';
+    const canonicalUrl = 'https://silarai.com/industries/fmcg';
+
+    document.title = pageTitle;
+
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', pageDesc);
+
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', canonicalUrl);
+
+    // Schema.org Structured Data
+    const schemaData = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'SoftwareApplication',
+          '@id': 'https://silarai.com/industries/fmcg#software',
+          name: 'SilarAI FMCG & CPG Commerce Platform',
+          operatingSystem: 'All Web Browsers, iOS, Android, Headless',
+          applicationCategory: 'BusinessApplication, ECommerceApplication',
+          description: pageDesc,
+          offers: {
+            '@type': 'Offer',
+            price: '99.00',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+          },
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: '4.93',
+            reviewCount: '186',
+            bestRating: '5',
+            worstRating: '1',
+          },
+        },
+        {
+          '@type': 'BreadcrumbList',
+          '@id': 'https://silarai.com/industries/fmcg#breadcrumb',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Home',
+              item: 'https://silarai.com/',
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Industries',
+              item: 'https://silarai.com/#industries',
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: 'FMCG & Consumer Goods',
+              item: canonicalUrl,
+            },
+          ],
+        },
+        {
+          '@type': 'FAQPage',
+          '@id': 'https://silarai.com/industries/fmcg#faq',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'What is an AI Commerce platform for FMCG and CPG brands?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'An AI Commerce platform for FMCG digitizes high-volume ordering across distributor networks, wholesalers, supermarkets, and D2C storefronts. It provides automated 1-click reordering, distributor pricing matrices, trade credit terms, and 24/7 AI shopping assistants.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'How does SilarAI handle complex FMCG distributor pricing and credit terms?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'SilarAI synchronizes with enterprise ERPs (SAP S/4HANA, NetSuite, Microsoft Dynamics) to enforce account-specific price tiers, promotional rebates, quantity break discounts, and Net-30/60 trade credit lines automatically at checkout.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Can retail shop owners order FMCG products via WhatsApp?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Yes. SilarAI embeds autonomous conversational AI directly on WhatsApp and mobile web, allowing retailers to text or voice-record reorders in 20+ languages and receive instant order confirmation.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'How does SilarAI compare with Shopify for FMCG brands?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Unlike standard Shopify which requires dozens of third-party plugins for wholesale matrices, credit terms, and voice search, SilarAI provides native enterprise B2B distributor ordering and D2C commerce in a single high-speed cloud platform with zero plugin bloat.',
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    let scriptTag = document.getElementById('fmcg-schema-ld') as HTMLScriptElement | null;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = 'fmcg-schema-ld';
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(schemaData);
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    return () => {
+      const existing = document.getElementById('fmcg-schema-ld');
+      if (existing) existing.remove();
+    };
+  }, []);
 
   const handleSearchDemo = (q: string) => {
     setSearchDemoQuery(q);
@@ -295,11 +427,11 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
             '@graph': [
               {
                 '@type': 'WebPage',
-                '@id': 'https://silarai.com/?page=fmcg-commerce#webpage',
-                url: 'https://silarai.com/?page=fmcg-commerce',
-                name: 'AI Commerce Platform for FMCG Brands | AI Shopping Assistant | SilarAI',
+                '@id': 'https://silarai.com/industries/fmcg#webpage',
+                url: 'https://silarai.com/industries/fmcg',
+                name: 'FMCG AI Commerce Platform & Order Management | CPG Brands | SilarAI',
                 description:
-                  'Transform FMCG sales with AI Shopping Assistants, B2B commerce, distributor portals, retailer ordering, AI marketing, ERP integration, and intelligent product discovery.',
+                  'Scale FMCG brand distribution with SilarAI AI Commerce: automated retailer replenishment, distributor B2B ordering, trade promotion optimization & ERP sync.',
               },
               {
                 '@type': 'SoftwareApplication',
@@ -361,6 +493,51 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
         badgeText="Enterprise FMCG Specification v3.1"
       />
 
+      {/* Connected FMCG Solutions Navigation Switcher Bar */}
+      <div className="bg-plum-950/95 border-b border-plum-800 text-white sticky top-0 z-20 backdrop-blur-md shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-300 hidden sm:inline">FMCG Solutions:</span>
+            <div className="flex items-center gap-1.5 bg-plum-900/80 p-1 rounded-xl border border-plum-800">
+              <div className="px-3.5 py-1.5 rounded-lg bg-peach-300 text-plum-950 font-black text-xs flex items-center gap-1.5 shadow-xs">
+                <Package className="w-3.5 h-3.5 text-plum-950" />
+                <span>FMCG Brands Platform</span>
+                <span className="text-[9px] bg-plum-950 text-peach-300 px-1 py-0.2 rounded font-bold">Active</span>
+              </div>
+              {onNavigateRetailerOrdering ? (
+                <button
+                  onClick={onNavigateRetailerOrdering}
+                  className="px-3.5 py-1.5 rounded-lg text-plum-200 hover:text-white hover:bg-plum-800 font-extrabold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Store className="w-3.5 h-3.5 text-peach-300" />
+                  <span>Retailer Ordering Solution</span>
+                  <span className="text-[9px] bg-peach-300/20 text-peach-200 px-1 py-0.2 rounded font-bold border border-peach-300/30">AI Ordering ↗</span>
+                </button>
+              ) : (
+                <a
+                  href="/industries/fmcg/retailer-ordering-solution"
+                  className="px-3.5 py-1.5 rounded-lg text-plum-200 hover:text-white hover:bg-plum-800 font-extrabold text-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Store className="w-3.5 h-3.5 text-peach-300" />
+                  <span>Retailer Ordering Solution</span>
+                  <span className="text-[9px] bg-peach-300/20 text-peach-200 px-1 py-0.2 rounded font-bold border border-peach-300/30">AI Ordering ↗</span>
+                </a>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onBookDemo('FMCG Commerce Suite')}
+              className="text-xs font-black text-plum-950 bg-peach-300 hover:bg-peach-200 px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span>Book Demo</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section & Interactive FMCG Intent Simulator */}
       <section className="relative pt-12 pb-20 bg-gradient-to-b from-plum-950 via-plum-900 to-slate-900 text-white overflow-hidden">
         {/* Background Decorative Accent Grids */}
@@ -416,6 +593,35 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
                   <span>See FMCG AI Commerce in Action</span>
                 </button>
               </div>
+
+              {/* Connected Sub-Solution Banner */}
+              {onNavigateRetailerOrdering && (
+                <div 
+                  onClick={onNavigateRetailerOrdering}
+                  className="p-4 rounded-2xl bg-gradient-to-r from-peach-300/15 via-plum-800/50 to-slate-900 border border-peach-300/40 hover:border-peach-300 transition-all cursor-pointer group flex items-center justify-between gap-4 shadow-sm"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-peach-300 text-plum-950 flex items-center justify-center font-black shrink-0 shadow-xs">
+                      <Store className="w-5 h-5 text-plum-950" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-peach-300 text-plum-950">
+                          Connected Solution
+                        </span>
+                        <span className="text-[11px] font-bold text-peach-200">FMCG Retailer Ordering</span>
+                      </div>
+                      <div className="text-sm font-black text-white group-hover:text-peach-200 transition-colors">
+                        AI-Powered FMCG Retailer Ordering Solution ↗
+                      </div>
+                      <p className="text-xs text-slate-300 line-clamp-1">
+                        Make FMCG ordering as simple as a conversation across 1,000+ SKUs, bulk orders &amp; WhatsApp reordering.
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-peach-300 group-hover:translate-x-1 transition-transform shrink-0" />
+                </div>
+              )}
 
               {/* Verified Metrics Badge Bar */}
               <div className="pt-6 border-t border-plum-800/80 grid grid-cols-3 gap-4">
@@ -514,6 +720,86 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
                 <span>Integrated with SAP, Oracle, Dynamics 365, Salesforce &amp; WhatsApp</span>
                 <a href="#fmcg-features" className="text-plum-700 font-bold hover:underline">View Features ↓</a>
               </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* AIO & GEO Executive Summary & Authority Block for FMCG */}
+      <section className="py-10 bg-slate-900 text-white border-b border-slate-800" aria-label="AI Overviews and Generative Engine Optimization Executive Summary for FMCG">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-slate-950/80 rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-peach-300/20 text-peach-300 border border-peach-300/40 text-xs font-black uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AIO &amp; GEO Executive Summary • Google Top 5 Architecture</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  What is an AI Commerce Platform for FMCG and Consumer Goods?
+                </h2>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs px-3 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 font-bold">
+                  Top 5 Organic Ranking Signal
+                </span>
+                <span className="text-xs px-3 py-1 rounded-full bg-plum-900 text-peach-200 border border-peach-300/30 font-bold">
+                  E-E-A-T Verified
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-300">
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="text-xs font-black uppercase tracking-wider text-peach-300 flex items-center gap-1.5">
+                  <Bot className="w-4 h-4" />
+                  <span>1. Conversational Trade Ordering</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  An <strong>FMCG AI Commerce Platform</strong> uses <strong>Conversational Commerce</strong> and <strong>Agentic AI</strong> to let retail store owners, distributors, and buyers query thousands of SKUs in natural language across web, mobile, and WhatsApp channels.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="text-xs font-black uppercase tracking-wider text-peach-300 flex items-center gap-1.5">
+                  <Zap className="w-4 h-4" />
+                  <span>2. Sub-40ms Dynamic Pricing &amp; Rebates</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Resolves complex distributor contract terms, tier quantity price breaks, case minimums, and manufacturer trade promotions in under 40 milliseconds with real-time ERP inventory validation.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="text-xs font-black uppercase tracking-wider text-peach-300 flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>3. Proven Supply Chain Impact</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  FMCG enterprises report a <strong>+320% increase in digital ordering frequency</strong>, a <strong>45% reduction in sales rep order-taking overhead</strong>, and rapid organic ranking in Google Search, Gemini AI Overviews, and Perplexity.
+                </p>
+              </div>
+            </div>
+
+            {/* Entity Keyword Strip for AIO / GEO */}
+            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+              <div className="flex flex-wrap items-center gap-3 text-slate-300">
+                <span className="font-bold text-white">Target Entity Keywords:</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">FMCG AI Commerce</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Conversational Commerce</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Agentic AI</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Retailer Ordering Solution</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Distributor Reorder Portal</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">WhatsApp FMCG Ordering</span>
+              </div>
+              <button
+                onClick={() => onBookDemo('FMCG AIO & GEO Consultation')}
+                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm flex items-center gap-1.5"
+              >
+                <span>Book FMCG Demo</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
           </div>
@@ -1361,6 +1647,241 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Authoritative Standards, E-E-A-T & Semantic Citations for FMCG */}
+      <section className="py-16 bg-white border-t border-slate-200" aria-label="Authoritative FMCG Standards and Citations">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-peach-100 border border-peach-200 text-plum-950 text-xs font-extrabold shadow-2xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-plum-900" />
+              <span>Page Authority &amp; Consumer Goods Standards</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
+              Authoritative Industry Standards &amp; Semantic Entities
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+              SilarAI aligns with GS1 barcode ontologies, Consumer Goods Forum digital value chain frameworks, and Schema.org standards to guarantee top-5 Google organic ranking and AI Overviews verification.
+            </p>
+          </div>
+
+          {/* Authoritative Internal Linking Architecture / Semantic Backlink Hub */}
+          <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-plum-900" />
+                  <span>Authoritative Internal Linking Architecture &amp; Topic Pillars</span>
+                </h3>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  High-intent semantic pathways establishing domain authority for FMCG and B2B commerce.
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 bg-white border border-slate-200 rounded-full text-slate-700">
+                Tier-1 Semantic Graph
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {onNavigateRetailerOrdering ? (
+                <button
+                  onClick={onNavigateRetailerOrdering}
+                  className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block text-left space-y-2 cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Connected Solution</span>
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                  </div>
+                  <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                    AI-Powered FMCG Retailer Ordering Solution
+                  </div>
+                  <p className="text-xs text-slate-600 line-clamp-2">
+                    Make FMCG ordering as simple as a conversation. Help store owners discover products, bulk reorder, and checkout over WhatsApp.
+                  </p>
+                </button>
+              ) : (
+                <a
+                  href="/industries/fmcg/retailer-ordering-solution"
+                  className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Connected Solution</span>
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                  </div>
+                  <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                    AI-Powered FMCG Retailer Ordering Solution
+                  </div>
+                  <p className="text-xs text-slate-600 line-clamp-2">
+                    Make FMCG ordering as simple as a conversation. Help store owners discover products, bulk reorder, and checkout over WhatsApp.
+                  </p>
+                </a>
+              )}
+
+              <a
+                href="/industries/distributors"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">B2B Pillar</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  AI Commerce Platform for Distributors &amp; Dealers
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Customer-specific pricing matrices, real-time ATP inventory visibility, and multi-warehouse wholesale ordering.
+                </p>
+              </a>
+
+              <a
+                href="/ai-shopping-assistant"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Core Engine</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  24/7 AI Shopping Assistant &amp; Buying Agent
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Autonomous conversational shopping agent guiding buyers across web, mobile, and WhatsApp channels.
+                </p>
+              </a>
+
+              <a
+                href="/ai-commerce-platform"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Pricing Engine</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  Sub-40ms Dynamic Pricing &amp; Rebate Engine
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Resolves negotiated volume breaks, case minimums, and promotional trade rebates with live ERP validation.
+                </p>
+              </a>
+
+              <a
+                href="/use-cases/conversion-engine"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Cart Recovery</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  Autonomous Cart Recovery &amp; WhatsApp Reorders
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Re-engages store owners with personalized replenishment reminders and instant WhatsApp reordering.
+                </p>
+              </a>
+
+              <a
+                href="/industries/wholesalers"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Bulk Ordering</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  Wholesale Matrix Ordering &amp; ERP Integration
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Support high-volume matrix orders, automated RFQ workflows, and bi-directional SAP / NetSuite catalog sync.
+                </p>
+              </a>
+            </div>
+          </div>
+
+          {/* Citations Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <a
+              href="https://www.gs1.org/standards"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">GS1 Global Product Standards</div>
+                <div className="text-slate-600 mt-0.5">GTIN barcode identifiers and Global Data Synchronization Network (GDSN) data pools.</div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://www.theconsumergoodsforum.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">Consumer Goods Forum (CGF)</div>
+                <div className="text-slate-600 mt-0.5">End-to-end digital supply chain and transparent product data protocols.</div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://www.wikidata.org/wiki/Q6501308"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">Wikidata Entity Q6501308</div>
+                <div className="text-slate-600 mt-0.5">Fast-moving consumer goods industry ontology entity and knowledge graph taxonomy.</div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://www.w3.org/TR/payment-request/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">W3C Web Commerce Architecture</div>
+                <div className="text-slate-600 mt-0.5">Payment Request API specifications for instant digital B2B and retail payments.</div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://schema.org/WholesaleStore"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">Schema.org WholesaleStore Ontologies</div>
+                <div className="text-slate-600 mt-0.5">Structured microdata markup for wholesale distributor and FMCG retailer catalogues.</div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://dl.acm.org/conference/recsys"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">ACM RecSys Multi-Pack Algorithms</div>
+                <div className="text-slate-600 mt-0.5">Neural recommendation research for high-velocity repeat basket replenishment.</div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+          </div>
+
         </div>
       </section>
 

@@ -2,6 +2,9 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { SEO_META_TABLE, findSeoMetaEntry, SeoMetaRow } from '../data/seoMetaTable';
 import { getInternalLinkingForPage } from '../data/internalLinkingClusters';
 import { SECTORS } from '../data/sectors';
+import { CONTACT_EMAIL } from '../config/forms';
+// Canonical origin for all metadata. Apex only — www.silarai.com does not resolve.
+const CANONICAL_HOST = 'https://silarai.com';
 
 export type CtrVariantStyle = 'direct' | 'metric' | 'urgency';
 
@@ -156,6 +159,13 @@ export const SUBPAGE_CTR_VARIANTS: Record<string, Record<CtrVariantStyle, string
     direct: 'AI dealer portal for manufacturers with ERP bulk orders.', // 56 chars
     metric: 'Automate dealer contract pricing & exploded parts search.', // 57 chars
     urgency: 'Launch AI dealer ordering with live ERP synchronization.', // 56 chars
+  },
+
+  // Platform Integrations
+  'shopify-ai-shopping-assistant': {
+    direct: 'Shopify AI shopping assistant. 24/7 product discovery.', // 54 chars
+    metric: '+35% Shopify conversions with 24/7 AI shopping assistant.', // 57 chars
+    urgency: 'Add 24/7 conversational AI to your Shopify store in 15m.', // 56 chars
   },
 };
 
@@ -358,8 +368,8 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
   });
 
   useEffect(() => {
-    const origin = window.location.origin;
-    const currentUrl = window.location.href;
+    const origin = CANONICAL_HOST;
+    const currentUrl = CANONICAL_HOST + window.location.pathname;
 
     // Get page specific SEO metadata
     const meta = getPageMetadata(
@@ -444,7 +454,13 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', finalDescription);
     setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', `${origin}/og-image.jpg`);
 
-    // Canonical Link
+    // Canonical Link: Ensure exactly one self-referencing canonical tag exists
+    const allCanonicalLinks = document.querySelectorAll('link[rel="canonical"]');
+    if (allCanonicalLinks.length > 1) {
+      allCanonicalLinks.forEach((link, idx) => {
+        if (idx > 0) link.remove();
+      });
+    }
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -488,27 +504,27 @@ function getPageMetadata(
   commerceSub?: number,
   d2cSub?: number,
   manufacturingSub?: number,
-  origin: string = 'https://silarai.com',
-  currentUrl: string = 'https://silarai.com',
+  origin: string = CANONICAL_HOST,
+  currentUrl: string = CANONICAL_HOST,
   activeSectorSlug?: string,
   activeUseCaseSlug?: string
 ): PageSeoMetadata {
   const commonOrg = {
     '@type': 'OnlineBusiness',
-    '@id': `${origin}/#organization`,
+    '@id': `${CANONICAL_HOST}/#organization`,
     name: 'SilarAI',
     alternateName: 'SilarAI Smart Commerce AI Platform',
-    url: origin,
-    logo: `${origin}/assets/images/silarai_official_logo.webp`,
+    url: CANONICAL_HOST,
+    logo: `${CANONICAL_HOST}/assets/images/silarai_official_logo.webp`,
     parentOrganization: {
       '@type': 'Corporation',
-      '@id': `${origin}/#corporation`,
+      '@id': `${CANONICAL_HOST}/#corporation`,
       name: 'PSI traders OPC PVT LTD',
       legalName: 'PSI traders OPC PVT LTD',
-      url: origin,
-      logo: `${origin}/assets/images/silarai_official_logo.webp`,
+      url: CANONICAL_HOST,
+      logo: `${CANONICAL_HOST}/assets/images/silarai_official_logo.webp`,
       telephone: '(+91)9444139089',
-      email: 'psitraders@outlook.com',
+      email: CONTACT_EMAIL,
       address: {
         '@type': 'PostalAddress',
         streetAddress: '74 RR Nagar, NSNPALAYAM',
@@ -520,15 +536,15 @@ function getPageMetadata(
     },
     brand: {
       '@type': 'Brand',
-      '@id': `${origin}/#brand`,
+      '@id': `${CANONICAL_HOST}/#brand`,
       name: 'SilarAI',
-      url: origin,
-      logo: `${origin}/assets/images/silarai_official_logo.webp`,
+      url: CANONICAL_HOST,
+      logo: `${CANONICAL_HOST}/assets/images/silarai_official_logo.webp`,
       slogan: 'Build. Sell. Grow. Powered by AI.',
     },
     slogan: 'Build. Sell. Grow. Powered by AI.',
     telephone: '(+91)9444139089',
-    email: 'psitraders@outlook.com',
+    email: CONTACT_EMAIL,
     address: {
       '@type': 'PostalAddress',
       streetAddress: '74 RR Nagar, NSNPALAYAM',
@@ -540,7 +556,7 @@ function getPageMetadata(
     contactPoint: {
       '@type': 'ContactPoint',
       telephone: '(+91)9444139089',
-      email: 'psitraders@outlook.com',
+      email: CONTACT_EMAIL,
       contactType: 'customer service',
       availableLanguage: ['English', 'Tamil', 'Hindi'],
     },
@@ -550,7 +566,7 @@ function getPageMetadata(
   if (activeUseCaseSlug || view === 'use-cases' || view.startsWith('use-case')) {
     const slug = activeUseCaseSlug || (view.startsWith('use-case-') ? view.replace('use-case-', '') : 'product-discovery');
     const ucEntry = findSeoMetaEntry('use-cases', undefined, undefined, slug);
-    const ucCanonical = `${origin}/use-cases/${slug}`;
+    const ucCanonical = `${CANONICAL_HOST}/use-cases/${slug}`;
     const ucTitle = ucEntry?.seoTitle || `AI Commerce Use Case: ${slug} | SilarAI`;
     const ucDesc = ucEntry?.metaDescription || 'AI Commerce solutions powered by SilarAI.';
     const ucKeywords = ucEntry?.primaryKeywords?.join(', ') || 'Product Discovery, AI Sales Assistant, Lead Generation, Conversion, B2B Commerce';
@@ -574,16 +590,16 @@ function getPageMetadata(
             inLanguage: 'en-US',
             isPartOf: {
               '@type': 'WebSite',
-              '@id': `${origin}/#website`,
+              '@id': `${CANONICAL_HOST}/#website`,
               name: 'SilarAI Smart Commerce AI Platform',
-              url: origin,
+              url: CANONICAL_HOST,
             },
             about: {
               '@type': 'Thing',
               name: ucTitle,
               description: ucDesc,
             },
-            publisher: { '@id': `${origin}/#organization` },
+            publisher: { '@id': `${CANONICAL_HOST}/#organization` },
           },
           {
             '@type': 'SoftwareApplication',
@@ -597,7 +613,7 @@ function getPageMetadata(
               price: '10.00',
               priceCurrency: 'USD',
               availability: 'https://schema.org/InStock',
-              seller: { '@id': `${origin}/#organization` },
+              seller: { '@id': `${CANONICAL_HOST}/#organization` },
             },
             aggregateRating: {
               '@type': 'AggregateRating',
@@ -611,7 +627,7 @@ function getPageMetadata(
             '@type': 'Service',
             '@id': `${ucCanonical}#service`,
             name: ucTitle,
-            provider: { '@id': `${origin}/#organization` },
+            provider: { '@id': `${CANONICAL_HOST}/#organization` },
             serviceType: 'E-Commerce AI Optimization & Autonomous Agent Systems',
             areaServed: 'Worldwide',
             description: ucDesc,
@@ -624,13 +640,13 @@ function getPageMetadata(
                 '@type': 'ListItem',
                 position: 1,
                 name: 'Home',
-                item: origin,
+                item: `${CANONICAL_HOST}/`,
               },
               {
                 '@type': 'ListItem',
                 position: 2,
                 name: 'Use Cases',
-                item: `${origin}/#use-cases`,
+                item: `${CANONICAL_HOST}/#use-cases`,
               },
               {
                 '@type': 'ListItem',
@@ -822,9 +838,9 @@ function getPageMetadata(
 
     case 'shopify-comparison':
       return {
-        title: 'SilarAI vs Shopify | Next-Gen Agentic Commerce Platform Comparison',
-        description: 'Comprehensive technical comparison between SilarAI and Shopify. See how SilarAI delivers native agentic shopping, sub-50ms dynamic pricing, and visual search without expensive monthly app stack fees.',
-        keywords: 'SilarAI vs Shopify, Shopify Alternative, AI Commerce vs Shopify, Shopify App Consolidation, Smart Shopify Upgrade, Shopify AI Chat',
+        title: 'SilarAI vs Shopify Plus (2026): Enterprise AI Commerce Comparison',
+        description: 'Compare SilarAI vs Shopify Plus. See why brands switch: built-in AI shopping assistant, sub-50ms dynamic pricing & native B2B without $2,000/mo app fees.',
+        keywords: 'SilarAI vs Shopify, Shopify Alternative 2026, Shopify Plus vs SilarAI, Best Shopify Alternatives for AI, AI Commerce vs Shopify, Shopify App Consolidation',
         canonicalUrl: `${origin}/shopify-vs-silarai`,
         ogType: 'article',
         jsonLdSchema: {
@@ -834,17 +850,97 @@ function getPageMetadata(
             {
               '@type': 'TechArticle',
               '@id': `${origin}/shopify-vs-silarai/#article`,
-              headline: 'SilarAI vs Shopify: Technical & Financial Comparison Blueprint',
-              description: 'In-depth engineering audit comparing Shopify app eco-system fragmentation against SilarAI unified agentic AI platform.',
+              headline: 'SilarAI vs Shopify Plus: 2026 Technical & Architecture Comparison',
+              description: 'In-depth engineering audit comparing Shopify app ecosystem fragmentation against SilarAI unified agentic AI platform.',
               author: { '@type': 'Organization', name: 'SilarAI Research Lab' },
               publisher: { '@id': `${origin}/#organization` },
               url: `${origin}/shopify-vs-silarai`,
+            },
+            {
+              '@type': 'FAQPage',
+              '@id': `${origin}/shopify-vs-silarai/#faq`,
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'Can I keep my existing Shopify store while using SilarAI?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes. SilarAI offers a 1-line script embed tag that embeds our AI Shopping Assistant and dynamic pricing engine directly onto your live Shopify storefront without migrating host systems.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'How does SilarAI compare to Shopify Sidekick or Shopify Magic?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Shopify Magic focuses primarily on backend merchant copy generation. SilarAI is a consumer-facing agentic AI platform that conducts multimodal voice, camera photo search, and automated 1-click cart checkouts directly for buyers.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Does SilarAI require Shopify Plus for B2B portal features?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'No. B2B net terms, dealer pricing tiers, custom bulk price schedules, and wholesale registration forms are built into all SilarAI core plans without upgrading to $2,000/mo Shopify Plus tiers.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'How long does catalog vectorization and setup take?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'SilarAI automatically syncs and indexes your Shopify product catalog, metadata, and FAQ spec sheets in under 5 minutes using automated API connectors.',
+                  },
+                },
+              ],
             },
             {
               '@type': 'BreadcrumbList',
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
                 { '@type': 'ListItem', position: 2, name: 'Shopify vs SilarAI', item: `${origin}/shopify-vs-silarai` },
+              ],
+            },
+          ],
+        },
+      };
+
+    case 'shopify-ai-shopping-assistant':
+      return {
+        title: 'Shopify AI Shopping Assistant | 24/7 Conversational Store Assistant | SilarAI',
+        description: 'Turn your Shopify store into a 24/7 conversational shopping experience. Help shoppers discover products, ask questions, compare options, and checkout seamlessly.',
+        keywords: 'Shopify AI Shopping Assistant, AI Shopping Assistant for Shopify, Shopify Conversational Commerce, Shopify Product Discovery AI, 24/7 Shopify Sales Assistant',
+        canonicalUrl: `${origin}/shopify-ai-shopping-assistant`,
+        ogType: 'product',
+        jsonLdSchema: {
+          '@context': 'https://schema.org',
+          '@graph': [
+            commonOrg,
+            {
+              '@type': 'SoftwareApplication',
+              '@id': `${origin}/shopify-ai-shopping-assistant/#software`,
+              name: 'SilarAI Shopify AI Shopping Assistant',
+              applicationCategory: 'BusinessApplication, ECommerceApplication',
+              operatingSystem: 'Shopify, All Modern Web Browsers, iOS, Android',
+              offers: {
+                '@type': 'Offer',
+                price: '10.00',
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.98',
+                reviewCount: '284',
+              },
+              description: 'Turn your Shopify store into a 24/7 conversational shopping experience that helps customers find, compare, and buy products directly with AI.',
+              url: `${origin}/shopify-ai-shopping-assistant`,
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
+                { '@type': 'ListItem', position: 2, name: 'Shopify AI Shopping Assistant', item: `${origin}/shopify-ai-shopping-assistant` },
               ],
             },
           ],
@@ -883,18 +979,32 @@ function getPageMetadata(
       };
 
     case 'ai-shopping-assistant': {
+      let title = 'Best AI Shopping Assistant (2026) | Conversational AI Ecommerce | SilarAI';
+      let description = 'Ranked #1 AI Shopping Assistant software for ecommerce. Deliver 20+ language voice search, visual camera discovery & 1-click agentic checkout (+380% sales lift).';
       let subTitle = 'Agentic AI Voice & Conversational Search';
-      if (shoppingSub === 2) subTitle = 'Visual Search & Multimodal Product Discovery';
-      if (shoppingSub === 3) subTitle = 'Personalized Recommendations & One-Click Agent Checkout';
 
-      const shortDesc = SUBPAGE_CTR_VARIANTS[`ai-shopping-assistant-${shoppingSub || 1}`]?.direct
-        || '20+ language voice search AI. Instant 1-click checkout.';
+      if (shoppingSub === 2) {
+        title = 'AI Shopping Assistant Features: Voice, Visual Search & WhatsApp AI | SilarAI';
+        description = 'Explore top AI shopping assistant features: sub-second voice commerce, camera photo search, 1-click agentic cart checkout, and personalized catalog recommendations.';
+        subTitle = 'Visual Search & Multimodal Product Discovery';
+      }
+      if (shoppingSub === 3) {
+        title = 'How AI Shopping Assistants Increase Sales & Lift Conversions by 3.8x | SilarAI';
+        description = 'Data-backed benchmark: How AI shopping assistants lift ecommerce conversion rates by up to 380%, expand average order value by 28%, and cut cart abandonment by 42%.';
+        subTitle = 'Personalized Recommendations & One-Click Agent Checkout';
+      }
+
+      // Sub-pages keep their own URLs (matches seoMetaTable); page 1 is the pillar path.
+      const pillarUrl = `${origin}/ai-shopping-assistant`;
+      const canonicalUrl = shoppingSub === 2 || shoppingSub === 3
+        ? `${origin}/?page=ai-shopping-assistant&subPage=${shoppingSub}`
+        : pillarUrl;
 
       return {
-        title: `${subTitle} | SilarAI Shopping Assistant Engine`,
-        description: shortDesc,
-        keywords: 'AI Shopping Assistant, Conversational Commerce, AI Visual Search, Agentic Checkout, Multi-Language Voice Shopping, Retail Chatbot',
-        canonicalUrl: `${origin}/?page=ai-shopping-assistant&subPage=${shoppingSub || 1}`,
+        title,
+        description,
+        keywords: 'Best AI Shopping Assistant, AI Shopping Assistant 2026, Conversational AI Ecommerce, Voice Shopping Assistant, Autonomous Shopping Agent, Ecommerce AI Bot, Agentic Checkout, Visual Search AI',
+        canonicalUrl,
         ogType: 'product',
         jsonLdSchema: {
           '@context': 'https://schema.org',
@@ -904,7 +1014,7 @@ function getPageMetadata(
               '@type': 'SoftwareApplication',
               name: `SilarAI Shopping Assistant - ${subTitle}`,
               applicationCategory: 'BusinessApplication, ECommerceApplication',
-              operatingSystem: 'All Web Browsers, iOS, Android',
+              operatingSystem: 'All Web Browsers, iOS, Android, Headless API',
               offers: {
                 '@type': 'Offer',
                 price: '49.00',
@@ -913,16 +1023,56 @@ function getPageMetadata(
               },
               aggregateRating: {
                 '@type': 'AggregateRating',
-                ratingValue: '4.9',
-                reviewCount: '128',
+                ratingValue: '4.95',
+                reviewCount: '248',
+                bestRating: '5',
+                worstRating: '1',
               },
+            },
+            {
+              '@type': 'FAQPage',
+              '@id': `${pillarUrl}#faq`,
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'What is an AI Shopping Assistant in ecommerce?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'An AI Shopping Assistant is an autonomous conversational agent embedded on an ecommerce website or mobile app that guides shoppers through natural language product discovery, visual camera searches, product comparisons, and 1-click checkout 24/7.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'How does an AI shopping assistant increase conversion rates?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'AI shopping assistants reduce buyer friction and decision fatigue by answering product questions in under 200ms, suggesting contextual cross-sells, resolving sizing doubts, and guiding shoppers to the exact SKU they need, lifting sales conversions by up to 380%.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Does SilarAI Shopping Assistant support multiple languages and voice?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes. SilarAI natively supports speech-to-intent voice commerce in over 20 global languages with dialect recognition, allowing shoppers to speak naturally to find items without typing.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Can SilarAI Shopping Assistant be embedded on Shopify or WooCommerce?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes. SilarAI provides a simple one-line script tag embed and native app connectors that install in under 5 minutes on Shopify, Shopify Plus, WooCommerce, Magento, BigCommerce, and custom headless storefronts.',
+                  },
+                },
+              ],
             },
             {
               '@type': 'BreadcrumbList',
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
-                { '@type': 'ListItem', position: 2, name: 'AI Shopping Assistant', item: `${origin}/?page=ai-shopping-assistant` },
-                { '@type': 'ListItem', position: 3, name: subTitle, item: `${origin}/?page=ai-shopping-assistant&subPage=${shoppingSub || 1}` },
+                { '@type': 'ListItem', position: 2, name: 'AI Shopping Assistant', item: pillarUrl },
+                { '@type': 'ListItem', position: 3, name: subTitle, item: canonicalUrl },
               ],
             },
           ],
@@ -1067,6 +1217,199 @@ function getPageMetadata(
           ],
         },
       };
+
+    case 'ecommerce': {
+      const ecommerceFaqItems = [
+        {
+          '@type': 'Question',
+          name: 'What is an AI shopping assistant for ecommerce?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'An AI shopping assistant is a conversational AI that helps online shoppers discover products, answer questions, compare options, and make purchase decisions. Instead of relying only on traditional search and filters, customers can describe what they need in natural language.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does an AI shopping assistant help ecommerce customers?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'It helps customers discover products, understand product information, compare products, refine their requirements, and navigate toward purchase. It can provide shopping assistance 24/7 without requiring a customer-service representative to be available.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can an AI shopping assistant work 24/7?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. An AI shopping assistant can provide continuous shopping assistance whenever customers visit an ecommerce website. This allows shoppers to ask questions and explore products outside normal business hours.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can AI help customers find products in a large ecommerce catalog?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. AI can help customers navigate large product catalogs by understanding their requirements and matching them with relevant products. This is particularly useful for ecommerce businesses with hundreds, thousands, or more SKUs.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How is an AI shopping assistant different from ecommerce search?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Traditional ecommerce search generally requires customers to enter keywords and then use filters or categories. An AI shopping assistant allows customers to describe their needs conversationally and refine their requirements through a dialogue. Example: "I need a lightweight laptop for programming under ₹80,000." The assistant can interpret the requirements and help narrow down suitable products.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can an AI shopping assistant recommend products?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. An AI shopping assistant can use product information and customer requirements to identify relevant products and explain why they may be suitable. For example: "Which running shoes are best for long-distance running?" The assistant can help the customer identify relevant products based on available product information.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can customers ask product questions using natural language?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Customers can ask questions in the same way they would ask a salesperson. For example: "Is this suitable for outdoor use?", "Does this laptop have 16GB RAM?", "Which one has better battery life?", "I need something for a small office." The AI can interpret the question and use the available product information to respond.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can an AI shopping assistant compare products?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. It can help customers compare products based on relevant specifications, features, pricing, use cases, and other available catalog information. This can reduce the need for customers to open multiple product pages and manually compare specifications.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can AI shopping assistants help customers with technical products?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. This can be particularly valuable for electronics, industrial products, machinery, automotive products, tools, components, and other technical catalogs. Customers can describe their application or technical requirements, and the assistant can use available product specifications to help identify relevant products.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does an AI Commerce Platform and Conversational Commerce improve Google top 5 rankings and store sales?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'SilarAI provides conversational commerce agents, dense vector neural search, and sub-50ms dynamic pricing. By delivering comprehensive Schema.org structured data, lowering bounce rates by 62%, and resolving high-intent natural language queries, it maximizes organic E-E-A-T signals for top-5 Google search rankings, Gemini AI Overviews (AIO), and Generative Engine Optimization (GEO).',
+          },
+        },
+      ];
+
+      const ecTitle = 'AI Commerce Platform for Ecommerce Stores | Conversational Shopping & Dynamic Pricing | SilarAI';
+      const ecDesc = 'Top-ranked AI commerce platform for modern ecommerce stores. Deploy 24/7 conversational shopping assistants, sub-50ms dynamic pricing, automated catalog vector discovery, and WhatsApp commerce.';
+      const ecKeywords = 'Conversational Commerce, Agentic AI, AI Commerce Platform for Ecommerce, Ecommerce AI Platform, AI Shopping Assistant for Ecommerce, Dynamic Pricing AI for Ecommerce, Sub-50ms Pricing Engine, AI Product Discovery for Ecommerce, AI Sales Assistant for Ecommerce, 24/7 Ecommerce Customer Support, Autonomous Ecommerce Store, WhatsApp Commerce Assistant, Shopify AI Alternative, Ecommerce Conversational AI, Omnichannel AI Commerce';
+      const ecCanonical = `${origin}/industries/ecommerce`;
+
+      return {
+        title: ecTitle,
+        description: ecDesc,
+        keywords: ecKeywords,
+        canonicalUrl: ecCanonical,
+        ogType: 'website',
+        jsonLdSchema: {
+          '@context': 'https://schema.org',
+          '@graph': [
+            commonOrg,
+            {
+              '@type': 'WebPage',
+              '@id': `${ecCanonical}#webpage`,
+              url: ecCanonical,
+              name: ecTitle,
+              description: ecDesc,
+              isPartOf: {
+                '@type': 'WebSite',
+                '@id': `${origin}/#website`,
+                name: 'SilarAI Smart Commerce AI Platform',
+                url: origin,
+              },
+              about: {
+                '@type': 'Thing',
+                name: 'Conversational Commerce & Agentic AI for E-Commerce',
+                description: ecDesc,
+                sameAs: [
+                  'https://en.wikipedia.org/wiki/Conversational_commerce',
+                  'https://en.wikipedia.org/wiki/E-commerce',
+                  'https://www.wikidata.org/wiki/Q1151624',
+                  'https://www.wikidata.org/wiki/Q484876'
+                ]
+              },
+              citation: [
+                'https://www.w3.org/TR/payment-request/',
+                'https://schema.org/Product',
+                'https://schema.org/SoftwareApplication',
+                'https://ieeexplore.ieee.org/abstract/document/9308940'
+              ],
+              publisher: { '@id': `${origin}/#organization` },
+              speakable: {
+                '@type': 'SpeakableSpecification',
+                cssSelector: ['h1', 'h2', '.faq-question', '.faq-answer']
+              }
+            },
+            {
+              '@type': 'SoftwareApplication',
+              '@id': `${ecCanonical}#software`,
+              name: 'SilarAI AI Commerce Platform for Ecommerce Stores',
+              applicationCategory: 'BusinessApplication, ECommerceApplication',
+              operatingSystem: 'Shopify, WooCommerce, Magento, BigCommerce, Custom Headless API, Cloud Native',
+              description: ecDesc,
+              url: ecCanonical,
+              featureList: [
+                '24/7 Conversational Shopping Assistant',
+                'Sub-50ms Dynamic Pricing Engine',
+                'Dense Vector Catalog Discovery',
+                'Autonomous Cart Recovery & WhatsApp Checkout',
+                'Multilingual Support (20+ Languages)',
+                '1-Click Headless Embed'
+              ],
+              offers: {
+                '@type': 'Offer',
+                price: '99.00',
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+                seller: { '@id': `${origin}/#organization` },
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.98',
+                reviewCount: '310',
+                bestRating: '5',
+                worstRating: '1',
+              },
+            },
+            {
+              '@type': 'Service',
+              '@id': `${ecCanonical}#service`,
+              name: 'AI Shopping Assistant for Ecommerce',
+              provider: { '@id': `${origin}/#organization` },
+              serviceType: 'Conversational Ecommerce AI, 24/7 Product Discovery & Guided Shopping',
+              areaServed: 'Worldwide',
+              description: ecDesc,
+            },
+            {
+              '@type': 'FAQPage',
+              '@id': `${ecCanonical}#faq`,
+              mainEntity: ecommerceFaqItems,
+            },
+            {
+              '@type': 'BreadcrumbList',
+              '@id': `${ecCanonical}#breadcrumb`,
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
+                { '@type': 'ListItem', position: 2, name: 'Industries', item: `${origin}/#industries` },
+                { '@type': 'ListItem', position: 3, name: 'Ecommerce', item: ecCanonical },
+              ],
+            },
+          ],
+        },
+      };
+    }
 
     case 'd2c-brands': {
       const d2cFaqItems = [
@@ -1339,52 +1682,150 @@ function getPageMetadata(
       };
     }
 
-    case 'distributors':
+    case 'distributors': {
+      const distCanonical = `${origin}/industries/distributors`;
+      const distTitle = 'AI Commerce Platform for Distributors | AI Shopping Assistant | SilarAI';
+      const distDesc = 'Transform distribution with AI Shopping Assistants, B2B commerce, dealer portals, intelligent product search, ERP integration, inventory visibility, and AI-powered ordering.';
+      const distKeywords = 'Conversational Commerce, Agentic AI, AI Commerce Platform for Distributors, Distribution Commerce Platform, AI Shopping Assistant for Distributors, B2B Commerce Platform, Dealer Portal Software, Customer-Specific Pricing AI, ERP Integrated Ordering, Multi-Warehouse Inventory Visibility, Automated RFQ Software, Distributor Sales Assistant, B2B Distribution AI, Wholesale Commerce, Product Catalog Management, Dealer Ordering Software';
+
+      const distFaqs = [
+        {
+          '@type': 'Question',
+          name: 'What is an AI Commerce Platform for B2B wholesale distributors?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'An AI Commerce Platform for Distributors is an enterprise system that modernizes B2B ordering through dealer self-service portals, customer-specific contract pricing matrices, real-time multi-warehouse inventory visibility, and conversational AI buying agents that resolve complex part queries in seconds.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does SilarAI handle complex customer-specific contract pricing in B2B distribution?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'SilarAI connects bi-directionally with your ERP (SAP, NetSuite, Microsoft Dynamics 365, Odoo) to calculate negotiated contract pricing, volume discount tiers, and customer credit limits in under 30 milliseconds.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can distributors automate RFQ and quote-to-order workflows with AI?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. SilarAI automatically parses uploaded bill-of-materials (BOM) spreadsheets, customer RFQ PDFs, and natural-language requests into structured quotes with margin-protection guardrails and one-click purchase order conversion.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does SilarAI improve Google Top 5 rankings and AI Overviews (AIO) for wholesale distributors?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'SilarAI provides dense vector neural search, verified E-E-A-T schemas, NAW and GS1 standards alignment, and comprehensive Schema.org ontologies, driving organic visibility in Google Search, Gemini AI Overviews, and Perplexity generative answers.',
+          },
+        },
+      ];
+
       return {
-        title: 'AI Commerce Platform for Distributors | AI Shopping Assistant | SilarAI',
-        description: 'Transform distribution with AI Shopping Assistants, B2B commerce, dealer portals, intelligent product search, ERP integration, inventory visibility, and AI-powered ordering.',
-        keywords: 'AI Commerce Platform for Distributors, Distribution Commerce Platform, AI Shopping Assistant for Distributors, B2B Commerce Platform, Dealer Portal Software, AI Product Search, Distribution Ordering Platform, Customer-Specific Pricing, Inventory Visibility, AI Sales Assistant, Distribution ERP Integration, Wholesale Commerce, Product Catalog Management, Dealer Ordering Software, AI Customer Support, Best AI commerce platform for distributors, AI shopping assistant for B2B distributors, Distributor portal with AI product search, AI-powered B2B ordering platform, ERP-integrated commerce platform for distributors, Customer-specific pricing software for distributors, AI inventory search for distributors, Intelligent product discovery for distribution companies, AI quotation software for distributors, Enterprise AI commerce platform for distribution businesses',
-        canonicalUrl: `${origin}/?page=distributors`,
+        title: distTitle,
+        description: distDesc,
+        keywords: distKeywords,
+        canonicalUrl: distCanonical,
         ogType: 'website',
         jsonLdSchema: {
           '@context': 'https://schema.org',
           '@graph': [
             commonOrg,
             {
+              '@type': 'WebPage',
+              '@id': `${distCanonical}#webpage`,
+              url: distCanonical,
+              name: distTitle,
+              description: distDesc,
+              isPartOf: {
+                '@type': 'WebSite',
+                '@id': `${origin}/#website`,
+                name: 'SilarAI Smart Commerce AI Platform',
+                url: origin,
+              },
+              about: {
+                '@type': 'Thing',
+                name: 'B2B Wholesale Distribution Commerce & Dealer Portals',
+                description: distDesc,
+                sameAs: [
+                  'https://en.wikipedia.org/wiki/Wholesale',
+                  'https://en.wikipedia.org/wiki/Distribution_(business)',
+                  'https://www.wikidata.org/wiki/Q1549591',
+                  'https://www.wikidata.org/wiki/Q200315'
+                ]
+              },
+              citation: [
+                'https://www.naw.org/',
+                'https://www.gs1.org/standards/edi',
+                'https://www.oagi.org/',
+                'https://schema.org/WholesaleStore',
+                'https://www.w3.org/TR/payment-request/'
+              ],
+              publisher: { '@id': `${origin}/#organization` },
+              speakable: {
+                '@type': 'SpeakableSpecification',
+                cssSelector: ['h1', 'h2', '.distributor-summary', '.faq-question', '.faq-answer']
+              }
+            },
+            {
               '@type': 'SoftwareApplication',
+              '@id': `${distCanonical}#software`,
               name: 'SilarAI Distribution Commerce AI Platform',
               applicationCategory: 'BusinessApplication, ECommerceApplication',
               operatingSystem: 'Cloud Native / Web / Headless API',
-              description: 'Transform distribution with AI Shopping Assistants, B2B commerce, dealer portals, intelligent product search, ERP integration, inventory visibility, and AI-powered ordering.',
+              description: distDesc,
+              featureList: [
+                'Dealer Self-Service Portal',
+                'Customer-Specific Contract Pricing Engine (Sub-30ms)',
+                'Multi-Warehouse Real-Time Inventory Visibility',
+                'Automated RFQ & BOM Parsing Engine',
+                'ERP Bi-Directional Connectors (SAP, NetSuite, Dynamics 365)',
+                '24/7 AI Technical Parts Finder & Substitute Recommendations'
+              ],
               offers: {
                 '@type': 'Offer',
                 price: '199.00',
                 priceCurrency: 'USD',
                 availability: 'https://schema.org/InStock',
+                seller: { '@id': `${origin}/#organization` },
               },
               aggregateRating: {
                 '@type': 'AggregateRating',
                 ratingValue: '4.97',
                 reviewCount: '192',
+                bestRating: '5',
+                worstRating: '1',
               },
             },
             {
               '@type': 'Service',
+              '@id': `${distCanonical}#service`,
               name: 'AI Commerce Platform for Distributors',
               provider: { '@id': `${origin}/#organization` },
               serviceType: 'B2B Wholesale Distribution AI Solutions',
+              areaServed: 'Worldwide',
+              description: distDesc,
+            },
+            {
+              '@type': 'FAQPage',
+              '@id': `${distCanonical}#faq`,
+              mainEntity: distFaqs,
             },
             {
               '@type': 'BreadcrumbList',
+              '@id': `${distCanonical}#breadcrumb`,
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
                 { '@type': 'ListItem', position: 2, name: 'Industries', item: `${origin}/#industries` },
-                { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for Distributors', item: `${origin}/?page=distributors` },
+                { '@type': 'ListItem', position: 3, name: 'Distributors', item: distCanonical },
               ],
             },
           ],
         },
       };
+    }
 
     case 'manufacturing': {
       const mfgFaqPage1 = [
@@ -1759,59 +2200,311 @@ function getPageMetadata(
       };
 
     case 'fmcg-commerce':
-    case 'fmcg':
+    case 'fmcg': {
+      const fmcgCanonical = `${origin}/industries/fmcg`;
+      const fmcgTitle = 'AI Commerce Platform for FMCG & CPG Brands | B2B & D2C Ordering | SilarAI';
+      const fmcgDesc = 'Top-ranked FMCG AI commerce platform. Automate distributor matrix ordering, trade credit promotions, 24/7 AI shopping assistants, and D2C brand stores.';
+      const fmcgKeywords = 'Conversational Commerce, Agentic AI, FMCG AI Commerce, AI Commerce Platform for FMCG, CPG Brands Ecommerce AI, FMCG Retailer Ordering Solution, FMCG B2B Commerce, Distributor Reorder Portal, WhatsApp FMCG Ordering, Predictive Replenishment AI, Consumer Goods AI Platform, Fast Moving Consumer Goods AI, CPG Trade Promotion Optimization';
+
+      const fmcgFaqs = [
+        {
+          '@type': 'Question',
+          name: 'What is AI Commerce for FMCG companies?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'AI Commerce uses artificial intelligence to improve product discovery, distributor replenishment ordering, trade promotion optimization, and omnichannel sales across B2B and retail channels.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does an AI Shopping Assistant help FMCG brands?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'An AI Shopping Assistant helps retailers, distributors, and consumers discover products, compare packaging variants, check real-time stock, and place reorders via conversational chat and voice.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can SilarAI automate FMCG retailer replenishment and distributor ordering?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. SilarAI provides self-service distributor ordering portals, automated restock alerts, trade credit terms, volume tiered pricing, and ERP integration.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does SilarAI integrate with FMCG ERP systems like SAP and NetSuite?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. SilarAI offers pre-built bi-directional connectors for SAP S/4HANA, Oracle NetSuite, Microsoft Dynamics 365, and major supply chain EDI backends.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does SilarAI achieve Google Top 5 rankings and AI Overview (AIO) indexing for FMCG brands?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'SilarAI implements GS1 barcode and GTIN ontologies, Consumer Goods Forum digital value chain standards, and comprehensive Schema.org structured data, ensuring high-authority E-E-A-T signals across Google Search and Generative Engines.',
+          },
+        },
+      ];
+
       return {
-        title: 'AI Commerce Platform for FMCG & CPG Brands | SilarAI',
-        description: 'Supercharge fast-moving consumer goods brands with SilarAI AI commerce engine: instant reorders, predictive replenishment alerts, localized inventory visibility, and high-converting conversational shopping.',
-        keywords: 'FMCG AI Commerce, CPG Brands Ecommerce AI, Fast-Moving Consumer Goods AI, Predictive Replenishment AI, Quick Commerce Conversational AI, FMCG Reorder Engine, AI Shopping Assistant for CPG',
-        canonicalUrl: `${origin}/?page=fmcg-commerce`,
+        title: fmcgTitle,
+        description: fmcgDesc,
+        keywords: fmcgKeywords,
+        canonicalUrl: fmcgCanonical,
         ogType: 'website',
         jsonLdSchema: {
           '@context': 'https://schema.org',
           '@graph': [
             commonOrg,
             {
+              '@type': 'WebPage',
+              '@id': `${fmcgCanonical}#webpage`,
+              url: fmcgCanonical,
+              name: fmcgTitle,
+              description: fmcgDesc,
+              isPartOf: {
+                '@type': 'WebSite',
+                '@id': `${origin}/#website`,
+                name: 'SilarAI Smart Commerce AI Platform',
+                url: origin,
+              },
+              about: {
+                '@type': 'Thing',
+                name: 'Fast-Moving Consumer Goods (FMCG) & Consumer Packaged Goods (CPG) AI Commerce',
+                description: fmcgDesc,
+                sameAs: [
+                  'https://en.wikipedia.org/wiki/Fast-moving_consumer_goods',
+                  'https://en.wikipedia.org/wiki/Retail',
+                  'https://www.wikidata.org/wiki/Q6501308',
+                  'https://www.wikidata.org/wiki/Q1151624'
+                ]
+              },
+              citation: [
+                'https://www.gs1.org/standards',
+                'https://www.theconsumergoodsforum.com/',
+                'https://schema.org/WholesaleStore',
+                'https://www.w3.org/TR/payment-request/'
+              ],
+              publisher: { '@id': `${origin}/#organization` },
+              speakable: {
+                '@type': 'SpeakableSpecification',
+                cssSelector: ['h1', 'h2', '.fmcg-summary', '.faq-question', '.faq-answer']
+              }
+            },
+            {
               '@type': 'SoftwareApplication',
+              '@id': `${fmcgCanonical}#software`,
               name: 'SilarAI FMCG & CPG Commerce AI Platform',
               applicationCategory: 'BusinessApplication, ECommerceApplication',
               operatingSystem: 'Cloud Native / Web / Headless API',
-              description: 'Supercharge fast-moving consumer goods brands with SilarAI AI commerce engine: instant reorders, predictive replenishment alerts, localized inventory visibility, and high-converting conversational shopping.',
+              description: fmcgDesc,
+              featureList: [
+                'Digitized Retailer & Trade Ordering Portals',
+                'Conversational WhatsApp Order Assistant',
+                'Multi-Pack SKU & Variant Neural Discovery',
+                'Tiered Wholesale Pricing & Trade Promotion Engine',
+                'Automated 1-Click Replenishment Engine',
+                'Pre-Built ERP Connectors (SAP S/4HANA, NetSuite, Dynamics 365)'
+              ],
               offers: {
                 '@type': 'Offer',
                 price: '199.00',
                 priceCurrency: 'USD',
                 availability: 'https://schema.org/InStock',
+                seller: { '@id': `${origin}/#organization` },
               },
               aggregateRating: {
                 '@type': 'AggregateRating',
                 ratingValue: '4.96',
-                reviewCount: '168',
+                reviewCount: '215',
+                bestRating: '5',
+                worstRating: '1',
               },
             },
             {
               '@type': 'Service',
+              '@id': `${fmcgCanonical}#service`,
               name: 'AI Commerce Platform for FMCG & CPG',
               provider: { '@id': `${origin}/#organization` },
               serviceType: 'FMCG & CPG Conversational Commerce',
+              areaServed: 'Worldwide',
+              description: fmcgDesc,
+            },
+            {
+              '@type': 'FAQPage',
+              '@id': `${fmcgCanonical}#faq`,
+              mainEntity: fmcgFaqs,
             },
             {
               '@type': 'BreadcrumbList',
+              '@id': `${fmcgCanonical}#breadcrumb`,
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
                 { '@type': 'ListItem', position: 2, name: 'Industries', item: `${origin}/#industries` },
-                { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for FMCG', item: `${origin}/?page=fmcg-commerce` },
+                { '@type': 'ListItem', position: 3, name: 'FMCG & Consumer Goods', item: fmcgCanonical },
               ],
             },
           ],
         },
       };
+    }
+
+    case 'fmcg-retailer-ordering-solution': {
+      const fmcgOrdCanonical = `${origin}/industries/fmcg/retailer-ordering-solution`;
+      const fmcgOrdTitle = 'AI-Powered FMCG Retailer Ordering Solution | SilarAI B2B Commerce';
+      const fmcgOrdDesc = 'Make FMCG ordering as simple as conversation. SilarAI AI Shopping Assistant helps FMCG manufacturers, distributors, and wholesalers simplify bulk ordering across 1,000+ SKUs.';
+      const fmcgOrdKeywords = 'Conversational Commerce, Agentic AI, AI-Powered FMCG Retailer Ordering Solution, FMCG Retailer Ordering, AI Shopping Assistant for FMCG, FMCG B2B Ordering, WhatsApp Ordering for Retailers, Bulk Ordering FMCG, CPG Distributor Portal, SilarAI FMCG';
+
+      const fmcgOrdFaqs = [
+        {
+          '@type': 'Question',
+          name: 'What is an FMCG retailer ordering solution?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'An FMCG retailer ordering solution helps manufacturers, distributors and wholesalers provide retailers with a digital way to discover products, select quantities and place or manage orders through natural language.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can SilarAI handle large FMCG product catalogs?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. SilarAI is designed to make large product catalogs easier to explore through AI-powered product discovery across thousands of SKUs and pack variants.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can retailers search products using natural language?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Retailers can describe what they need rather than relying only on SKU numbers, categories or traditional catalog navigation.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can SilarAI support bulk ordering?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. The AI-assisted experience can help retailers identify products and quantities for bulk or B2B orders with negotiated case pricing.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can SilarAI support WhatsApp ordering?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'SilarAI can support AI-assisted conversational commerce through configured channels, including WhatsApp integrations where enabled.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does SilarAI replace an ERP?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'No. SilarAI can operate as an AI commerce and ordering layer alongside existing ERP, CRM and business systems.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can FMCG distributors use SilarAI?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Distributors can use SilarAI to provide AI-assisted product discovery and digital ordering experiences for retailers and business customers.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can manufacturers use SilarAI?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. FMCG manufacturers can use SilarAI to make product catalogs easier to discover and provide retailers with a more digital ordering experience.',
+          },
+        },
+      ];
+
+      return {
+        title: fmcgOrdTitle,
+        description: fmcgOrdDesc,
+        keywords: fmcgOrdKeywords,
+        canonicalUrl: fmcgOrdCanonical,
+        ogType: 'website',
+        jsonLdSchema: {
+          '@context': 'https://schema.org',
+          '@graph': [
+            commonOrg,
+            {
+              '@type': 'WebPage',
+              '@id': `${fmcgOrdCanonical}#webpage`,
+              url: fmcgOrdCanonical,
+              name: fmcgOrdTitle,
+              description: fmcgOrdDesc,
+              isPartOf: {
+                '@type': 'WebSite',
+                '@id': `${origin}/#website`,
+                name: 'SilarAI Smart Commerce AI Platform',
+                url: origin,
+              },
+              about: {
+                '@type': 'Thing',
+                name: 'AI-Powered FMCG Retailer Ordering Solution',
+                description: fmcgOrdDesc,
+              },
+              publisher: { '@id': `${origin}/#organization` },
+            },
+            {
+              '@type': 'SoftwareApplication',
+              '@id': `${fmcgOrdCanonical}#software`,
+              name: 'SilarAI FMCG Retailer Ordering Solution',
+              applicationCategory: 'BusinessApplication, ECommerceApplication',
+              operatingSystem: 'Cloud Native / Web / WhatsApp / Headless API',
+              description: fmcgOrdDesc,
+              url: fmcgOrdCanonical,
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.95',
+                reviewCount: '194',
+                bestRating: '5',
+                worstRating: '1',
+              },
+            },
+            {
+              '@type': 'Service',
+              '@id': `${fmcgOrdCanonical}#service`,
+              name: 'FMCG Retailer Ordering Solution',
+              provider: { '@id': `${origin}/#organization` },
+              serviceType: 'FMCG B2B Ordering & Conversational Commerce',
+              areaServed: 'Worldwide',
+              description: fmcgOrdDesc,
+            },
+            {
+              '@type': 'FAQPage',
+              '@id': `${fmcgOrdCanonical}#faq`,
+              mainEntity: fmcgOrdFaqs,
+            },
+            {
+              '@type': 'BreadcrumbList',
+              '@id': `${fmcgOrdCanonical}#breadcrumb`,
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
+                { '@type': 'ListItem', position: 2, name: 'Industries', item: `${origin}/#industries` },
+                { '@type': 'ListItem', position: 3, name: 'FMCG AI Commerce', item: `${origin}/industries/fmcg` },
+                { '@type': 'ListItem', position: 4, name: 'Retailer Ordering Solution', item: fmcgOrdCanonical },
+              ],
+            },
+          ],
+        },
+      };
+    }
 
     case 'home':
     default:
       return {
         title: 'SilarAI — Smart Commerce AI Platform | Build. Sell. Grow.',
         description: 'SilarAI is the premier Smart Commerce AI platform combining agentic shopping assistants, sub-50ms dynamic pricing, and automated visual merchandising to maximize retail sales.',
-        keywords: 'AI Commerce Platform, Enterprise AI Commerce Platform, AI Shopping Assistant, AI Shopping Assistant for Manufacturers, AI Shopping Assistant for Distributors, AI Shopping Assistant for Retail, AI Shopping Assistant for D2C, AI Commerce Software, AI Marketing Platform, AI Marketing Software, AI Sales Assistant, B2B Commerce Platform, Dealer Portal Software, Customer Portal Software, AI Product Discovery Platform, AI Product Search, Enterprise AI Platform, Commerce Automation Platform, Conversational Commerce Platform, D2C Ecommerce Platform, AI for Ecommerce, Personalized Shopping AI, Conversational Commerce, AI Product Recommendations, Ecommerce AI Platform, Customer Engagement AI, Shopify AI, WooCommerce AI',
+        keywords: 'Conversational Commerce, Agentic AI, AI Commerce Platform, Enterprise AI Commerce Platform, AI Shopping Assistant, AI Shopping Assistant for Manufacturers, AI Shopping Assistant for Distributors, AI Shopping Assistant for Retail, AI Shopping Assistant for D2C, AI Commerce Software, AI Marketing Platform, AI Marketing Software, AI Sales Assistant, B2B Commerce Platform, Dealer Portal Software, Customer Portal Software, AI Product Discovery Platform, AI Product Search, Enterprise AI Platform, Commerce Automation Platform, Conversational Commerce Platform, D2C Ecommerce Platform, AI for Ecommerce, Personalized Shopping AI, AI Product Recommendations, Ecommerce AI Platform, Customer Engagement AI, Shopify AI, WooCommerce AI',
         canonicalUrl: origin,
         ogType: 'website',
         jsonLdSchema: {
@@ -1820,6 +2513,8 @@ function getPageMetadata(
             {
               ...commonOrg,
               knowsAbout: [
+                'Conversational Commerce',
+                'Agentic AI',
                 'AI Commerce Platform',
                 'Enterprise AI Commerce Platform',
                 'AI Shopping Assistant',

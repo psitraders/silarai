@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Check,
@@ -27,6 +27,7 @@ import { Breadcrumbs } from './Breadcrumbs';
 interface ShopifyComparisonPageProps {
   onBackToHome: () => void;
   onBookDemo: (plan?: string) => void;
+  onNavigateShopifyAiShoppingAssistant?: () => void;
 }
 
 export interface ComparisonItem {
@@ -116,9 +117,50 @@ export const SHOPIFY_COMPARISON_DATA: ComparisonItem[] = [
 
 export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
   onBackToHome,
-  onBookDemo
+  onBookDemo,
+  onNavigateShopifyAiShoppingAssistant
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const pageTitle = 'Shopify vs SilarAI (2026 Comparison) | Native AI Commerce Platform | SilarAI';
+    const pageDesc = 'In-depth comparison: Shopify Plus vs SilarAI. Compare native AI shopping assistants, zero app store fees, sub-50ms dynamic pricing, and WhatsApp commerce.';
+    const canonicalUrl = 'https://silarai.com/shopify-vs-silarai';
+
+    document.title = pageTitle;
+
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', pageDesc);
+
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', canonicalUrl);
+
+    let scriptTag = document.getElementById('shopify-vs-silarai-schema') as HTMLScriptElement | null;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = 'shopify-vs-silarai-schema';
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(jsonLdData);
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    return () => {
+      const existing = document.getElementById('shopify-vs-silarai-schema');
+      if (existing) existing.remove();
+    };
+  }, []);
 
   const filteredItems = SHOPIFY_COMPARISON_DATA.filter((item) => {
     const q = searchTerm.toLowerCase();
@@ -130,8 +172,85 @@ export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
     );
   });
 
+  const jsonLdData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'TechArticle',
+        '@id': 'https://silarai.com/shopify-vs-silarai#article',
+        headline: 'SilarAI vs Shopify Plus: 2026 Technical & Architecture Comparison',
+        description:
+          'Comprehensive engineering and business comparison between SilarAI unified agentic commerce and Shopify Plus multi-app architecture.',
+        url: 'https://silarai.com/shopify-vs-silarai',
+        author: {
+          '@type': 'Organization',
+          name: 'SilarAI Technologies',
+          url: 'https://silarai.com',
+        },
+      },
+      {
+        '@type': 'SoftwareApplication',
+        name: 'SilarAI Enterprise Commerce AI Platform',
+        operatingSystem: 'Cloud Native / Web / Headless API',
+        applicationCategory: 'BusinessApplication, ECommerceApplication',
+        description:
+          'Enterprise AI-first commerce platform uniting 24/7 AI shopping assistants, sub-50ms dynamic pricing, native B2B wholesale portals, and omnichannel marketing.',
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '4.96',
+          reviewCount: '194',
+          bestRating: '5',
+          worstRating: '1',
+        },
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': 'https://silarai.com/shopify-vs-silarai#faq',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'Can I keep my existing Shopify store while using SilarAI?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. SilarAI offers a 1-line script embed tag that embeds our AI Shopping Assistant and dynamic pricing engine directly onto your live Shopify storefront without migrating host systems.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How does SilarAI compare to Shopify Sidekick or Shopify Magic?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Shopify Magic focuses primarily on backend merchant copy generation. SilarAI is a consumer-facing agentic AI platform that conducts multimodal voice, camera photo search, and automated 1-click cart checkouts directly for buyers.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Does SilarAI require Shopify Plus for B2B portal features?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'No. B2B net terms, dealer pricing tiers, custom bulk price schedules, and wholesale registration forms are built into all SilarAI core plans without upgrading to $2,000/mo Shopify Plus tiers.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How long does catalog vectorization and setup take?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'SilarAI automatically syncs and indexes your Shopify product catalog, metadata, and FAQ spec sheets in under 5 minutes using automated API connectors.',
+            },
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-900 pt-20 pb-20">
+      {/* Rich Snippets Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+      />
       {/* Top Breadcrumb Navigation */}
       <Breadcrumbs
         items={[
@@ -157,11 +276,11 @@ export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-              Shopify <span className="text-slate-400 font-light">vs</span> <span className="text-peach-300">SilarAI</span>
+              SilarAI <span className="text-slate-400 font-light">vs</span> <span className="text-peach-300">Shopify Plus</span>
             </h1>
 
             <p className="text-xl sm:text-2xl font-bold text-teal-200">
-              More Than an Ecommerce Platform
+              Enterprise AI Commerce Architecture vs Fragmented App Stores
             </p>
 
             <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal pt-2">
@@ -172,6 +291,31 @@ export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-16">
+        {/* Shopify Existing Store Callout */}
+        {onNavigateShopifyAiShoppingAssistant && (
+          <div className="bg-gradient-to-r from-plum-900 via-plum-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white border border-plum-800/80 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-peach-300/20 text-peach-300 text-xs font-black uppercase tracking-wider">
+                <Sparkles className="w-3 h-3" />
+                Already on Shopify?
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white">
+                You don't need to rebuild or migrate your Shopify store.
+              </h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Add SilarAI directly to your existing Shopify storefront. Empower your shoppers with 24/7 conversational product discovery, multi-lingual guidance, and instant checkout.
+              </p>
+            </div>
+            <button
+              onClick={onNavigateShopifyAiShoppingAssistant}
+              className="whitespace-nowrap px-6 py-3.5 rounded-xl bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-sm transition-all shadow-lg hover:shadow-peach-300/20 flex items-center gap-2 cursor-pointer group"
+            >
+              <span>Explore Shopify AI Assistant</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        )}
+
         {/* Core Value Pillars Grid */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">

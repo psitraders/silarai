@@ -9,6 +9,7 @@
       "/*.txt",
       "/*.xml",
       "/*.json",
+      "/*.webmanifest",
       "/*.{png,jpg,jpeg,gif,svg,webp,avif,ico}",
       "/*.{css,js,map}",
       "/*.{woff,woff2,ttf,otf,eot}"

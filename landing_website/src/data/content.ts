@@ -335,6 +335,75 @@ export const AI_STUDIO_CHECKLIST = [
 
 export const INDUSTRIES: IndustrySolution[] = [
   {
+    id: 'ecommerce',
+    title: 'Ecommerce',
+    headline: 'AI Shopping Assistant for Ecommerce | Help Every Customer Shop 24/7 with AI',
+    description:
+      'Your online store is open 24/7—but your customers shouldn\'t have to search through hundreds or thousands of products on their own. SilarAI AI Shopping Assistant helps customers discover, compare, understand, and purchase products through natural conversation.',
+    icon: 'ShoppingBag',
+    stat: '+380%',
+    statLabel: 'Conversion Lift (tested benchmark)',
+    keyCapability: '24/7 Conversational AI Shopping Assistant, Discovery & Cart Assistance',
+    challenges: [
+      'Customers searching through hundreds or thousands of products manually',
+      'High bounce and exit rates when customers cannot quickly locate the right SKU',
+      'Unanswered product questions at midnight, weekends, and holidays causing lost sales',
+      'Complex specifications and subtle differences overwhelming shoppers',
+      'Traditional keyword search failing on natural language questions and intent',
+    ],
+    howSilarAiHelps: [
+      '24/7 Product Assistance answering questions anytime without waiting for sales staff',
+      'Instant Product Discovery across entire catalogs using natural language',
+      'Conversational Recommendations understanding buyer intent instead of keywords',
+      'Product Comparison explaining meaningful differences between items',
+      'Purchase Assistance guiding customers toward cart and checkout',
+    ],
+    idealFor: [
+      'D2C Brands',
+      'Retailers',
+      'Manufacturers',
+      'Distributors',
+      'B2B Ecommerce',
+    ],
+    benefits: [
+      '24/7 Customer Assistance even when your sales team isn\'t available',
+      'Faster Product Discovery across large and complex product catalogs',
+      'Better Product Understanding using natural language and intent reasoning',
+      'Personalized Shopping guided by customer requirements and preferences',
+      'Higher Shopping Engagement turning discovery into interactive conversation',
+      'Scalable Customer Assistance serving multiple shoppers simultaneously',
+    ],
+    productsUsed: [
+      'AI Shopping Assistant',
+      'Product Discovery Engine',
+      'Conversational Recommender',
+      'Product Comparison Bot',
+      'Purchase Assistance Engine',
+    ],
+    customModules: [
+      {
+        title: 'Ask → Understand → Discover → Compare → Buy',
+        desc: 'Replaces the friction of traditional search-and-filter with an effortless conversational buying journey.',
+        icon: 'Bot',
+      },
+      {
+        title: 'Your Store Never Sleeps (24/7)',
+        desc: 'Provides continuous customer assistance morning, evening, weekends, holidays, and midnight.',
+        icon: 'Clock',
+      },
+      {
+        title: 'Catalog Understanding Engine',
+        desc: 'Parses specs, attributes, compatibility, pricing, and availability to match intent rather than keywords.',
+        icon: 'Sparkles',
+      },
+      {
+        title: 'Works Alongside Your Store',
+        desc: 'No replatforming needed. Seamlessly layers on top of your existing store, cart, and checkout.',
+        icon: 'Zap',
+      },
+    ],
+  },
+  {
     id: 'd2c-brands',
     title: 'D2C Brands',
     headline: 'Scale Direct-to-Consumer Revenue with Autonomous AI Commerce',

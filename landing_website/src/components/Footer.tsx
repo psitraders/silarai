@@ -4,10 +4,12 @@ import { SilarAiBrandLogo } from './SilarAiBrandLogo';
 
 interface FooterProps {
   onSelectIndustry?: (industryId: string) => void;
+  onSelectEcommercePage?: () => void;
   onSelectUseCase?: (slug: string) => void;
   onNavigateAbout?: () => void;
   onNavigateWhyChooseUs?: () => void;
   onNavigateShopifyComparison?: () => void;
+  onNavigateShopifyAiShoppingAssistant?: () => void;
   onNavigateWoocommerceComparison?: () => void;
   onNavigateAiCommerceMarketingPlatform?: () => void;
   onSelectAiShoppingPage?: (pageId: 1 | 2 | 3) => void;
@@ -23,10 +25,12 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({
   onSelectIndustry,
+  onSelectEcommercePage,
   onSelectUseCase,
   onNavigateAbout,
   onNavigateWhyChooseUs,
   onNavigateShopifyComparison,
+  onNavigateShopifyAiShoppingAssistant,
   onNavigateWoocommerceComparison,
   onNavigateAiCommerceMarketingPlatform,
   onSelectAiShoppingPage,
@@ -144,8 +148,10 @@ export const Footer: React.FC<FooterProps> = ({
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-white">Products</h4>
             <ul className="space-y-2.5 text-xs text-plum-200">
               <li>
-                <button
-                  onClick={() => {
+                <a
+                  href="/ai-shopping-assistant"
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (onSelectAiShoppingPage) onSelectAiShoppingPage(1);
                     else scrollToSection('products');
                   }}
@@ -153,17 +159,21 @@ export const Footer: React.FC<FooterProps> = ({
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-peach-300"></span>
                   <span>AI Shopping Assistant</span>
-                </button>
+                </a>
 
                 {/* Sub-pages under AI Shopping Assistant */}
                 <ul className="mt-2 ml-3 space-y-1.5 border-l border-plum-800 pl-2 text-[11px] text-plum-300">
                   <li>
-                    <button
-                      onClick={() => onSelectAiShoppingPage && onSelectAiShoppingPage(1)}
+                    <a
+                      href="/ai-shopping-assistant"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (onSelectAiShoppingPage) onSelectAiShoppingPage(1);
+                      }}
                       className="hover:text-peach-300 transition-colors text-left block cursor-pointer"
                     >
                       1. What is an AI Assistant?
-                    </button>
+                    </a>
                   </li>
                   <li>
                     <button
@@ -264,6 +274,24 @@ export const Footer: React.FC<FooterProps> = ({
           <div className="space-y-3">
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-white">Solutions</h4>
             <ul data-focus-id="focus-0" className="space-y-2 text-xs text-plum-200">
+              {/* Ecommerce - First Industry */}
+              <li>
+                <button
+                  onClick={() => {
+                    if (onSelectEcommercePage) {
+                      onSelectEcommercePage();
+                    } else if (onSelectIndustry) {
+                      onSelectIndustry('ecommerce');
+                    }
+                  }}
+                  className="hover:text-peach-300 transition-colors text-left cursor-pointer font-bold text-peach-300 flex items-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-peach-300"></span>
+                  <span>Ecommerce</span>
+                  <span className="text-[9px] font-bold text-plum-950 bg-peach-300 px-1 py-0.2 rounded">New ↗</span>
+                </button>
+              </li>
+
               <li>
                 <button
                   onClick={() => {
@@ -273,6 +301,20 @@ export const Footer: React.FC<FooterProps> = ({
                   className="hover:text-peach-300 transition-colors text-left cursor-pointer"
                 >
                   FMCG Brands
+                </button>
+              </li>
+
+              {/* FMCG Retailer Ordering Solution */}
+              <li>
+                <button
+                  onClick={() => {
+                    if (onSelectIndustry) onSelectIndustry('fmcg-retailer-ordering-solution');
+                  }}
+                  className="hover:text-peach-300 transition-colors text-left cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="w-1 h-1 rounded-full bg-peach-300"></span>
+                  <span>FMCG Retailer Ordering</span>
+                  <span className="text-[9px] font-bold text-plum-950 bg-peach-300 px-1 py-0.2 rounded">Solution ↗</span>
                 </button>
               </li>
 
@@ -343,22 +385,40 @@ export const Footer: React.FC<FooterProps> = ({
               {[
                 { id: 'boutiques', label: 'Boutiques & Curated' },
                 { id: 'b2b2c', label: 'B2B2C Multi-Tier' },
-                { id: 'distributors', label: 'Distributors' },
+                { id: 'distributors', label: 'Distributors (AI Commerce)', href: '/industries/distributors' },
                 { id: 'wholesalers', label: 'Wholesalers' },
                 { id: 'retailers', label: 'Retailers' },
               ].map((ind) => (
                 <li key={ind.id}>
-                  <button
-                    onClick={() => {
-                      scrollToSection('industries');
-                      if (onSelectIndustry) {
-                        onSelectIndustry(ind.id);
-                      }
-                    }}
-                    className="hover:text-peach-300 transition-colors text-left cursor-pointer"
-                  >
-                    {ind.label}
-                  </button>
+                  {ind.href ? (
+                    <a
+                      href={ind.href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (onSelectIndustry) {
+                          onSelectIndustry(ind.id);
+                        } else {
+                          window.history.pushState(null, '', ind.href);
+                          window.dispatchEvent(new PopStateEvent('popstate'));
+                        }
+                      }}
+                      className="hover:text-peach-300 transition-colors text-left cursor-pointer block"
+                    >
+                      {ind.label}
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        scrollToSection('industries');
+                        if (onSelectIndustry) {
+                          onSelectIndustry(ind.id);
+                        }
+                      }}
+                      className="hover:text-peach-300 transition-colors text-left cursor-pointer"
+                    >
+                      {ind.label}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -402,7 +462,7 @@ export const Footer: React.FC<FooterProps> = ({
               ].map((uc) => (
                 <li key={uc.slug}>
                   <a
-                    href={`/use-cases/${uc.slug}`}
+                    href={`/use-cases/${uc.slug}/`}
                     onClick={(e) => {
                       e.preventDefault();
                       scrollToSection('use-cases');
@@ -467,6 +527,20 @@ export const Footer: React.FC<FooterProps> = ({
                   className="hover:text-peach-300 transition-colors text-left flex items-center gap-1.5 font-bold text-teal-300"
                 >
                   <span>Shopify vs SilarAI</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    if (onNavigateShopifyAiShoppingAssistant) {
+                      onNavigateShopifyAiShoppingAssistant();
+                    }
+                  }}
+                  className="hover:text-peach-300 transition-colors text-left flex items-center gap-1.5 font-bold text-peach-200"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-peach-300 shrink-0" />
+                  <span>Shopify AI Shopping Assistant</span>
+                  <span className="text-[10px] font-black text-plum-950 bg-peach-300 px-1.5 py-0.2 rounded">New</span>
                 </button>
               </li>
               <li>
@@ -541,7 +615,7 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
-        {/* Bottom Socials & Copyright */}
+        {/* Bottom Socials, Appearance Switcher & Copyright */}
         <div className="pt-8 border-t border-plum-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-plum-300">
           <div>
             © {new Date().getFullYear()} SilarAI • PSI traders OPC PVT LTD. All rights reserved. 74 RR Nagar, NSNPALAYAM, Coimbatore, Tamil nadu 641031.

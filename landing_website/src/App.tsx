@@ -38,6 +38,9 @@ const FmcgIndustryPage = React.lazy(() => import('./components/FmcgIndustryPage'
 const AiCommerceMarketingPlatformPage = React.lazy(() => import('./components/AiCommerceMarketingPlatformPage').then(m => ({ default: m.AiCommerceMarketingPlatformPage })));
 const ContactUsPage = React.lazy(() => import('./components/ContactUsPage').then(m => ({ default: m.ContactUsPage })));
 const SectorLandingPage = React.lazy(() => import('./components/SectorLandingPage').then(m => ({ default: m.SectorLandingPage })));
+const ShopifyAiShoppingAssistantPage = React.lazy(() => import('./components/ShopifyAiShoppingAssistantPage').then(m => ({ default: m.ShopifyAiShoppingAssistantPage })));
+const EcommerceIndustryPage = React.lazy(() => import('./components/EcommerceIndustryPage').then(m => ({ default: m.EcommerceIndustryPage })));
+const FmcgRetailerOrderingPage = React.lazy(() => import('./components/FmcgRetailerOrderingPage').then(m => ({ default: m.FmcgRetailerOrderingPage })));
 
 // Modular Lazy Loading for Below-the-Fold Home Page Sections
 const CustomerMetrics = React.lazy(() => import('./components/CustomerMetrics').then(m => ({ default: m.CustomerMetrics })));
@@ -67,6 +70,13 @@ const SectionLoadingFallback = () => (
   </div>
 );
 
+// Inbound URLs may carry a trailing slash (e.g. /about/). Strip it before route
+// matching so they resolve like their canonical form; the URL scheme is unchanged.
+const getPathname = () => {
+  const p = window.location.pathname;
+  return p.length > 1 ? p.replace(/\/+$/, '') : p;
+};
+
 export default function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [tourModalOpen, setTourModalOpen] = useState(false);
@@ -91,7 +101,7 @@ export default function App() {
 
   const [manufacturingSubPage, setManufacturingSubPage] = useState<number>(() => {
     const params = new URLSearchParams(window.location.search);
-    const path = window.location.pathname;
+    const path = getPathname();
     const sub = params.get('subPage');
     if (sub === '2' || path.includes('/ai-shopping-sales-assistant')) return 2;
     if (sub === '3' || path.includes('/dealer-distributor-commerce')) return 3;
@@ -100,7 +110,7 @@ export default function App() {
 
   const [d2cSubPage, setD2cSubPage] = useState<D2cPageId | undefined>(() => {
     const params = new URLSearchParams(window.location.search);
-    const path = window.location.pathname;
+    const path = getPathname();
     const sub = params.get('subPage');
     const pageParam = params.get('page');
     if (sub === '2' || path.includes('/ai-commerce-platform') || pageParam === 'd2c-ai-commerce-platform') return 2;
@@ -110,10 +120,10 @@ export default function App() {
   });
 
   const [currentView, setCurrentView] = useState<
-    'home' | 'about' | 'contact-us' | 'ai-shopping-assistant' | 'ai-commerce-platform' | 'ai-commerce-marketing-platform' | 'why-choose-us' | 'shopify-comparison' | 'woocommerce-comparison' | 'retail-commerce' | 'd2c-brands' | 'distributors' | 'wholesalers' | 'manufacturing' | 'fmcg-commerce' | 'fmcg' | 'sector-landing'
+    'home' | 'about' | 'contact-us' | 'ai-shopping-assistant' | 'ai-commerce-platform' | 'ai-commerce-marketing-platform' | 'why-choose-us' | 'shopify-comparison' | 'shopify-ai-shopping-assistant' | 'woocommerce-comparison' | 'retail-commerce' | 'ecommerce' | 'd2c-brands' | 'distributors' | 'wholesalers' | 'manufacturing' | 'fmcg-commerce' | 'fmcg' | 'fmcg-retailer-ordering-solution' | 'sector-landing'
   >(() => {
     const params = new URLSearchParams(window.location.search);
-    const path = window.location.pathname;
+    const path = getPathname();
     const pageParam = params.get('page');
     const sectorParam = params.get('sector');
 
@@ -131,6 +141,9 @@ export default function App() {
     }
     if (pageParam === 'shopify-comparison' || pageParam === 'shopify-vs-silarai' || path === '/shopify-vs-silarai' || path === '/integrations/shopify') {
       return 'shopify-comparison';
+    }
+    if (pageParam === 'shopify-ai-shopping-assistant' || pageParam === 'shopify-assistant' || path === '/shopify-ai-shopping-assistant' || path === '/integrations/shopify-ai-shopping-assistant') {
+      return 'shopify-ai-shopping-assistant';
     }
     if (pageParam === 'woocommerce-comparison' || pageParam === 'woocommerce-vs-silarai' || path === '/woocommerce-vs-silarai' || path === '/integrations/woocommerce') {
       return 'woocommerce-comparison';
@@ -171,6 +184,12 @@ export default function App() {
       pageParam === 'customer-portal'
     ) {
       return 'ai-commerce-platform';
+    }
+    if (pageParam === 'ecommerce' || pageParam === 'ecommerce-ai-shopping-assistant' || path === '/ecommerce' || path === '/industries/ecommerce' || path === '/ecommerce-ai-shopping-assistant') {
+      return 'ecommerce';
+    }
+    if (pageParam === 'fmcg-retailer-ordering' || pageParam === 'fmcg-retailer-ordering-solution' || pageParam === 'retailer-ordering-solution' || path === '/industries/fmcg/retailer-ordering-solution') {
+      return 'fmcg-retailer-ordering-solution';
     }
     if (pageParam === 'fmcg' || pageParam === 'fmcg-commerce' || pageParam === 'fmcg-brands' || pageParam === 'cpg' || path === '/fmcg-commerce' || path === '/fmcg' || path === '/industries/fmcg' || path === '/industries/fmcg-commerce') {
       return 'fmcg-commerce';
@@ -213,7 +232,7 @@ export default function App() {
   });
 
   const [activeUseCaseSlug, setActiveUseCaseSlug] = useState<string | null>(() => {
-    const path = window.location.pathname;
+    const path = getPathname();
     if (path.startsWith('/use-cases/')) {
       return path.replace('/use-cases/', '');
     }
@@ -260,7 +279,7 @@ export default function App() {
 
   const [activeSectorSlug, setActiveSectorSlug] = useState<string>(() => {
     const params = new URLSearchParams(window.location.search);
-    const path = window.location.pathname;
+    const path = getPathname();
     if (path.startsWith('/sector/')) {
       return path.replace('/sector/', '');
     }
@@ -269,7 +288,7 @@ export default function App() {
 
   useEffect(() => {
     const handlePopState = () => {
-      const path = window.location.pathname;
+      const path = getPathname();
       const params = new URLSearchParams(window.location.search);
       const pageParam = params.get('page');
       const sectorParam = params.get('sector');
@@ -286,6 +305,8 @@ export default function App() {
         setCurrentView('why-choose-us');
       } else if (pageParam === 'shopify-comparison' || pageParam === 'shopify-vs-silarai' || path === '/shopify-vs-silarai' || path === '/integrations/shopify') {
         setCurrentView('shopify-comparison');
+      } else if (pageParam === 'shopify-ai-shopping-assistant' || pageParam === 'shopify-assistant' || path === '/shopify-ai-shopping-assistant' || path === '/integrations/shopify-ai-shopping-assistant') {
+        setCurrentView('shopify-ai-shopping-assistant');
       } else if (pageParam === 'woocommerce-comparison' || pageParam === 'woocommerce-vs-silarai' || path === '/woocommerce-vs-silarai' || path === '/integrations/woocommerce') {
         setCurrentView('woocommerce-comparison');
       } else if (
@@ -330,6 +351,10 @@ export default function App() {
         if (sub === '2') setAiCommerceSubPage(2);
         else if (sub === '3') setAiCommerceSubPage(3);
         else setAiCommerceSubPage(1);
+      } else if (pageParam === 'ecommerce' || pageParam === 'ecommerce-ai-shopping-assistant' || path === '/ecommerce' || path === '/industries/ecommerce' || path === '/ecommerce-ai-shopping-assistant') {
+        setCurrentView('ecommerce');
+      } else if (pageParam === 'fmcg-retailer-ordering' || pageParam === 'fmcg-retailer-ordering-solution' || pageParam === 'retailer-ordering-solution' || path === '/industries/fmcg/retailer-ordering-solution') {
+        setCurrentView('fmcg-retailer-ordering-solution');
       } else if (pageParam === 'fmcg' || pageParam === 'fmcg-commerce' || pageParam === 'fmcg-brands' || pageParam === 'cpg' || path === '/fmcg-commerce' || path === '/fmcg' || path === '/industries/fmcg' || path === '/industries/fmcg-commerce') {
         setCurrentView('fmcg-commerce');
       } else if (pageParam === 'retail-commerce' || pageParam === 'retail-ai-platform' || path === '/retail-ai-platform' || path === '/retail-commerce' || path === '/industries/retailers' || path === '/industries/retail-commerce') {
@@ -382,7 +407,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const path = window.location.pathname;
+    const path = getPathname();
     const hash = window.location.hash;
     const page = new URLSearchParams(window.location.search).get('page');
     if (path === '/pricing' || hash === '#pricing' || page === 'pricing') {
@@ -504,6 +529,42 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleNavigateFmcgRetailerOrdering = () => {
+    setCurrentView('fmcg-retailer-ordering-solution');
+    window.history.pushState(null, '', '/industries/fmcg/retailer-ordering-solution');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateEcommerce = () => {
+    setCurrentView('ecommerce');
+    window.history.pushState(null, '', '/industries/ecommerce');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateShopifyAiShoppingAssistant = () => {
+    setCurrentView('shopify-ai-shopping-assistant');
+    window.history.pushState(null, '', '/shopify-ai-shopping-assistant');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Navigates to a site URL (absolute or relative) by pushing it and letting the
+  // popstate router resolve the view. Off-site URLs open in a new tab.
+  const handleNavigateToUrl = (url: string) => {
+    try {
+      const target = new URL(url, window.location.origin);
+      const onSite = target.origin === window.location.origin || target.hostname === 'silarai.com';
+      if (!onSite) {
+        window.open(target.href, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      window.history.pushState(null, '', target.pathname + target.search);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      handleBackToHome();
+    }
+  };
+
   const handleSelectAiShoppingPage = (pageId: AiShoppingPageId) => {
     setAiShoppingSubPage(pageId);
     setCurrentView('ai-shopping-assistant');
@@ -526,7 +587,7 @@ export default function App() {
 
   const handleBackToHome = () => {
     setCurrentView('home');
-    window.history.pushState(null, '', window.location.pathname);
+    window.history.pushState(null, '', '/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -559,6 +620,12 @@ export default function App() {
       handleNavigateManufacturing(options?.pageId);
     } else if (view === 'fmcg-commerce' || view === 'fmcg') {
       handleNavigateFmcgCommerce();
+    } else if (view === 'shopify-ai-shopping-assistant') {
+      handleNavigateShopifyAiShoppingAssistant();
+    } else if (view === 'ecommerce' || view === 'ecommerce-ai-shopping-assistant') {
+      handleNavigateEcommerce();
+    } else if (view === 'fmcg-retailer-ordering-solution') {
+      handleNavigateFmcgRetailerOrdering();
     } else if (view === 'contact-us') {
       handleNavigateContactUs();
     } else if (view === 'sector-landing' || view === 'boutiques' || view.startsWith('sector:')) {
@@ -588,6 +655,14 @@ export default function App() {
     }
     if (id === 'manufacturing' || id === 'manufacturers' || id === 'industrial-manufacturing' || id === 'industrial') {
       handleNavigateManufacturing();
+      return;
+    }
+    if (id === 'ecommerce' || id === 'e-commerce') {
+      handleNavigateEcommerce();
+      return;
+    }
+    if (id === 'fmcg-retailer-ordering' || id === 'fmcg-retailer-ordering-solution' || id === 'retailer-ordering' || id === 'retailer-ordering-solution') {
+      handleNavigateFmcgRetailerOrdering();
       return;
     }
     if (id === 'fmcg' || id === 'fmcg-brands' || id === 'fmcg-commerce' || id === 'cpg') {
@@ -689,6 +764,7 @@ export default function App() {
         onNavigateAbout={handleNavigateAbout}
         onNavigateWhyChooseUs={handleNavigateWhyChooseUs}
         onNavigateShopifyComparison={handleNavigateShopifyComparison}
+        onNavigateShopifyAiShoppingAssistant={handleNavigateShopifyAiShoppingAssistant}
         onNavigateWoocommerceComparison={handleNavigateWoocommerceComparison}
         onNavigateAiCommerceMarketingPlatform={handleNavigateAiCommerceMarketingPlatform}
         onSelectAiShoppingPage={(id) => handleSelectAiShoppingPage(id)}
@@ -720,6 +796,13 @@ export default function App() {
             <ShopifyComparisonPage
               onBackToHome={handleBackToHome}
               onBookDemo={(plan) => handleOpenDemo(plan)}
+              onNavigateShopifyAiShoppingAssistant={handleNavigateShopifyAiShoppingAssistant}
+            />
+          ) : currentView === 'shopify-ai-shopping-assistant' ? (
+            <ShopifyAiShoppingAssistantPage
+              onBackToHome={handleBackToHome}
+              onBookDemo={(plan) => handleOpenDemo(plan)}
+              onNavigateShopifyComparison={handleNavigateShopifyComparison}
             />
           ) : currentView === 'woocommerce-comparison' ? (
             <WoocommerceComparisonPage
@@ -768,12 +851,18 @@ export default function App() {
               onSelectPage={(id) => handleSelectAiShoppingPage(id)}
               onBackToHome={handleBackToHome}
               onBookDemo={(plan) => handleOpenDemo(plan)}
+              onNavigateDistributors={handleNavigateDistributors}
             />
           ) : currentView === 'ai-commerce-platform' ? (
             <AiCommercePlatformPages
               activePage={aiCommerceSubPage}
               onSelectPage={(id) => handleSelectAiCommercePage(id)}
               onNavigateAiAssistantPage={(id) => handleSelectAiShoppingPage(id)}
+              onBackToHome={handleBackToHome}
+              onBookDemo={(plan) => handleOpenDemo(plan)}
+            />
+          ) : currentView === 'ecommerce' ? (
+            <EcommerceIndustryPage
               onBackToHome={handleBackToHome}
               onBookDemo={(plan) => handleOpenDemo(plan)}
             />
@@ -795,6 +884,11 @@ export default function App() {
             <DistributorsIndustryPage
               onBackToHome={handleBackToHome}
               onBookDemo={(plan) => handleOpenDemo(plan)}
+              onNavigateToPage={handleNavigateToUrl}
+              onSelectAiShoppingPage={(id) => handleSelectAiShoppingPage(id)}
+              onSelectAiCommercePage={(id) => handleSelectAiCommercePage(id)}
+              onSelectManufacturingPage={(id) => handleNavigateManufacturing(id)}
+              onSelectD2cPage={() => handleNavigateD2cCommerce()}
             />
           ) : currentView === 'wholesalers' ? (
             <WholesalersIndustryPage
@@ -808,9 +902,16 @@ export default function App() {
               activeSubPage={manufacturingSubPage}
               onSelectSubPage={(id) => handleNavigateManufacturing(id)}
             />
+          ) : currentView === 'fmcg-retailer-ordering-solution' ? (
+            <FmcgRetailerOrderingPage
+              onBackToHome={handleBackToHome}
+              onNavigateFmcgOverview={handleNavigateFmcgCommerce}
+              onBookDemo={(plan) => handleOpenDemo(plan)}
+            />
           ) : currentView === 'fmcg-commerce' || currentView === 'fmcg' ? (
             <FmcgIndustryPage
               onBackToHome={handleBackToHome}
+              onNavigateRetailerOrdering={handleNavigateFmcgRetailerOrdering}
               onBookDemo={(plan) => handleOpenDemo(plan)}
             />
           ) : currentView === 'sector-landing' ? (
@@ -837,6 +938,7 @@ export default function App() {
                   onWatchTour={() => setTourModalOpen(true)}
                   onLogin={handleLogin}
                   onSelectSector={handleNavigateSector}
+                  onSelectIndustry={handleSelectIndustry}
                   showBackground={false}
                 />
 
@@ -853,6 +955,7 @@ export default function App() {
                     onNavigateWoocommerceComparison={handleNavigateWoocommerceComparison}
                     onSelectD2cPage={(id) => handleNavigateD2cCommerce(id)}
                     onSelectManufacturingPage={(id) => handleNavigateManufacturing(id)}
+                    onNavigateDistributors={handleNavigateDistributors}
                   />
                 </Suspense>
               </DeferredSection>
@@ -885,6 +988,7 @@ export default function App() {
                     onBookDemo={(ind) => handleOpenDemo(ind)}
                     activeIndustryId={activeIndustryId}
                     onSelectIndustry={(id) => handleSelectIndustry(id)}
+                    onNavigateRetailerOrdering={handleNavigateFmcgRetailerOrdering}
                   />
                 </Suspense>
               </DeferredSection>
@@ -974,10 +1078,12 @@ export default function App() {
         <Suspense fallback={<SectionLoadingFallback />}>
           <Footer
             onSelectIndustry={(id) => handleSelectIndustry(id)}
+            onSelectEcommercePage={handleNavigateEcommerce}
             onSelectUseCase={(slug) => handleSelectUseCase(slug)}
             onNavigateAbout={handleNavigateAbout}
             onNavigateWhyChooseUs={handleNavigateWhyChooseUs}
             onNavigateShopifyComparison={handleNavigateShopifyComparison}
+            onNavigateShopifyAiShoppingAssistant={handleNavigateShopifyAiShoppingAssistant}
             onNavigateWoocommerceComparison={handleNavigateWoocommerceComparison}
             onNavigateAiCommerceMarketingPlatform={handleNavigateAiCommerceMarketingPlatform}
             onSelectAiShoppingPage={(id) => handleSelectAiShoppingPage(id)}

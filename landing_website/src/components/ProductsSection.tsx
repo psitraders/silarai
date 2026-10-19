@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import aiBotCommerceImg from '../assets/images/ai_bot_commerce_dashboard_1785403446965.webp';
 import aiCommerceEngineImg from '../assets/images/ai_commerce_platform_engine_1785488597071.webp';
+import commerceCloudImg from '../assets/images/commerce_cloud_platform_1788795904634.webp';
 
 interface ProductsSectionProps {
   onLearnMoreAssistant: (subPage?: 1 | 2 | 3) => void;
@@ -28,6 +29,7 @@ interface ProductsSectionProps {
   onNavigateWoocommerceComparison?: () => void;
   onSelectD2cPage?: (sectionId?: string) => void;
   onSelectManufacturingPage?: (pageId?: number) => void;
+  onNavigateDistributors?: () => void;
 }
 
 export const ProductsSection: React.FC<ProductsSectionProps> = ({
@@ -37,6 +39,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
   onNavigateWoocommerceComparison,
   onSelectD2cPage,
   onSelectManufacturingPage,
+  onNavigateDistributors,
 }) => {
   const [activeAssistantFeature, setActiveAssistantFeature] = useState<string>('Conversational Shopping');
   const [activePlatformFeature, setActivePlatformFeature] = useState<string>('Online Store');
@@ -135,7 +138,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <a
-                    href="/ai-shopping-assistant?subPage=1"
+                    href="/ai-shopping-assistant"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -151,7 +154,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                   </a>
 
                   <a
-                    href="/ai-shopping-assistant?subPage=2"
+                    href="/ai-shopping-assistant/?subPage=2"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -167,7 +170,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                   </a>
 
                   <a
-                    href="/ai-shopping-assistant?subPage=3"
+                    href="/ai-shopping-assistant/?subPage=3"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -185,12 +188,15 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
               </div>
 
               {/* Brand Visual Banner with Click-to-Explore Overlay */}
-              <div
+              <a
+                href="/ai-shopping-assistant"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   onLearnMoreAssistant(1);
                 }}
-                className="mb-6 rounded-2xl overflow-hidden border border-plum-200/90 shadow-md group-hover:shadow-lg transition-all relative cursor-pointer"
+                className="mb-6 rounded-2xl overflow-hidden border border-plum-200/90 shadow-md group-hover:shadow-lg transition-all relative cursor-pointer block"
+                title="View AI Shopping Assistant Product Guide & Features"
               >
                 <img
                   src={aiBotCommerceImg}
@@ -211,7 +217,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                     <ArrowRight className="w-3 h-3 text-peach-300" />
                   </span>
                 </div>
-              </div>
+              </a>
 
               {/* Feature Checklist Grid */}
               <div className="space-y-3 mb-6">
@@ -322,7 +328,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                   </a>
 
                   <a
-                    href="/ai-shopping-assistant?subPage=1"
+                    href="/ai-shopping-assistant"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -335,7 +341,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                   </a>
 
                   <a
-                    href="/ai-shopping-assistant?subPage=2"
+                    href="/ai-shopping-assistant/?subPage=2"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -348,7 +354,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                   </a>
 
                   <a
-                    href="/ai-shopping-assistant?subPage=3"
+                    href="/ai-shopping-assistant/?subPage=3"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -400,6 +406,24 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                     title="D2C Brands AI Shopping Assistant"
                   >
                     D2C AI Assistant
+                  </a>
+
+                  <a
+                    href="/industries/distributors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onNavigateDistributors) {
+                        onNavigateDistributors();
+                      } else {
+                        window.history.pushState(null, '', '/industries/distributors');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-plum-50 text-slate-700 hover:text-plum-800 font-semibold border border-slate-200 transition-colors"
+                    title="AI Shopping Assistant for Wholesale Distributors"
+                  >
+                    Distributors Assistant
                   </a>
                 </div>
               </div>
@@ -554,16 +578,19 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
               </div>
 
               {/* Brand Visual Banner with Click-to-Explore Overlay */}
-              <div
+              <a
+                href="/ai-commerce-platform"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   onExplorePlatform(1);
                 }}
-                className="mb-6 rounded-2xl overflow-hidden border border-plum-200/90 shadow-md group-hover:shadow-lg transition-all relative cursor-pointer"
+                className="mb-6 rounded-2xl overflow-hidden border border-plum-200/90 shadow-md group-hover:shadow-lg transition-all relative cursor-pointer block"
+                title="View AI Commerce & Marketing Platform Architecture"
               >
                 <img
-                  src={aiCommerceEngineImg}
-                  alt="AI Commerce & Marketing Platform"
+                  src={commerceCloudImg}
+                  alt="AI Commerce Cloud Platform & Multi-Channel Marketing Architecture"
                   className="w-full h-48 object-cover object-center transform group-hover:scale-102 transition-transform duration-500"
                   referrerPolicy="no-referrer"
                 />
@@ -577,7 +604,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                     <ArrowRight className="w-3 h-3 text-peach-300" />
                   </span>
                 </div>
-              </div>
+              </a>
 
               {/* Categorized Feature Grid */}
               <div className="space-y-4 mb-6">
@@ -786,6 +813,24 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                   >
                     B2B &amp; Manufacturing
                   </a>
+
+                  <a
+                    href="/industries/distributors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onNavigateDistributors) {
+                        onNavigateDistributors();
+                      } else {
+                        window.history.pushState(null, '', '/industries/distributors');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-plum-50 text-slate-700 hover:text-plum-800 font-semibold border border-slate-200 transition-colors"
+                    title="Wholesale Distributors AI Commerce Platform"
+                  >
+                    Distributors Platform
+                  </a>
                 </div>
               </div>
             </div>
@@ -921,7 +966,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                       "@type": "ListItem",
                       "position": 2,
                       "name": "Architecture & Workflow Guide",
-                      "url": "https://silarai.com/ai-shopping-assistant?subPage=1"
+                      "url": "https://silarai.com/ai-shopping-assistant"
                     },
                     {
                       "@type": "ListItem",
@@ -982,13 +1027,13 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                       "@type": "ListItem",
                       "position": 4,
                       "name": "Retail AI Commerce Platform",
-                      "url": "https://silarai.com/retail-ai-platform"
+                      "url": "https://silarai.com/industries/retailers"
                     },
                     {
                       "@type": "ListItem",
                       "position": 5,
                       "name": "B2B Wholesale & Distributor Commerce",
-                      "url": "https://silarai.com/wholesale-distributor-commerce"
+                      "url": "https://silarai.com/industries/distributors"
                     },
                     {
                       "@type": "ListItem",

@@ -1,5 +1,5 @@
 /**
- * Backend RAG, GEO, AEO, AIO, and SEO Discovery Engine
+ * Autonomous Client-Side RAG, GEO, AEO, AIO, and SEO Discovery Engine
  * 
  * Provides structured knowledge chunks, semantic backlinks,
  * Wikidata/DBpedia ontology entities, AEO/AIO answer blocks,
@@ -292,6 +292,38 @@ The SilarAI D2C Brand solution operates across a structured 4-pillar semantic kn
     tokenCountEstimate: 195
   },
   {
+    chunkId: 'chunk-ecommerce-industry-platform',
+    topic: 'Autonomous AI Commerce Solutions for Ecommerce Stores',
+    category: 'Ecommerce Industry',
+    title: 'Autonomous AI Commerce Solutions for Modern E-Commerce Stores: 24/7 AI Shopping Assistant & Sub-50ms Dynamic Pricing',
+    summary: 'Turn online storefronts into autonomous revenue engines with instant conversational shopping agents, sub-50ms dynamic pricing, automated catalog vector search, and WhatsApp checkout.',
+    content: `
+SilarAI delivers an autonomous AI Commerce platform engineered specifically for modern e-commerce stores across fashion, electronics, health & wellness, home goods, industrial parts, and multi-category retailers.
+Core architectural components:
+1. 24/7 Autonomous Shopping Assistants: Customers describe requirements conversationally (e.g., "Find noise-canceling headphones for long flights under $150 with at least 30 hours battery life") and receive sub-second semantic matches.
+2. Sub-50ms Dynamic Pricing Engine: Continuously aligns catalog prices against competitor benchmarks, stock availability, and margin targets with zero latency penalties.
+3. Neural Vector Catalog Discovery: Overcomes traditional filter limitations, allowing buyers to search by photo upload, natural language descriptions, and technical specifications across 100,000+ SKUs.
+4. Autonomous Cart Recovery & WhatsApp Checkout: Automatically detects hesitation points, suggests matching accessories or alternative in-stock sizes, and recovers up to 34% of dropped carts over web and WhatsApp.
+5. Headless Integration: 1-click embeddable widget works alongside existing checkout flows on Shopify, WooCommerce, Magento 2, BigCommerce, or custom React/Vue storefronts.
+Tested benchmarks: +35% to +380% conversion rate lift, 3.4x faster product discovery, and +28% Average Order Value (AOV).
+`.trim(),
+    keyEntities: [
+      'AI Commerce Platform for Ecommerce',
+      'Ecommerce AI Platform',
+      'AI Shopping Assistant for Ecommerce',
+      'Conversational Commerce',
+      'Sub-50ms Dynamic Pricing AI',
+      'Neural Vector Search',
+      'WhatsApp Commerce',
+      'Cart Recovery AI'
+    ],
+    canonicalBacklink: 'https://silarai.com/industries/ecommerce',
+    apiBacklink: 'https://silarai.com/ai/site-architecture.json',
+    schemaContext: 'https://schema.org/SoftwareApplication',
+    confidenceScore: 0.99,
+    tokenCountEstimate: 230
+  },
+  {
     chunkId: 'chunk-dealer-b2b2c-portal',
     topic: 'Dealer Networks & B2B2C Hybrid Fulfillment',
     category: 'Channel Management',
@@ -526,6 +558,87 @@ export const AEO_AIO_KNOWLEDGE_QA: AeoQuestionAnswer[] = [
     targetEntities: ['Human-Controlled AI', 'Permission Governance', 'Approval Workflows', 'Enterprise Security'],
     citationUrl: 'https://silarai.com/industries/manufacturing/dealer-distributor-commerce',
     relevantPillar: 'AI Dealer & Distributor Commerce'
+  },
+  {
+    id: 'aeo-ecom-1',
+    question: 'What is an AI shopping assistant for ecommerce?',
+    shortAnswer: 'An AI shopping assistant is a conversational AI that helps online shoppers discover products, answer questions, compare options, and make purchase decisions using natural language.',
+    detailedAnswer: 'An AI shopping assistant is a conversational AI that helps online shoppers discover products, answer questions, compare options, and make purchase decisions. Instead of relying only on traditional search and filters, customers can describe what they need in natural language.',
+    targetEntities: ['AI shopping assistant for ecommerce', 'ecommerce AI shopping assistant', 'conversational ecommerce', 'AI product discovery'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
+  },
+  {
+    id: 'aeo-ecom-2',
+    question: 'How does an AI shopping assistant help ecommerce customers?',
+    shortAnswer: 'It helps customers discover products, understand specifications, compare items, refine requirements, and navigate toward purchase 24/7 without needing a human representative.',
+    detailedAnswer: 'It helps customers discover products, understand product information, compare products, refine their requirements, and navigate toward purchase. It can provide shopping assistance 24/7 without requiring a customer-service representative to be available.',
+    targetEntities: ['24/7 ecommerce customer support', 'AI sales assistant for ecommerce', 'product discovery', 'guided shopping'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
+  },
+  {
+    id: 'aeo-ecom-3',
+    question: 'Can an AI shopping assistant work 24/7?',
+    shortAnswer: 'Yes. An AI shopping assistant provides continuous shopping assistance whenever customers visit an ecommerce website, including outside normal business hours.',
+    detailedAnswer: 'Yes. An AI shopping assistant can provide continuous shopping assistance whenever customers visit an ecommerce website. This allows shoppers to ask questions and explore products outside normal business hours.',
+    targetEntities: ['24/7 ecommerce customer support', 'Always-On Shopping AI', 'Zero Wait Times', 'Automated Sales Assistant'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
+  },
+  {
+    id: 'aeo-ecom-4',
+    question: 'Can AI help customers find products in a large ecommerce catalog?',
+    shortAnswer: 'Yes. AI navigates large product catalogs by understanding customer requirements and matching them with relevant products across hundreds or thousands of SKUs.',
+    detailedAnswer: 'Yes. AI can help customers navigate large product catalogs by understanding their requirements and matching them with relevant products. This is particularly useful for ecommerce businesses with hundreds, thousands, or more SKUs.',
+    targetEntities: ['AI product discovery', 'Large Catalog Search', 'Neural Vector Embeddings', 'SKU Navigation'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
+  },
+  {
+    id: 'aeo-ecom-5',
+    question: 'How is an AI shopping assistant different from ecommerce search?',
+    shortAnswer: 'Traditional search requires keywords and manual filters, whereas an AI assistant lets customers describe their needs conversationally and refines requirements through dialogue.',
+    detailedAnswer: 'Traditional ecommerce search generally requires customers to enter keywords and then use filters or categories. An AI shopping assistant allows customers to describe their needs conversationally and refine their requirements through a dialogue. Example: "I need a lightweight laptop for programming under ₹80,000." The assistant can interpret the requirements and help narrow down suitable products.',
+    targetEntities: ['Conversational ecommerce', 'Traditional Search vs AI', 'Intent Understanding', 'Search vs AI Shopping Assistant'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
+  },
+  {
+    id: 'aeo-ecom-6',
+    question: 'Can an AI shopping assistant recommend products?',
+    shortAnswer: 'Yes. An AI shopping assistant uses product specifications and shopper requirements to identify relevant products and explain why they may be suitable.',
+    detailedAnswer: 'Yes. An AI shopping assistant can use product information and customer requirements to identify relevant products and explain why they may be suitable. For example: "Which running shoes are best for long-distance running?" The assistant can help the customer identify relevant products based on available product information.',
+    targetEntities: ['AI product recommendation', 'Product Recommendations', 'Personalized Recommendations', 'Shopping Guidance'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
+  },
+  {
+    id: 'aeo-ecom-7',
+    question: 'Can customers ask product questions using natural language?',
+    shortAnswer: 'Yes. Customers can ask questions in the same way they would ask a retail salesperson, and the AI interprets the question to respond accurately.',
+    detailedAnswer: 'Yes. Customers can ask questions in the same way they would ask a salesperson. For example: "Is this suitable for outdoor use?", "Does this laptop have 16GB RAM?", "Which one has better battery life?", "I need something for a small office." The AI can interpret the question and use the available product information to respond.',
+    targetEntities: ['Natural language product search', 'Product Q&A', 'Conversational AI', 'AI Customer Support'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
+  },
+  {
+    id: 'aeo-ecom-8',
+    question: 'Can an AI shopping assistant compare products?',
+    shortAnswer: 'Yes. It compares products based on specifications, features, pricing, and use cases, reducing the need for shoppers to open multiple tabs.',
+    detailedAnswer: 'Yes. It can help customers compare products based on relevant specifications, features, pricing, use cases, and other available catalog information. This can reduce the need for customers to open multiple product pages and manually compare specifications.',
+    targetEntities: ['Product comparison', 'Side-by-side comparison', 'Spec Delta Comparison', 'Alternative Products'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
+  },
+  {
+    id: 'aeo-ecom-9',
+    question: 'Can AI shopping assistants help customers with technical products?',
+    shortAnswer: 'Yes. It is particularly valuable for electronics, industrial products, machinery, automotive parts, and technical catalogs where customers have specific parameters.',
+    detailedAnswer: 'Yes. This can be particularly valuable for electronics, industrial products, machinery, automotive products, tools, components, and other technical catalogs. Customers can describe their application or technical requirements, and the assistant can use available product specifications to help identify relevant products.',
+    targetEntities: ['Technical product discovery', 'Industrial Commerce', 'Electronics & Components', 'Application Matching'],
+    citationUrl: 'https://silarai.com/industries/ecommerce',
+    relevantPillar: 'AI Shopping Assistant for Ecommerce'
   },
   {
     id: 'aeo-1',

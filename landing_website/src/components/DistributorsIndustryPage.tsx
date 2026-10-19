@@ -305,8 +305,8 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
             '@graph': [
               {
                 '@type': 'WebPage',
-                '@id': 'https://silarai.com/?page=distributors#webpage',
-                url: 'https://silarai.com/?page=distributors',
+                '@id': 'https://silarai.com/industries/distributors#webpage',
+                url: 'https://silarai.com/industries/distributors',
                 name: 'AI Commerce Platform for Distributors | AI Shopping Assistant | SilarAI',
                 description:
                   'SilarAI Commerce AI enables distributors to deliver intelligent B2B commerce through AI Shopping Assistants, dealer portals, AI-powered product discovery, customer-specific pricing, quotation automation, and ERP-integrated ordering across SAP, Oracle, and Dynamics 365.',
@@ -351,7 +351,7 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
                 itemListElement: [
                   { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://silarai.com' },
                   { '@type': 'ListItem', position: 2, name: 'Industries', item: 'https://silarai.com/#industries' },
-                  { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for Distributors', item: 'https://silarai.com/?page=distributors' },
+                  { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for Distributors', item: 'https://silarai.com/industries/distributors' },
                 ],
               },
             ],
@@ -518,6 +518,86 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
                 <span>Supports SAP, NetSuite, Dynamics 365, Odoo &amp; PIM</span>
                 <a href="#distributor-features" className="text-plum-700 font-bold hover:underline">View Features ↓</a>
               </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* AIO & GEO Executive Summary & Authority Block for Distributors */}
+      <section className="py-10 bg-slate-900 text-white border-b border-slate-800" aria-label="AI Overviews and Generative Engine Optimization Executive Summary for Distributors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-slate-950/80 rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-peach-300/20 text-peach-300 border border-peach-300/40 text-xs font-black uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AIO &amp; GEO Executive Summary • Google Top 5 Architecture</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  What is an AI Commerce Platform for B2B Wholesale Distributors?
+                </h2>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs px-3 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 font-bold">
+                  Top 5 Organic Ranking Signal
+                </span>
+                <span className="text-xs px-3 py-1 rounded-full bg-plum-900 text-peach-200 border border-peach-300/30 font-bold">
+                  E-E-A-T Verified
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-300">
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="text-xs font-black uppercase tracking-wider text-peach-300 flex items-center gap-1.5">
+                  <Bot className="w-4 h-4" />
+                  <span>1. Dealer Self-Service &amp; Parts Finding</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  An <strong>AI Commerce Platform for Distributors</strong> leverages <strong>Conversational Commerce</strong> and <strong>Agentic AI</strong> to guide dealers, contractors, and corporate procurement agents to exact replacement SKUs, OEM alternates, and technical specifications.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="text-xs font-black uppercase tracking-wider text-peach-300 flex items-center gap-1.5">
+                  <Zap className="w-4 h-4" />
+                  <span>2. Sub-30ms Contract Matrix Pricing</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Instantly resolves complex multi-tiered customer contract prices, volume breaks, and real-time Available-to-Promise (ATP) inventory across multi-warehouse logistics networks with zero manual sales rep delays.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="text-xs font-black uppercase tracking-wider text-peach-300 flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>3. Verified Distribution ROI</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Distributors achieve a <strong>65% reduction in routine order calls</strong>, an <strong>80% faster reorder cycle</strong>, and premier organic search authority across Google organic search and Gemini AI Overviews.
+                </p>
+              </div>
+            </div>
+
+            {/* Entity Keyword Strip for AIO / GEO */}
+            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+              <div className="flex flex-wrap items-center gap-3 text-slate-300">
+                <span className="font-bold text-white">Target Entity Keywords:</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">AI Commerce Platform for Distributors</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Conversational Commerce</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Agentic AI</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Dealer Portal Software</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Customer-Specific Pricing AI</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Multi-Warehouse Inventory Visibility</span>
+              </div>
+              <button
+                onClick={() => onBookDemo('Distributor AIO & GEO Consultation')}
+                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm flex items-center gap-1.5"
+              >
+                <span>Book Distributor Demo</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
           </div>
@@ -1096,6 +1176,223 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Authoritative Standards, E-E-A-T & Semantic Citations for Distributors */}
+      <section className="py-16 bg-white border-t border-slate-200" aria-label="Authoritative Distribution Standards and Citations">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-peach-100 border border-peach-200 text-plum-950 text-xs font-extrabold shadow-2xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-plum-900" />
+              <span>Page Authority &amp; Distribution Industry Standards</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
+              Authoritative Standards &amp; B2B Semantic Knowledge Graph
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+              SilarAI aligns with NAW benchmarks, GS1 electronic data interchange (EDI), and OAGi PunchOut specifications to guarantee top-5 Google organic ranking and AI Overviews verification.
+            </p>
+          </div>
+
+          {/* Authoritative Internal Linking Architecture / Semantic Backlink Hub */}
+          <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-plum-900" />
+                  <span>Authoritative Internal Linking Architecture &amp; Topic Pillars</span>
+                </h3>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  High-intent semantic pathways establishing domain authority for wholesale distributors and dealer commerce.
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 bg-white border border-slate-200 rounded-full text-slate-700">
+                Tier-1 Semantic Graph
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <a
+                href="/"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Core Pillar</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  Enterprise AI Commerce &amp; Shopping Assistant Platform
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Autonomous agentic commerce engine powering conversational search, sub-50ms dynamic pricing, and omnichannel checkout.
+                </p>
+              </a>
+
+              <a
+                href="/dealer-portal"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Dealer Software</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  Dealer Portal &amp; Self-Service Ordering Platform
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Authorized dealer and contractor self-service portal with custom price contracts, spare parts lookup, and warranty tracking.
+                </p>
+              </a>
+
+              <a
+                href="/ai-commerce-platform"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Contract Pricing</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  Sub-30ms Dynamic Contract Pricing Engine
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Calculates customer-specific contract tiers, volume rebate brackets, and trade credit limits directly from ERP backends.
+                </p>
+              </a>
+
+              <a
+                href="/industries/fmcg"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Connected Industry</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  FMCG &amp; CPG AI Commerce Platform
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Empower FMCG manufacturers, distributors, and retailer networks with automated reordering and multi-pack discovery.
+                </p>
+              </a>
+
+              <a
+                href="/industries/manufacturing"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Supply Chain</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  Manufacturing Supply Chain &amp; Dealer Networks
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Connect manufacturers directly with distributor inventories, BOM parsing, and certified dealer routing.
+                </p>
+              </a>
+
+              <a
+                href="/industries/wholesalers"
+                className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-plum-900 uppercase tracking-wide">Bulk Matrix</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-plum-950 transition-all" />
+                </div>
+                <div className="text-sm font-bold text-slate-900 group-hover:text-plum-950">
+                  Wholesale Bulk Matrix &amp; RFQ Automation
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  Multi-warehouse inventory ATP checks, rapid spreadsheet BOM uploads, and 1-click purchase order conversions.
+                </p>
+              </a>
+            </div>
+          </div>
+
+          {/* Citations Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <a
+              href="https://www.naw.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">NAW Wholesale Distribution Benchmarks</div>
+                <div className="text-slate-600 mt-0.5">National Association of Wholesaler-Distributors digital ordering &amp; margin standards.</div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://www.gs1.org/standards/edi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">GS1 B2B Supply Chain &amp; EDI Standards</div>
+                <div className="text-slate-600 mt-0.5">Automated purchase orders, dispatch advices, and electronic invoice interchange protocols.</div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://www.wikidata.org/wiki/Q1549591"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">Wikidata Entity Q1549591</div>
+                <div className="text-slate-600 mt-0.5">Wholesale distribution and merchant supply network semantic entity taxonomy.</div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://www.oagi.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">OAGi Open Applications Group</div>
+                <div className="text-slate-600 mt-0.5">Interoperability standards for ERP punchout procurement and enterprise order routing.</div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://schema.org/WholesaleStore"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">Schema.org WholesaleStore Ontologies</div>
+                <div className="text-slate-600 mt-0.5">Standardized structured schema microdata representation for commercial distributor portals.</div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+
+            <a
+              href="https://ieeexplore.ieee.org/abstract/document/9308940"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 group"
+            >
+              <div>
+                <div className="font-bold text-slate-900 group-hover:text-plum-950">IEEE Neural Search for Industrial Parts</div>
+                <div className="text-slate-600 mt-0.5">Neural vector matching for engineering part cross-references and substitute recommendations.</div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-plum-950 shrink-0 mt-0.5" />
+            </a>
+          </div>
+
         </div>
       </section>
 

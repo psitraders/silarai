@@ -11,6 +11,7 @@ interface NavbarProps {
   onNavigateAbout?: () => void;
   onNavigateWhyChooseUs?: () => void;
   onNavigateShopifyComparison?: () => void;
+  onNavigateShopifyAiShoppingAssistant?: () => void;
   onNavigateWoocommerceComparison?: () => void;
   onNavigateAiCommerceMarketingPlatform?: () => void;
   onSelectAiShoppingPage?: (pageId: 1 | 2 | 3) => void;
@@ -32,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateAbout,
   onNavigateWhyChooseUs,
   onNavigateShopifyComparison,
+  onNavigateShopifyAiShoppingAssistant,
   onNavigateWoocommerceComparison,
   onNavigateAiCommerceMarketingPlatform,
   onSelectAiShoppingPage,
@@ -47,13 +49,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickNavOpen, setQuickNavOpen] = useState(false);
 
-  const handleLoginClick = () => {
-    if (onLogin) {
-      onLogin();
-    } else {
-      window.location.href = 'https://app.silarai.com/login';
-    }
-  };
   const [platformDropdownOpen, setPlatformDropdownOpen] = useState(false);
   const [industriesDropdownOpen, setIndustriesDropdownOpen] = useState(false);
   const [useCasesDropdownOpen, setUseCasesDropdownOpen] = useState(false);
@@ -283,13 +278,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Right Action CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             <button
-              onClick={handleLoginClick}
-              className="px-4 py-2 text-sm font-bold rounded-full transition-colors cursor-pointer text-slate-700 hover:text-slate-950 hover:bg-slate-100/80 border border-slate-200/90"
-            >
-              Login
-            </button>
-
-            <button
               onClick={onBookDemo}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all transform hover:scale-[1.02] active:scale-95 shadow-md bg-gradient-to-r from-[#F48C68] via-[#F47A38] to-[#E97A52] hover:from-[#F47A38] hover:to-[#DE6B44] text-white shadow-coral-500/25 cursor-pointer"
             >
@@ -301,14 +289,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Mobile Menu Button */}
           <div className="flex lg:hidden items-center gap-2">
             <button
-              onClick={onBookDemo}
-              className="px-3.5 py-1.5 text-xs font-bold rounded-full shadow-xs bg-gradient-to-r from-[#F48C68] to-[#E97A52] text-white"
-            >
-              Demo
-            </button>
-            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl transition-colors text-slate-700 hover:text-slate-950 hover:bg-slate-100"
+              className="p-2 rounded-xl transition-colors text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-darkteal-800"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -334,6 +316,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>AI Shopping Assistant</span>
               <span className="text-xs font-bold text-plum-900 bg-peach-300 px-2 py-0.5 rounded-md">Page ↗</span>
+            </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onSelectIndustry) {
+                  onSelectIndustry('ecommerce');
+                } else {
+                  scrollToSection('industries');
+                }
+              }}
+              className="w-full text-left px-3 py-2.5 text-base font-semibold text-slate-900 hover:bg-plum-50 rounded-xl flex items-center justify-between cursor-pointer"
+            >
+              <span>Ecommerce (AI Assistant)</span>
+              <span className="text-xs font-bold text-plum-900 bg-peach-300 px-2 py-0.5 rounded-md">New ↗</span>
             </button>
             <button
               onClick={() => {
@@ -366,17 +362,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 space-y-2">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleLoginClick();
-              }}
-              className="w-full py-2.5 text-sm font-extrabold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
-            >
-              <span>Login</span>
-            </button>
-
+          <div className="pt-4 border-t border-slate-200 dark:border-darkteal-800 space-y-3">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
@@ -534,6 +520,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <button
                           onClick={() => {
                             setQuickNavOpen(false);
+                            if (onSelectIndustry) onSelectIndustry('ecommerce');
+                            else scrollToSection('industries');
+                          }}
+                          className="w-full text-left px-2.5 py-1.5 rounded-xl text-plum-200 hover:text-white hover:bg-plum-800/70 transition-all flex items-center justify-between group cursor-pointer border border-transparent hover:border-plum-700/50"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-peach-300 group-hover:scale-125 transition-all shrink-0"></span>
+                            <span className="text-xs font-semibold text-peach-300 group-hover:text-peach-200 transition-colors truncate">
+                              Ecommerce (AI Assistant)
+                            </span>
+                          </div>
+                          <ArrowRight className="w-3 h-3 text-peach-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
+                        </button>
+                      </li>
+
+                      <li>
+                        <button
+                          onClick={() => {
+                            setQuickNavOpen(false);
                             if (onSelectIndustry) onSelectIndustry('fmcg');
                             else scrollToSection('industries');
                           }}
@@ -543,6 +548,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                             <span className="w-1.5 h-1.5 rounded-full bg-peach-400/80 group-hover:bg-peach-300 group-hover:scale-125 transition-all shrink-0"></span>
                             <span className="text-xs font-medium group-hover:font-semibold group-hover:text-peach-200 transition-colors truncate">
                               FMCG &amp; Packaged Goods
+                            </span>
+                          </div>
+                          <ArrowRight className="w-3 h-3 text-peach-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
+                        </button>
+                      </li>
+
+                      <li>
+                        <button
+                          onClick={() => {
+                            setQuickNavOpen(false);
+                            if (onSelectIndustry) onSelectIndustry('fmcg-retailer-ordering-solution');
+                            else scrollToSection('industries');
+                          }}
+                          className="w-full text-left px-2.5 py-1.5 rounded-xl text-plum-200 hover:text-white hover:bg-plum-800/70 transition-all flex items-center justify-between group cursor-pointer border border-transparent hover:border-plum-700/50 pl-5"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-peach-300 group-hover:scale-125 transition-all shrink-0"></span>
+                            <span className="text-xs font-medium text-peach-300 group-hover:text-peach-200 transition-colors truncate flex items-center gap-1.5">
+                              <span>↳ Retailer Ordering Solution</span>
+                              <span className="text-[9px] font-bold bg-peach-300/30 text-peach-200 px-1 py-0.2 rounded border border-peach-300/40">AI</span>
                             </span>
                           </div>
                           <ArrowRight className="w-3 h-3 text-peach-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -609,8 +634,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </li>
 
                       <li>
-                        <button
-                          onClick={() => {
+                        <a
+                          href="/industries/distributors"
+                          onClick={(e) => {
+                            e.preventDefault();
                             setQuickNavOpen(false);
                             if (onSelectIndustry) onSelectIndustry('distributors');
                             else scrollToSection('industries');
@@ -624,7 +651,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                             </span>
                           </div>
                           <ArrowRight className="w-3 h-3 text-peach-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
-                        </button>
+                        </a>
                       </li>
 
                       <li>
@@ -785,6 +812,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                             <span className="w-1.5 h-1.5 rounded-full bg-peach-400/80 group-hover:bg-peach-300 group-hover:scale-125 transition-all shrink-0"></span>
                             <span className="text-xs font-medium group-hover:font-semibold group-hover:text-peach-200 transition-colors truncate">
                               Shopify vs SilarAI Platform
+                            </span>
+                          </div>
+                          <ArrowRight className="w-3 h-3 text-peach-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          onClick={() => {
+                            setQuickNavOpen(false);
+                            if (onNavigateShopifyAiShoppingAssistant) onNavigateShopifyAiShoppingAssistant();
+                          }}
+                          className="w-full text-left px-2.5 py-1.5 rounded-xl text-plum-200 hover:text-white hover:bg-plum-800/70 transition-all flex items-center justify-between group cursor-pointer border border-transparent hover:border-plum-700/50"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#F47A38] group-hover:scale-125 transition-all shrink-0"></span>
+                            <span className="text-xs font-medium group-hover:font-semibold group-hover:text-peach-200 transition-colors truncate">
+                              Shopify AI Shopping Assistant
                             </span>
                           </div>
                           <ArrowRight className="w-3 h-3 text-peach-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />

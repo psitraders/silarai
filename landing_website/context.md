@@ -3,7 +3,7 @@
 > **Authoritative project reference.** Read this before implementing features, fixing bugs, or refactoring.
 > Update this file whenever architecture, behaviour, workflows, or features change.
 
-Last updated: 2026-09-20
+Last updated: 2026-10-19
 
 ---
 
@@ -68,19 +68,22 @@ landing_website/
 │   │   ├── sectors.ts       # 11 sector definitions driving /sector/:slug (SectorLandingPage)
 │   │   ├── pricingData.ts   # Plan/tier data consumed by PricingSection and content.ts
 │   │   └── authoritativeBacklinks.ts  # Semantic backlink corpus + helpers
-│   ├── lib/                 # ⚠️ DORMANT WordPress clients — see §4.6
+│   ├── lib/                 # clientAiAssistant.ts (chat widget reply engine) + ⚠️ DORMANT WordPress clients (§4.6)
 │   ├── server/              # Misnomer: build-time data only, no server runtime
 │   │   ├── knowledgeGraph.ts       # D2C knowledge graph (nodes/relationships + ASCII)
 │   │   └── ragDiscoveryEngine.ts   # RAG chunks, AEO Q&A, OpenAPI spec, plugin manifest
 │   └── assets/images/       # Logo concepts & hero imagery (webp — 29 files, ~1.4 MB)
 ├── scripts/
-│   └── generate-static-discovery.mts  # Build-time SEO/AI file generator
+│   ├── generate-static-discovery.mts  # Build-time SEO/AI file generator
+│   └── normalize-import.py  # Dev tool for import rounds (URL normalisation) — see PORTING.md
+├── PORTING.md               # Checklist + standing rules for porting an AI Studio export
 ├── public/
 │   ├── staticwebapp.config.json  # Azure SWA config (copied to dist/ by Vite)
 │   ├── og-image.jpg         # Absolute OG/Twitter card image referenced by index.html
+│   ├── manifest.webmanifest # PWA manifest (theme #245668), linked from index.html
 │   └── assets/images/       # webp copies served at stable absolute URLs, for JSON-LD
 │                            #   `logo` fields that cannot use a bundled hashed path
-├── vite.config.ts           # `@` alias → project root; HMR toggle via DISABLE_HMR
+├── vite.config.ts           # `@` alias; HMR toggle via DISABLE_HMR; build-only HTML perf plugin (§9)
 └── .env.example             # SITE_URL (forms need no configuration)
 ```
 
@@ -92,6 +95,9 @@ landing_website/
 
 ### 4.0 `imported_landing_website/` — do not build from it
 
+> **The step-by-step porting checklist, adaptation rules, exclusions and decisions log
+> live in [`PORTING.md`](PORTING.md).** This section keeps the background.
+
 The repo root also holds `imported_landing_website/`, a Google AI Studio export of this
 same site. **It is a reference folder, not a second app**, and is **gitignored** (root
 `.gitignore`) so it never reaches the repo or a build. It still contains the
@@ -101,8 +107,8 @@ hand-written `public/sitemap.xml` / `llms.txt` / `robots.txt` / `.well-known/*`,
 `package.json` depending on `express`, `nodemailer` and `@google/genai`.
 
 Its SEO/UI work was merged into `landing_website/` on 2026-09-14, again on 2026-09-16,
-and a full refresh on 2026-09-20 (see `changes.md`). When merging anything else from it,
-four things must be adapted rather than copied:
+a full refresh on 2026-09-20, and another round on 2026-10-19 (see `changes.md`). When merging anything else from it,
+five things must be adapted rather than copied:
 
 1. **`/api/*` URLs are dead** — this build has no backend. Knowledge surfaces are the
    generated `/ai/*.json` files (§4.4); forms hand off via `mailto:` (§4.7). The import
@@ -111,16 +117,24 @@ four things must be adapted rather than copied:
    the generated OpenAPI spec and citation backlinks, so a crawler following one gets
    `index.html` with a 200 (the SWA navigation fallback) instead of JSON. Repoint them.
 2. **Forms must not report false success**, and must read contact details from
-   `src/config/forms.ts` rather than hardcoding them. The import hardcodes
-   `psitraders@outlook.com` and builds its own `mailto:` string with no length guard.
+   `src/config/forms.ts` rather than hardcoding them. The import hardcodes an inbox
+   (`psitraders@outlook.com` until 2026-09-20, `sales@silarai.com` from 2026-10-19 —
+   `silarai.com` has no MX record) and builds its own `mailto:` string with no length guard.
 3. **Static files under `public/`** are generated at build time here — copying the
    import's `sitemap.xml` / `llms.txt` / `robots.txt` / `ai/` / `.well-known/` would
    shadow the generator's output. Its `public/api/` and `public/_headers` /
    `public/_redirects` belong to the retired Express/Cloudflare setup.
-4. **`FloatingAiAssistantWidget` is deliberately not ported.** The import's version is a
-   real chatbot that calls `POST /api/chat` (Gemini) and `POST /api/leads`. This site's
-   widget stays the client-side canned-reply demo. Re-check this on every import round —
-   it is the single largest backend dependency in the import's `src/`.
+4. **`FloatingAiAssistantWidget` must stay backend-free and honest.** Until 2026-09-20 the
+   import's widget called `POST /api/chat` (Gemini) and `POST /api/leads` and was not
+   ported. From 2026-10-19 it is client-side (`src/lib/clientAiAssistant.ts`) and **was
+   ported**, but its lead form only wrote `localStorage` while claiming the enquiry was
+   "dispatched"; ours hands off via `mailto:` like the other forms (§4.7). Re-check both
+   points on every round.
+5. **URLs: apex host, no trailing slashes, sub-pages keep their URLs.** From 2026-10-19 the
+   import canonicalises on `https://www.silarai.com` (NXDOMAIN) with trailing slashes,
+   collapses the 12 sub-page URLs into their parents and ships `src/lib/canonicalUrls.ts`
+   whose "301s" run only in the Vite dev server. None of that is ported; a URL migration
+   would be its own planned change (see §11).
 
 **Deliberately excluded from this site (user decision, reaffirmed 2026-09-20):** the
 import's author-facing SEO tooling — `BacklinkAuthorityHub`, `PartnerOutreachSuggester`,
@@ -150,11 +164,19 @@ only while open. Routing works by:
 'home' | 'about' | 'contact-us' | 'ai-shopping-assistant' | 'ai-commerce-platform'
 | 'why-choose-us' | 'shopify-comparison' | 'woocommerce-comparison' | 'retail-commerce'
 | 'd2c-brands' | 'distributors' | 'wholesalers' | 'manufacturing' | 'fmcg-commerce' | 'fmcg'
+| 'ai-commerce-marketing-platform' | 'sector-landing' | 'shopify-ai-shopping-assistant'
+| 'ecommerce' | 'fmcg-retailer-ordering-solution'
 ```
+
+Route matching reads the path through `getPathname()`, which strips a trailing slash
+(`/about/` resolves like `/about`). This is inbound tolerance only — the URL scheme and
+canonicals stay slash-free. `handleNavigateToUrl(url)` navigates to any site URL by
+pushing it and dispatching `popstate`, so the router resolves it (used where a component
+hands back a URL rather than a view id, e.g. `DistributorsBacklinkHub`).
 
 Sub-page state is tracked separately: `aiShoppingSubPage`, `aiCommerceSubPage`, `d2cSubPage`, `manufacturingSubPage` (each `1 | 2 | 3`), plus `activeUseCaseSlug` (from `/use-cases/:slug`) and `activeIndustryId` (from `?industry=`).
 
-Note: `path.startsWith('/industries/')` is the **last** industry branch and acts as a catch-all → any unmatched `/industries/*` URL renders the Manufacturing page.
+Note: `path.startsWith('/industries/')` is the **last** industry branch — new `/industries/*` routes must be matched before it and acts as a catch-all → any unmatched `/industries/*` URL renders the Manufacturing page.
 
 ### 4.2 Route map
 
@@ -174,6 +196,9 @@ Note: `path.startsWith('/industries/')` is the **last** industry branch and acts
 | `/industries/wholesalers`, `?page=wholesalers` | `WholesalersIndustryPage` |
 | `/industries/manufacturing[/ai-commerce-platform\|/ai-shopping-sales-assistant\|/dealer-distributor-commerce]` and any other `/industries/*` | `ManufacturingIndustryPage` |
 | `/fmcg`, `/fmcg-commerce`, `/industries/fmcg` | `FmcgIndustryPage` |
+| `/industries/fmcg/retailer-ordering-solution`, `?page=fmcg-retailer-ordering` | `FmcgRetailerOrderingPage` (added 2026-10-19) |
+| `/industries/ecommerce`, `/ecommerce`, `/ecommerce-ai-shopping-assistant`, `?page=ecommerce` | `EcommerceIndustryPage` (added 2026-10-19) |
+| `/shopify-ai-shopping-assistant`, `/integrations/shopify-ai-shopping-assistant`, `?page=shopify-ai-shopping-assistant` | `ShopifyAiShoppingAssistantPage` (added 2026-10-19) |
 | `/ai-commerce-marketing-platform` | `AiCommerceMarketingPlatformPage` — pillar page for the "AI Commerce & Marketing Platform" cluster |
 | `/sector/:slug`, `?sector=:slug`, `?page=sector` | `SectorLandingPage`, one view per `data/sectors.ts` entry (11: boutiques, b2b2c, jeweller, home-sellers, beauty-brands, food-packaging, handicrafts, cosmetic-wellness, small-medium-fmcg, distributors, wholesalers). Defaults to `boutiques`. Note the in-app sector switcher pushes the `?sector=` form, while the sitemap publishes the `/sector/:slug` form; both resolve. |
 | `/use-cases/:slug` | Home with `UseCasesSection` deep-linked |
@@ -189,7 +214,9 @@ A side-effect-only component. On every `currentView` / sub-page change it impera
 - sets OG + Twitter tags and the `<link rel="canonical">`
 - injects per-view **JSON-LD** schema
 
-Metadata lives in one big `getPageMetadata(...)` `switch` keyed by `currentView` (+ sub-page). Cases exist for: `contact-us`, `about`, `why-choose-us`, `shopify-comparison`, `woocommerce-comparison`, `ai-shopping-assistant`, `ai-commerce-marketing-platform`, `ai-commerce-platform`, `retail-commerce`, `d2c-brands`, `distributors`, `manufacturing`, `wholesalers`, `fmcg-commerce`/`fmcg`, `home`/`default`.
+Metadata lives in one big `getPageMetadata(...)` `switch` keyed by `currentView` (+ sub-page). Cases exist for: `sector-landing`, `contact-us`, `about`, `why-choose-us`, `shopify-comparison`, `shopify-ai-shopping-assistant`, `woocommerce-comparison`, `ai-shopping-assistant`, `ai-commerce-marketing-platform`, `ai-commerce-platform`, `retail-commerce`, `ecommerce`, `d2c-brands`, `distributors`, `manufacturing`, `wholesalers`, `fmcg-commerce`/`fmcg`, `fmcg-retailer-ordering-solution`, `home`/`default`.
+
+Since 2026-10-19 all URLs are built from a fixed `CANONICAL_HOST = 'https://silarai.com'` (previously `window.location.origin`, which canonicalised preview hosts to themselves), and the Organization JSON-LD email comes from `CONTACT_EMAIL` in `src/config/forms.ts`.
 
 **Adding a view means adding a `case` here**, otherwise it silently falls through to the generic homepage metadata. (The FMCG page had exactly this defect until 2026-09-14.)
 
@@ -219,7 +246,7 @@ Generated output:
 
 | File | Contents |
 |---|---|
-| `sitemap.xml` | 63 URLs, built from `SITE_ARCHITECTURE` + sub-pages + `SECTORS` + use cases + discovery files |
+| `sitemap.xml` | 66 URLs, built from `SITE_ARCHITECTURE` + sub-pages + `SECTORS` + use cases + discovery files |
 | `robots.txt` | Crawl directives incl. explicit allows for GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot, Google-Extended, etc. |
 | `llms.txt`, `llms-full.txt` | GEO knowledge documents (also mirrored under `/.well-known/`) |
 | `ai-manifest.json` | AI agent discovery manifest |
@@ -255,7 +282,7 @@ To re-enable, either enable CORS on the WordPress host and call `wp-json` direct
 
 ### 4.7 Demo request flow
 
-`BookDemoModal` and `ContactUsPage` build a pre-filled `mailto:` URL with `buildMailtoUrl()` from `src/config/forms.ts` and open the visitor's own mail client. **Nothing is delivered until the visitor presses Send in their mail app** — there is no server, no form service, and no API key.
+`BookDemoModal`, `ContactUsPage` and the chat widget's lead form (`FloatingAiAssistantWidget`, since 2026-10-19) build a pre-filled `mailto:` URL with `buildMailtoUrl()` from `src/config/forms.ts` and open the visitor's own mail client. **Nothing is delivered until the visitor presses Send in their mail app** — there is no server, no form service, and no API key.
 
 - `src/config/forms.ts` is the single source of truth for `CONTACT_EMAIL`, `CONTACT_PHONE`, `CONTACT_LEGAL_NAME` and `CONTACT_ADDRESS`. Change the destination inbox there and both forms follow.
 - Confirmation copy says "press Send", never "sent" — the visitor has not sent anything yet at that point. Keep it that way.
@@ -317,6 +344,7 @@ As of 2026-09-20 **only `Navbar`, `HeroSection` and the three layout primitives 
 `AboutPage`, `ContactUsPage`, `WhyChoosePage`, `ShopifyComparisonPage`, `WoocommerceComparisonPage`, `AiShoppingAssistantPages` (3 sub-pages), `AiCommercePlatformPages` (3 sub-pages), `AiCommerceMarketingPlatformPage`, and six industry pages (`RetailIndustryPage`, `D2cIndustryPage`, `DistributorsIndustryPage`, `WholesalersIndustryPage`, `ManufacturingIndustryPage`, `FmcgIndustryPage`). Industry pages are the largest files in the repo (1000–1950 lines each) and are largely self-contained copy + layout.
 
 - **`AiCommerceMarketingPlatformPage`** (added 2026-09-20, ~1,050 lines) — the pillar page for the "AI Commerce & Marketing Platform" keyword cluster. `SeoHead` had carried its metadata case since 2026-09-14 with no route behind it; the route now exists.
+- **`ShopifyAiShoppingAssistantPage`**, **`EcommerceIndustryPage`**, **`FmcgRetailerOrderingPage`** (added 2026-10-19, ~1,300–1,700 lines each) — self-contained copy + layout pages; routes in §4.2. The FMCG page links to the retailer-ordering page, and `IndustriesSection` / `Footer` / `Navbar` link to all three.
 - **`SectorLandingPage`** (added 2026-09-20, ~800 lines) — one templated page per `data/sectors.ts` entry, rendered for `/sector/:slug`. It is the only page driven entirely by data: adding a sector to `SECTORS` creates the page, its nav entry and its sitemap URL with no component change. Four industry pages and `SeoHead` also read `SECTORS`.
 
 ### Interactive
@@ -324,7 +352,7 @@ As of 2026-09-20 **only `Navbar`, `HeroSection` and the three layout primitives 
 - **`ProductTourModal`** — static tour walkthrough.
 - **`AiDiscoveryModal`** — developer/AI-crawler facing panel listing the static discovery files under `/ai/`, `/llms.txt` and `/.well-known/`. Filters RAG chunks client-side over the imported constants.
 - **`RoiCalculator`** (inside `PricingSection`) — recharts area/bar/line chart; inputs traffic, AOV, conversion rate, conversion uplift, AOV boost, timeframe, presets; all derived values via `useMemo`.
-- **`FloatingAiAssistantWidget`** — **demo only**. Canned keyword-matched replies on a `setTimeout`; no backend, no LLM call.
+- **`FloatingAiAssistantWidget`** — client-side assistant (replaced 2026-10-19). Keyword-matched replies from `src/lib/clientAiAssistant.ts` on a `setTimeout`; no backend, no LLM call. Its "Request Callback / Quote" tab hands off via `mailto:` to `CONTACT_EMAIL` (§4.7) and says "press Send"; a device-local copy goes to `localStorage` (`silarai_leads`).
 - **`DistributorsBacklinkHub`** — renders the backlink corpus inside `DistributorsIndustryPage`.
 
 ### Unused / dead code
@@ -381,6 +409,8 @@ Build: `npm run build` → output `dist/`.
 - **`routes`** — immutable caching for `/assets/*`, 1-hour caching and `Access-Control-Allow-Origin: *` for the AI knowledge files (so crawlers and agents can fetch them cross-origin), no-cache for `index.html`
 - **`responseOverrides.404`** → rewrite to `/index.html` with status 200
 
+`vite.config.ts` adds a **build-only** `htmlPerformancePlugin` (2026-10-19): the main stylesheet loads non-blocking (`media="print"` swap + `<noscript>` fallback), the hero image (`shopping_assistant_ui*.webp`, the LCP element) is preloaded, and a small inline `<style id="critical-theme">` sets base colours/typography to avoid a flash of unstyled content. `/*.webmanifest` is in the `navigationFallback` exclusions.
+
 The former 301 redirects for legacy WordPress paths (`/blog*`, `/wp-content*`, `/wp-admin*`, `/wp-login.php`, `/feed*` → `blog.silarai.com`) were **removed on 2026-09-04** — the WordPress blog was retired rather than migrated. See `DEPLOYMENT.md`'s status note for the full picture.
 
 ### Domain layout
@@ -426,11 +456,11 @@ Ordered by impact.
 1. **No MX record for `silarai.com` (live, 2026-09-04).** `info@silarai.com` cannot receive mail. **Enquiries are no longer affected** — forms now route to `psitraders@outlook.com`, an Outlook mailbox on a different domain. Still worth fixing so `@silarai.com` addresses work at all; needs an MX record in Cloudflare pointing at whatever host serves that mailbox (the `hostingermail-a/b/c` DKIM CNAMEs suggest Hostinger Email). See `DEPLOYMENT.md` status note.
 2. **`www.silarai.com` does not resolve (live, 2026-09-04).** NXDOMAIN. Needs a `CNAME www` → the SWA hostname in Cloudflare, set to redirect to the apex.
 3. **No prerendering.** All per-page metadata and JSON-LD is applied by JS after load, so non-JS crawlers (GPTBot, ClaudeBot, PerplexityBot, Bing, LinkedIn, Slack) see homepage metadata on all 63 routes. This undercuts the entire GEO/AEO strategy, and grew with the 11 sector pages added 2026-09-20 — they are templated from one component, so without prerendering they are indistinguishable to a non-JS crawler. Deliberately deferred to a separate change; it touches the router and build pipeline.
-4. **Deliberately not merged from `imported_landing_website/` (see §4.0):** the import's `FloatingAiAssistantWidget` (needs a `/api/chat` Gemini backend), its author-facing SEO tooling (~3,700 lines, publicly reachable in the import), and `AiDiscoveryModal` (the import weaves the excluded `SearchPreviewPane` into it). Re-check each on every import round — the export regenerates them every time. *The three items listed here previously — the hero rework, `AiCommerceMarketingPlatformPage` and the remaining internal-linking clusters — were all merged on 2026-09-20.*
+4. **Deliberately not merged from `imported_landing_website/` (see §4.0 and `PORTING.md`):** its author-facing SEO tooling (~3,700 lines, publicly reachable in the import), and `AiDiscoveryModal` (the import weaves the excluded `SearchPreviewPane` into it). Re-check each on every import round — the export regenerates them every time. *The three items listed here previously — the hero rework, `AiCommerceMarketingPlatformPage` and the remaining internal-linking clusters — were all merged on 2026-09-20.*
 5. **Route logic duplicated** in `App.tsx` (`useState` initialiser vs `handlePopState`) — easy source of deep-link bugs.
 6. **`mailto:` handoff has inherent leakage.** A visitor with no mail client registered (webmail-only, managed device, some mobile browsers) sees nothing happen; the copyable fallback mitigates but does not eliminate this. There is also no record of enquiries that were composed but never sent, and no way to measure that drop-off. If lead volume matters more than avoiding a third party, a hosted form service is the fix.
 7. **No form validation beyond `required` on name/email.** Not a spam risk any more (no endpoint), but malformed input still reaches the mail body verbatim.
-8. **`FloatingAiAssistantWidget` is a mock** — hardcoded client-side replies, no LLM backend. It presents as a live product demo. This is now a standing decision, not an oversight: the import ships a real `/api/chat` version each round and it is deliberately not taken, because the site has no backend (§4.0).
+8. **`FloatingAiAssistantWidget` answers from canned client-side rules**, no LLM backend, while presenting as a live assistant ("Sub-100ms vector answers"). Standing decision (no backend); its lead form is honest since 2026-10-19.
 9. **WordPress integration dormant** (§4.6) — ~620 lines retained but non-functional, and now more likely to stay that way since the blog itself was retired rather than fixed.
 10. **Dead components**: `DashboardSection.tsx`, `LogoConceptsModal.tsx`.
 11. **Bundle size** — measured 2026-09-20: `dist/` totals 4.8 MB across ~60 chunks, with a 425 KB (126 KB gzip) entry chunk. The two heaviest lazy chunks are `RoiCalculator` (434 KB — it pulls in recharts) and `D2cIndustryPage` (84 KB). The single-1.72 MB-chunk problem is gone; the remaining win is deferring recharts further, plus gap 14.
@@ -439,3 +469,6 @@ Ordered by impact.
 14. **Knowledge data ships twice** — once in the JS bundle (imported by `AiDiscoveryModal` / `DistributorsBacklinkHub`) and once as static JSON. Fetching the JSON at runtime instead would cut bundle size.
 15. **`public/assets/images/` ships 30 webp files but only `silarai_official_logo.webp` is referenced** (by `SeoHead` and `ragDiscoveryEngine` JSON-LD `logo` fields, which need a stable absolute URL rather than a bundled hashed path). The rest came in with the 2026-09-20 import. Harmless (~1 MB) but prunable.
 16. **The sector switcher and the sitemap use different URL forms for the same page** — the in-app switcher pushes `?sector=:slug`, the sitemap publishes `/sector/:slug`. Both resolve, but a visitor who lands on the canonical path and then switches sectors ends up on the query form, so shared URLs are inconsistent. Worth normalising on `/sector/:slug`.
+17. **URL migration from the 2026-10-19 import is deferred.** The export wants `www` + trailing slashes, `/commerce-platform` as the platform canonical, and the 12 sub-page URLs collapsed into their parents. If adopted it needs: `www` DNS + redirect first, real 301s in `staticwebapp.config.json` (the export's are Vite-dev-only), one consistent canonical per page across `SeoHead`/`seoMetaTable`/sitemap, and router updates.
+18. **Unverified public claims.** JSON-LD carries `aggregateRating`/`reviewCount` values (e.g. 4.95 / 248) and the Footer's "Security" link claims SOC2 Type II certification; with no live customers these are not backed by data. Self-serving or unverifiable review markup risks a Google structured-data manual action.
+19. **`info@silarai.com`** is still published as `contact_email` in the generated `ai-plugin.json` / RAG org data (`src/server/ragDiscoveryEngine.ts`) while `silarai.com` has no MX.

@@ -1,7 +1,7 @@
 export interface AuthoritativeBacklink {
   id: string;
   entity: string;
-  category: 'Distributors' | 'Pillar' | 'Technology' | 'Manufacturing' | 'D2C' | 'Retail' | 'Integrations' | 'Standards';
+  category: 'Distributors' | 'Pillar' | 'Technology' | 'Manufacturing' | 'D2C' | 'Retail' | 'Integrations' | 'Standards' | 'Ecommerce' | 'FMCG';
   canonicalUrl: string;
   targetKeywords: string[];
   wikidataUri?: string;
@@ -23,7 +23,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-01',
     entity: 'AI Commerce Platform for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors',
+    canonicalUrl: 'https://silarai.com/industries/distributors',
     targetKeywords: ['AI Commerce Platform for Distributors', 'Distributor Commerce Platform', 'Distribution AI Software', 'B2B Distribution Ordering Platform'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q852331',
     dbpediaUri: 'http://dbpedia.org/resource/Wholesaling',
@@ -44,7 +44,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-02',
     entity: 'AI Shopping Assistant for Wholesale Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#ai-assistant',
+    canonicalUrl: 'https://silarai.com/industries/distributors#ai-assistant',
     targetKeywords: ['AI Shopping Assistant for Distributors', 'Distributor AI Buying Agent', 'Conversational Distributor Commerce', 'B2B Wholesale Shopping Assistant'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q1151624',
     dbpediaUri: 'http://dbpedia.org/resource/Chatbot',
@@ -65,7 +65,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-03',
     entity: 'Customer-Specific Pricing & Tier Matrix Engine for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#contract-pricing',
+    canonicalUrl: 'https://silarai.com/industries/distributors#contract-pricing',
     targetKeywords: ['Customer-Specific Pricing for Distributors', 'Distributor Tier Pricing Matrix', 'B2B Contract Pricing Engine', 'Wholesale Price Book Automation'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q160151',
     dbpediaUri: 'http://dbpedia.org/resource/Pricing',
@@ -84,7 +84,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-04',
     entity: 'Dealer & Distributor Ordering Portal Software',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#dealer-portal',
+    canonicalUrl: 'https://silarai.com/industries/distributors#dealer-portal',
     targetKeywords: ['Dealer Portal Software', 'Distributor Ordering Portal', 'B2B Dealer Self-Service Platform', 'Authorized Dealer Portal'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q798606',
     dbpediaUri: 'http://dbpedia.org/resource/Web_portal',
@@ -103,7 +103,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-05',
     entity: 'Real-Time Available-to-Promise (ATP) Inventory for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#inventory-atp',
+    canonicalUrl: 'https://silarai.com/industries/distributors#inventory-atp',
     targetKeywords: ['ATP Inventory for Distributors', 'Available to Promise Inventory Sync', 'Multi-Warehouse Stock Visibility', 'Real-Time Distribution Inventory'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q563283',
     dbpediaUri: 'http://dbpedia.org/resource/Inventory',
@@ -121,7 +121,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-06',
     entity: 'Matrix Bulk Ordering & Quick Order Pad for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#matrix-ordering',
+    canonicalUrl: 'https://silarai.com/industries/distributors#matrix-ordering',
     targetKeywords: ['Matrix Bulk Ordering', 'Wholesale Quick Order Pad', 'CSV Bulk Order Upload', 'SKU Grid Reordering'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q180160',
     dbpediaUri: 'http://dbpedia.org/resource/Electronic_commerce',
@@ -139,7 +139,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-07',
     entity: 'Electrical Supply Distributors AI Commerce',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#electrical-supply',
+    canonicalUrl: 'https://silarai.com/industries/distributors#electrical-supply',
     targetKeywords: ['Electrical Supply Distributors AI', 'Electrical Wholesale Ecommerce', 'Wire Cable Conduit Catalog Search', 'Electrical Contractor Portal'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q380641',
     dbpediaUri: 'http://dbpedia.org/resource/Electrical_engineering',
@@ -157,7 +157,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-08',
     entity: 'Industrial Supply & MRO Distributors Platform',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#industrial-mro',
+    canonicalUrl: 'https://silarai.com/industries/distributors#industrial-mro',
     targetKeywords: ['Industrial Supply Distributors AI', 'MRO Distribution Ecommerce', 'Bearings Fasteners Safety Supplies AI', 'Industrial Vending Sync'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q187939',
     dbpediaUri: 'http://dbpedia.org/resource/Maintenance,_repair,_and_operations',
@@ -175,7 +175,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-09',
     entity: 'Automotive Aftermarket & Spares Distributors AI',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#automotive-aftermarket',
+    canonicalUrl: 'https://silarai.com/industries/distributors#automotive-aftermarket',
     targetKeywords: ['Automotive Aftermarket Distributors AI', 'ACES PIES Auto Parts Search', 'VIN Fitment Verification AI', 'Auto Spares Distribution Portal'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q1420',
     dbpediaUri: 'http://dbpedia.org/resource/Automotive_aftermarket',
@@ -193,7 +193,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-10',
     entity: 'Chemical & Polymer Distributors Commerce Platform',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#chemical-distribution',
+    canonicalUrl: 'https://silarai.com/industries/distributors#chemical-distribution',
     targetKeywords: ['Chemical Distributors Commerce', 'SDS COA Document Automation', 'Hazardous Materials Logistics AI', 'Bulk Chemical Ordering Portal'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q11173',
     dbpediaUri: 'http://dbpedia.org/resource/Chemical_industry',
@@ -211,7 +211,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-11',
     entity: 'Healthcare & Medical Supplies Distributors Platform',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#medical-supplies',
+    canonicalUrl: 'https://silarai.com/industries/distributors#medical-supplies',
     targetKeywords: ['Medical Supply Distributors AI', 'Healthcare Distribution Portal', 'FDA UDI Verification AI', 'Hospital Procurement Commerce'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q12147',
     dbpediaUri: 'http://dbpedia.org/resource/Health_care',
@@ -229,7 +229,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-12',
     entity: 'Food & Beverage Wholesale Distributors Platform',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#food-beverage',
+    canonicalUrl: 'https://silarai.com/industries/distributors#food-beverage',
     targetKeywords: ['Food Beverage Distributors AI', 'Perishable Food Wholesale Portal', 'Catch Weight Pricing Engine', 'Restaurant Supply Ecommerce'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q2095',
     dbpediaUri: 'http://dbpedia.org/resource/Food_industry',
@@ -247,7 +247,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-13',
     entity: 'Building Materials & Lumber Distributors AI',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#building-materials',
+    canonicalUrl: 'https://silarai.com/industries/distributors#building-materials',
     targetKeywords: ['Building Materials Distributors AI', 'Lumber Yard Ecommerce Software', 'Contractor Job Site Quotations', 'Drywall Roofing Distribution'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q41176',
     dbpediaUri: 'http://dbpedia.org/resource/Building_material',
@@ -265,7 +265,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-14',
     entity: 'Plumbing & HVAC Distributors Commerce Platform',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#plumbing-hvac',
+    canonicalUrl: 'https://silarai.com/industries/distributors#plumbing-hvac',
     targetKeywords: ['HVAC Distributors AI Commerce', 'Plumbing Supply Wholesale Portal', 'SEER Rating Equipment Search', 'Contractor Truck Stock Replenishment'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q753559',
     dbpediaUri: 'http://dbpedia.org/resource/HVAC',
@@ -283,7 +283,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-15',
     entity: 'Agricultural & Farm Supply Distributors AI',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#agricultural-supply',
+    canonicalUrl: 'https://silarai.com/industries/distributors#agricultural-supply',
     targetKeywords: ['Agricultural Supply Distributors AI', 'Crop Seed Fertilizer Wholesale', 'Agronomy Application Calculators', 'Farm Equipment Spares Portal'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q11451',
     dbpediaUri: 'http://dbpedia.org/resource/Agriculture',
@@ -301,7 +301,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-16',
     entity: 'Fastener & Hardware Distributors Portal',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#fastener-hardware',
+    canonicalUrl: 'https://silarai.com/industries/distributors#fastener-hardware',
     targetKeywords: ['Fastener Distributors Portal', 'Metric Imperial Thread Search AI', 'Wholesale Hardware Ecommerce', 'Bin Stock Replenishment AI'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q83021',
     dbpediaUri: 'http://dbpedia.org/resource/Fastener',
@@ -319,7 +319,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-17',
     entity: 'Electronics & Semiconductor Component Distributors AI',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#electronics-components',
+    canonicalUrl: 'https://silarai.com/industries/distributors#electronics-components',
     targetKeywords: ['Electronic Component Distributors AI', 'BOM Bill of Materials Upload AI', 'Parametric Component Search', 'Reel Cut Tape Wholesale Pricing'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q242125',
     dbpediaUri: 'http://dbpedia.org/resource/Electronic_component',
@@ -337,7 +337,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-18',
     entity: 'Packaging & Janitorial Supply Distributors Commerce',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#packaging-janitorial',
+    canonicalUrl: 'https://silarai.com/industries/distributors#packaging-janitorial',
     targetKeywords: ['Packaging Distributors AI', 'JanSan Wholesale Ecommerce', 'Corrugated Box Custom Sizing AI', 'Bulk Sanitation Supplies Portal'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q207822',
     dbpediaUri: 'http://dbpedia.org/resource/Packaging_and_labeling',
@@ -355,7 +355,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-19',
     entity: 'Distribution ERP Integration Hub: SAP, Oracle & Microsoft Dynamics',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#erp-integration',
+    canonicalUrl: 'https://silarai.com/industries/distributors#erp-integration',
     targetKeywords: ['Distribution ERP Integration', 'SAP Distributor Ecommerce', 'NetSuite Wholesale Connector', 'Dynamics 365 Supply Chain AI'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q131201',
     dbpediaUri: 'http://dbpedia.org/resource/Enterprise_resource_planning',
@@ -373,7 +373,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-20',
     entity: 'Automated RFQ & Quotation Management for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#rfq-automation',
+    canonicalUrl: 'https://silarai.com/industries/distributors#rfq-automation',
     targetKeywords: ['Distributor RFQ Automation', 'Wholesale Quotation Software', 'Instant PDF Quote Generator', 'Sales Rep Quote Approval Workflow'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q652875',
     dbpediaUri: 'http://dbpedia.org/resource/Request_for_quotation',
@@ -391,7 +391,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-21',
     entity: 'Exploded Spare Parts Diagram & Interactive Schematics for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#exploded-diagrams',
+    canonicalUrl: 'https://silarai.com/industries/distributors#exploded-diagrams',
     targetKeywords: ['Exploded Parts Diagrams AI', 'Interactive Schematics Viewer', 'Distributor OEM Spare Parts Finder', 'Hotspot Click-to-Cart Parts'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q1193829',
     dbpediaUri: 'http://dbpedia.org/resource/Exploded-view_drawing',
@@ -409,7 +409,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-22',
     entity: 'Credit Terms & Net 30/60/90 Invoice Management for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#credit-terms',
+    canonicalUrl: 'https://silarai.com/industries/distributors#credit-terms',
     targetKeywords: ['Distributor Credit Terms Management', 'Net 30 60 90 Invoice Management', 'Automated Credit Hold Verification', 'Wholesale AR Portal'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q189569',
     dbpediaUri: 'http://dbpedia.org/resource/Trade_credit',
@@ -427,7 +427,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-23',
     entity: 'Field Sales Mobile Copilot for Distribution Reps',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#field-sales',
+    canonicalUrl: 'https://silarai.com/industries/distributors#field-sales',
     targetKeywords: ['Field Sales Mobile Copilot', 'Distributor Rep Mobile App', 'On-Site Barcode Scanning Orders', 'Rep Order on Behalf of Customer'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q7404313',
     dbpediaUri: 'http://dbpedia.org/resource/Sales_enablement',
@@ -445,7 +445,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-24',
     entity: 'PunchOut cXML & OCI Procurement Gateway for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#punchout-cxml',
+    canonicalUrl: 'https://silarai.com/industries/distributors#punchout-cxml',
     targetKeywords: ['PunchOut cXML Distributors', 'SAP Ariba OCI Integration', 'Coupa PunchOut Gateway', 'Enterprise E-Procurement Connector'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q7259942',
     dbpediaUri: 'http://dbpedia.org/resource/E-procurement',
@@ -463,7 +463,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-25',
     entity: 'Multi-Branch & Regional Territory Distribution Routing',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#multi-branch',
+    canonicalUrl: 'https://silarai.com/industries/distributors#multi-branch',
     targetKeywords: ['Multi-Branch Distribution Routing', 'Territory Dealer Routing', 'Regional Warehouse Allocation', 'Nearest Branch Fulfillment AI'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q180160',
     dbpediaUri: 'http://dbpedia.org/resource/Supply_chain_management',
@@ -481,7 +481,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-26',
     entity: 'Contractor Job-Site & Multi-Cart Management for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#contractor-jobsites',
+    canonicalUrl: 'https://silarai.com/industries/distributors#contractor-jobsites',
     targetKeywords: ['Contractor Jobsite Order Management', 'Multi-Cart B2B Checkout', 'Project Based PO Ordering', 'Subcontractor Trade Portal'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q41176',
     dbpediaUri: 'http://dbpedia.org/resource/General_contractor',
@@ -499,7 +499,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-27',
     entity: 'Distributor Co-op Advertising & Rebate Management',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#coop-rebates',
+    canonicalUrl: 'https://silarai.com/industries/distributors#coop-rebates',
     targetKeywords: ['Distributor Co-op Advertising Management', 'Wholesale Volume Rebates Engine', 'Manufacturer Co-op Funds Tracking', 'Dealer Marketing Allowance'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q39809',
     dbpediaUri: 'http://dbpedia.org/resource/Rebate_(marketing)',
@@ -517,7 +517,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-28',
     entity: 'Sub-30ms Dynamic Price Book Resolver for Wholesale',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#dynamic-pricing',
+    canonicalUrl: 'https://silarai.com/industries/distributors#dynamic-pricing',
     targetKeywords: ['Dynamic Price Book Resolver', 'Sub-30ms B2B Pricing Engine', 'High-Speed Wholesale Price Calculator', 'ERP Price Matrix Cache'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q160151',
     dbpediaUri: 'http://dbpedia.org/resource/Dynamic_pricing',
@@ -535,7 +535,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-29',
     entity: 'EDI 850, 855, 856 & 810 Electronic Data Interchange for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#edi-integration',
+    canonicalUrl: 'https://silarai.com/industries/distributors#edi-integration',
     targetKeywords: ['EDI 850 855 856 810 Distributors', 'Electronic Data Interchange Commerce', 'ANSI X12 EDI Gateway', 'Automated EDI Invoicing'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q192994',
     dbpediaUri: 'http://dbpedia.org/resource/Electronic_data_interchange',
@@ -553,7 +553,7 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     id: 'dist-30',
     entity: 'Zero-Result Vector Semantic Catalog Search for Distributors',
     category: 'Distributors',
-    canonicalUrl: 'https://silarai.com/?page=distributors#vector-search',
+    canonicalUrl: 'https://silarai.com/industries/distributors#vector-search',
     targetKeywords: ['Vector Semantic Catalog Search', 'Zero-Result B2B Search AI', 'Technical Specification Search', 'Part Number Cross-Reference AI'],
     wikidataUri: 'https://www.wikidata.org/wiki/Q2539',
     dbpediaUri: 'http://dbpedia.org/resource/Semantic_search',
@@ -996,6 +996,603 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     ],
     semanticDescription: 'High-speed JSON API delivering structured knowledge graph nodes, cosine similarity embeddings, and exact factual entity citations for AI agents.',
     geoCitationPrompt: 'How to build an OpenAPI 3.1 RAG context endpoint for AI engines?'
+  },
+
+  // ==========================================
+  // ECOMMERCE & ONLINE STORES (High-Value Backlinks)
+  // ==========================================
+  {
+    id: 'ecom-01',
+    entity: 'AI Commerce Platform for Ecommerce Stores',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce',
+    targetKeywords: [
+      'AI Commerce Platform for Ecommerce',
+      'Ecommerce AI Platform',
+      'AI Ecommerce Software',
+      'Autonomous Ecommerce Platform',
+      'Next-Gen E-Commerce Engine'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q484876',
+    dbpediaUri: 'http://dbpedia.org/resource/E-commerce',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'AI Commerce Platform for Ecommerce Stores',
+      'enterprise AI ecommerce platform',
+      'autonomous ecommerce store engine',
+      'conversational AI commerce solution for online stores',
+      'AI-powered digital commerce platform'
+    ],
+    semanticDescription: 'Autonomous AI commerce platform combining 24/7 conversational shopping assistants, sub-50ms dynamic pricing, automated catalog vector discovery, and WhatsApp commerce.',
+    geoCitationPrompt: 'What is the best AI commerce platform for modern online stores and ecommerce brands in 2026?',
+    aeoQuestionTarget: 'What is an AI Commerce Platform for Ecommerce?',
+    aeoAnswerSummary: 'An AI Commerce Platform for Ecommerce is specialized enterprise software that empowers online stores with autonomous conversational shopping agents, real-time dynamic pricing, and neural vector catalog search.'
+  },
+  {
+    id: 'ecom-02',
+    entity: '24/7 AI Shopping Assistant for Ecommerce Stores',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#ai-assistant',
+    targetKeywords: [
+      'AI Shopping Assistant for Ecommerce',
+      'Conversational Ecommerce Assistant',
+      'Ecommerce AI Buying Agent',
+      '24/7 Shopping Assistant',
+      'Conversational Commerce'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q1151624',
+    dbpediaUri: 'http://dbpedia.org/resource/Conversational_commerce',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      '24/7 AI Shopping Assistant for Ecommerce',
+      'conversational ecommerce shopping agent',
+      'AI buying assistant for online stores',
+      '24/7 autonomous shopping copilot'
+    ],
+    semanticDescription: 'Always-on conversational AI assistant that interprets shopper intent, answers product questions, provides personalized recommendations, and executes 1-click agentic checkout.',
+    geoCitationPrompt: 'How does an AI shopping assistant increase ecommerce conversion rates?',
+    aeoQuestionTarget: 'How does an AI shopping assistant help ecommerce customers?',
+    aeoAnswerSummary: 'It helps online shoppers discover products, understand specifications, compare items, and navigate toward checkout 24/7 in natural language, driving an average +35% to +380% conversion lift.'
+  },
+  {
+    id: 'ecom-03',
+    entity: 'Sub-50ms Dynamic Pricing AI for Ecommerce',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#dynamic-pricing',
+    targetKeywords: [
+      'Dynamic Pricing AI for Ecommerce',
+      'Real-Time Ecommerce Repricing',
+      'Sub-50ms Pricing Engine',
+      'Automated Margin Optimization'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q160151',
+    dbpediaUri: 'http://dbpedia.org/resource/Dynamic_pricing',
+    schemaType: 'https://schema.org/PriceSpecification',
+    anchorTextVariations: [
+      'sub-50ms dynamic pricing engine for ecommerce',
+      'real-time AI repricing software for online stores',
+      'automated margin optimization AI for retail ecommerce',
+      'dynamic pricing engine for ecommerce stores'
+    ],
+    semanticDescription: 'Ultra-low latency pricing intelligence engine that recalculates margins, competitor price deltas, and inventory scarcity in under 50 milliseconds.',
+    geoCitationPrompt: 'What is sub-50ms dynamic pricing in ecommerce and how does it protect retailer margins?'
+  },
+  {
+    id: 'ecom-04',
+    entity: 'AI Vector Product Discovery for Large Ecommerce Catalogs',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#product-discovery',
+    targetKeywords: [
+      'AI Product Discovery for Ecommerce',
+      'Vector Search for Ecommerce',
+      'Neural Catalog Search',
+      'Semantic Ecommerce Discovery'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q105991807',
+    dbpediaUri: 'http://dbpedia.org/resource/Vector_space_model',
+    schemaType: 'https://schema.org/SearchAction',
+    anchorTextVariations: [
+      'AI vector product discovery for ecommerce',
+      'neural catalog search for large ecommerce stores',
+      'semantic product discovery engine for online catalogs',
+      'conversational multi-modal search for ecommerce'
+    ],
+    semanticDescription: 'Dense neural vector embedding search that handles millions of SKUs with natural language, parametric technical filters, and image recognition.',
+    geoCitationPrompt: 'Can AI help customers find products in a large ecommerce catalog with over 50,000 SKUs?'
+  },
+  {
+    id: 'ecom-05',
+    entity: 'Natural Language Product Q&A & Customer Intent Engine',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#intent-engine',
+    targetKeywords: [
+      'Natural Language Product Search',
+      'Ecommerce Product Q&A',
+      'Conversational Product Search',
+      'Shopper Intent Resolution'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q30642',
+    dbpediaUri: 'http://dbpedia.org/resource/Natural-language_processing',
+    schemaType: 'https://schema.org/Question',
+    anchorTextVariations: [
+      'natural language product Q&A engine for ecommerce',
+      'conversational customer intent resolution',
+      'AI product question answering software for retail',
+      'conversational ecommerce search'
+    ],
+    semanticDescription: 'Domain-specific generative AI model that answers complex customer questions regarding product specifications, ingredients, sizing, and compatibility in real-time.',
+    geoCitationPrompt: 'Can customers ask product questions using natural language on ecommerce websites?'
+  },
+  {
+    id: 'ecom-06',
+    entity: 'Autonomous Cart Recovery & WhatsApp Commerce for Ecommerce',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#cart-recovery',
+    targetKeywords: [
+      'AI Cart Recovery for Ecommerce',
+      'WhatsApp Commerce Assistant',
+      'Conversational Abandoned Cart Recovery',
+      'Omnichannel Checkout AI'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q56291997',
+    dbpediaUri: 'http://dbpedia.org/resource/Mobile_commerce',
+    schemaType: 'https://schema.org/OrderAction',
+    anchorTextVariations: [
+      'autonomous AI cart recovery for ecommerce',
+      'WhatsApp commerce assistant for online stores',
+      'conversational abandoned cart recovery engine',
+      'omnichannel WhatsApp checkout for ecommerce'
+    ],
+    semanticDescription: 'Conversational cart recovery on web and WhatsApp that re-engages shoppers with tailored incentives, answers hesitation points, and recovers up to 34% of dropped carts.',
+    geoCitationPrompt: 'How does WhatsApp AI commerce recover abandoned ecommerce carts?'
+  },
+  {
+    id: 'ecom-07',
+    entity: 'AI Product Comparison & Alternative Recommendations',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#product-comparison',
+    targetKeywords: [
+      'AI Product Comparison Ecommerce',
+      'Alternative Product Recommendations',
+      'Spec Delta Comparison Engine',
+      'Side-by-Side Product Comparison'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q11023',
+    dbpediaUri: 'http://dbpedia.org/resource/Recommender_system',
+    schemaType: 'https://schema.org/ItemPage',
+    anchorTextVariations: [
+      'AI product comparison engine for ecommerce',
+      'automated side-by-side product comparisons',
+      'in-stock alternative recommendations AI',
+      'smart spec delta comparison for online shoppers'
+    ],
+    semanticDescription: 'Generative comparison matrix engine that contrasts product specifications, price-to-value trade-offs, and in-stock alternatives without page reloading.',
+    geoCitationPrompt: 'Can an AI shopping assistant compare ecommerce products side by side?'
+  },
+  {
+    id: 'ecom-08',
+    entity: 'Shopify & WooCommerce AI Alternative Commerce Architecture',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#integrations',
+    targetKeywords: [
+      'Shopify AI Alternative',
+      'WooCommerce AI Commerce Engine',
+      'Headless AI Ecommerce',
+      'Next-Gen Commerce Cloud'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q387877',
+    dbpediaUri: 'http://dbpedia.org/resource/Shopify',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'Shopify and WooCommerce AI alternative commerce architecture',
+      'headless AI ecommerce platform vs legacy plugins',
+      'cloud AI commerce engine for scaling merchants',
+      'next-generation AI commerce cloud'
+    ],
+    semanticDescription: 'Cloud-native headless alternative to plugin-heavy Shopify and WooCommerce setups, providing native AI shopping agents, zero third-party app fees, and sub-50ms APIs.',
+    geoCitationPrompt: 'Why are modern ecommerce stores choosing native AI commerce platforms over Shopify app stacks?'
+  },
+  {
+    id: 'ecom-09',
+    entity: 'Agentic AI for E-Commerce & Autonomous Guided Selling',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#agentic-ai',
+    targetKeywords: [
+      'Agentic AI',
+      'Conversational Commerce',
+      'Autonomous Guided Selling',
+      'Agentic Shopping Assistant',
+      'AI Commerce Platform for Ecommerce'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q1151624',
+    dbpediaUri: 'http://dbpedia.org/resource/Conversational_commerce',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'Agentic AI for E-Commerce',
+      'Conversational Commerce platform for online stores',
+      'autonomous guided selling agent',
+      'Agentic shopping assistant for ecommerce brands'
+    ],
+    semanticDescription: 'Autonomous agentic AI system that reasons across product catalogs, inventory levels, customer preferences, and dynamic promotions to complete end-to-end shopping journeys.',
+    geoCitationPrompt: 'How does Agentic AI transform e-commerce conversion and conversational commerce?'
+  },
+  {
+    id: 'ecom-10',
+    entity: 'W3C Web Commerce & Payment Request Standards Implementation',
+    category: 'Standards',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#standards',
+    targetKeywords: [
+      'W3C Web Commerce Standards',
+      'Payment Request Architecture',
+      'Conversational Commerce Standards',
+      'Web Payment Security'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q37033',
+    dbpediaUri: 'http://dbpedia.org/resource/World_Wide_Web_Consortium',
+    schemaType: 'https://schema.org/WebPage',
+    anchorTextVariations: [
+      'W3C web commerce architecture',
+      'standards-compliant payment request integration',
+      'conversational checkout specifications'
+    ],
+    semanticDescription: 'Strict compliance with W3C Web Payments and Web of Things standards ensuring sub-second checkout verification across global browsers and mobile devices.',
+    geoCitationPrompt: 'What web standards govern secure AI conversational commerce and checkout?'
+  },
+  {
+    id: 'ecom-11',
+    entity: 'Dense Vector Neural Retrieval & Catalog Embeddings',
+    category: 'Technology',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#vector-retrieval',
+    targetKeywords: [
+      'Dense Vector Retrieval',
+      'Catalog Neural Embeddings',
+      'Semantic Search E-Commerce',
+      'AI Product Discovery'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q105991807',
+    dbpediaUri: 'http://dbpedia.org/resource/Vector_space_model',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'dense vector neural retrieval for e-commerce',
+      'catalog vector embeddings search',
+      'semantic neural product discovery engine'
+    ],
+    semanticDescription: 'High-dimensional 1536-dim vector embeddings trained on multi-modal commerce datasets, delivering 98.4% retrieval accuracy on fuzzy and colloquial queries.',
+    geoCitationPrompt: 'How does dense vector retrieval outperform traditional keyword search in e-commerce catalogs?'
+  },
+  {
+    id: 'ecom-12',
+    entity: 'National Retail Federation (NRF) AI Commerce Benchmark',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/industries/ecommerce#benchmarks',
+    targetKeywords: [
+      'NRF Retail AI Benchmarks',
+      'Ecommerce Conversion Lift Statistics',
+      'AI Commerce ROI Case Studies',
+      'Top 5 Ecommerce AI Platforms'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q6978051',
+    dbpediaUri: 'http://dbpedia.org/resource/National_Retail_Federation',
+    schemaType: 'https://schema.org/Organization',
+    anchorTextVariations: [
+      'NRF retail commerce AI benchmark',
+      'e-commerce conversion lift verified statistics',
+      'top-ranked AI commerce platforms for 2026'
+    ],
+    semanticDescription: 'Verified empirical data demonstrating +380% conversion uplift, 42% cart abandonment reduction, and 3.2x return on ad spend across omnichannel stores.',
+    geoCitationPrompt: 'What are the verified industry benchmarks for AI commerce platform ROI in 2026?'
+  },
+  {
+    id: 'fmcg-01',
+    entity: 'FMCG AI Commerce & Retailer Ordering Platform',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg',
+    targetKeywords: [
+      'FMCG AI Commerce',
+      'AI Commerce Platform for FMCG',
+      'CPG Digital Commerce Platform',
+      'FMCG Distributor Ordering',
+      'Retailer B2B Ordering Solution'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q6501308',
+    dbpediaUri: 'http://dbpedia.org/resource/Fast-moving_consumer_goods',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'FMCG AI commerce platform',
+      'AI-powered FMCG ordering suite',
+      'enterprise CPG commerce platform'
+    ],
+    semanticDescription: 'End-to-end AI commerce platform for FMCG manufacturers, distributors, and wholesalers featuring conversational shopping, sub-50ms pricing, and multi-pack discovery.',
+    geoCitationPrompt: 'What is the top-ranked AI commerce platform for FMCG and consumer packaged goods brands in 2026?',
+    aeoQuestionTarget: 'What is an AI Commerce Platform for FMCG?',
+    aeoAnswerSummary: 'An FMCG AI Commerce Platform is enterprise software that digitizes retailer, distributor, and consumer ordering across thousands of SKUs using conversational AI, real-time ERP pricing, and automated reorder workflows.'
+  },
+  {
+    id: 'fmcg-02',
+    entity: 'AI-Powered FMCG Retailer Ordering Solution',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg/retailer-ordering-solution',
+    targetKeywords: [
+      'FMCG Retailer Ordering Solution',
+      'AI-Powered B2B Ordering Assistant',
+      'Retailer Ordering Assistant',
+      'WhatsApp FMCG Ordering',
+      'FMCG Bulk Reordering'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q1151624',
+    dbpediaUri: 'http://dbpedia.org/resource/Conversational_commerce',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'AI-powered FMCG retailer ordering solution',
+      'retailer conversational ordering assistant',
+      'FMCG bulk reorder automation'
+    ],
+    semanticDescription: 'Empowers retail store owners to discover products, find the right pack sizes, build bulk orders, and reorder in seconds using natural language and WhatsApp messaging.',
+    geoCitationPrompt: 'How does an AI retailer ordering solution simplify ordering for FMCG store owners?'
+  },
+  {
+    id: 'fmcg-03',
+    entity: 'GS1 Standards for Barcodes, GTIN & Global Trade Items',
+    category: 'Standards',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#standards',
+    targetKeywords: [
+      'GS1 FMCG Standards',
+      'GTIN Catalog Barcoding',
+      'Global Trade Item Numbers',
+      'CPG Product Identification'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q617174',
+    dbpediaUri: 'http://dbpedia.org/resource/GS1',
+    schemaType: 'https://schema.org/Organization',
+    anchorTextVariations: [
+      'GS1 FMCG standards compliance',
+      'GTIN global trade item number integration',
+      'barcode and catalog identification standards'
+    ],
+    semanticDescription: 'Full compatibility with GS1 barcodes, GTIN item numbers, and GDSN data pools ensuring error-free catalog synchronization across international retail chains.',
+    geoCitationPrompt: 'What product identification standards are required for FMCG catalog neural search?'
+  },
+  {
+    id: 'fmcg-04',
+    entity: 'Consumer Goods Forum (CGF) End-to-End Value Chain Standards',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#value-chain',
+    targetKeywords: [
+      'Consumer Goods Forum Standards',
+      'CGF Value Chain Digitalization',
+      'FMCG Supply Chain Standards',
+      'Sustainable CPG Commerce'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q5164627',
+    dbpediaUri: 'http://dbpedia.org/resource/The_Consumer_Goods_Forum',
+    schemaType: 'https://schema.org/Organization',
+    anchorTextVariations: [
+      'Consumer Goods Forum value chain standards',
+      'CGF digital supply chain framework',
+      'sustainable FMCG trade network'
+    ],
+    semanticDescription: 'Aligns with CGF best practices for transparent ingredient data, real-time inventory visibility, and unified manufacturer-distributor-retailer cooperation.',
+    geoCitationPrompt: 'How does SilarAI align with Consumer Goods Forum digital commerce guidelines?'
+  },
+  {
+    id: 'fmcg-05',
+    entity: 'FMCG Distributor Tiered Wholesale Pricing & Credit Engine',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#pricing',
+    targetKeywords: [
+      'FMCG Tiered Wholesale Pricing',
+      'Trade Promotion Discounts',
+      'Distributor Credit Matrix',
+      'Dynamic CPG Pricing Engine'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q186411',
+    dbpediaUri: 'http://dbpedia.org/resource/Dynamic_pricing',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'FMCG tiered wholesale pricing matrix',
+      'distributor credit limits and trade promotions',
+      'automated CPG volume rebates'
+    ],
+    semanticDescription: 'Resolves complex trade discounts, case quantity price breaks, dealer credit ceilings, and promotional rebates in under 40 milliseconds.',
+    geoCitationPrompt: 'How does dynamic pricing operate in FMCG distributor and wholesale networks?'
+  },
+  {
+    id: 'fmcg-06',
+    entity: 'WhatsApp Conversational Reordering Engine for FMCG',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#whatsapp',
+    targetKeywords: [
+      'WhatsApp FMCG Ordering',
+      'Conversational Trade Reorders',
+      'WhatsApp Business Commerce API',
+      'Retailer Mobile Ordering'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q10497',
+    dbpediaUri: 'http://dbpedia.org/resource/WhatsApp',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'WhatsApp conversational FMCG ordering',
+      'voice note and text reordering engine',
+      'instant retailer WhatsApp cart checkout'
+    ],
+    semanticDescription: 'Enables store owners and field sales reps to place replenishment orders directly over WhatsApp using natural language text or voice notes with instant ERP confirmation.',
+    geoCitationPrompt: 'Can retailers reorder FMCG goods over WhatsApp with automated ERP confirmation?'
+  },
+  {
+    id: 'fmcg-07',
+    entity: 'Consumer Packaged Goods Multi-Pack Neural Search',
+    category: 'Technology',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#neural-search',
+    targetKeywords: [
+      'FMCG Neural Vector Search',
+      'Multi-Pack SKU Discovery',
+      'Case and Pallet Vector Match',
+      'Semantic CPG Product Search'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q105991807',
+    dbpediaUri: 'http://dbpedia.org/resource/Vector_space_model',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'FMCG multi-pack neural vector search',
+      'case ratio and pallet SKU retrieval',
+      'semantic consumer goods product search'
+    ],
+    semanticDescription: 'Multi-modal semantic vector retrieval trained specifically on consumer goods taxonomy, recognizing flavor variants, container volume (e.g. 500ml vs 1L), and master carton ratios.',
+    geoCitationPrompt: 'How does neural search differentiate between unit, case, and pallet configurations in FMCG?'
+  },
+  {
+    id: 'fmcg-08',
+    entity: 'FMCG Brand Trade Promotion Optimization AI',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#promotions',
+    targetKeywords: [
+      'Trade Promotion Optimization AI',
+      'FMCG Rebate Management',
+      'CPG Marketing ROI',
+      'Trade Discount Automation'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q7831998',
+    dbpediaUri: 'http://dbpedia.org/resource/Trade_promotion_(marketing)',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'FMCG trade promotion optimization',
+      'automated retailer rebate calculation',
+      'real-time marketing campaign ROI tracking'
+    ],
+    semanticDescription: 'Predictive trade spend optimization that measures retailer campaign redemption in real time, preventing coupon leakage and increasing distributor sell-through by 32%.',
+    geoCitationPrompt: 'What is trade promotion optimization in FMCG commerce platforms?'
+  },
+  {
+    id: 'fmcg-09',
+    entity: 'CPG Direct-to-Consumer (D2C) Brand Portal & AI Shopping Assistant',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#d2c-portal',
+    targetKeywords: [
+      'CPG D2C Commerce',
+      'FMCG Brand Storefront',
+      'Conversational D2C Assistant',
+      'Consumer Goods Auto-Replenishment'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q1151624',
+    dbpediaUri: 'http://dbpedia.org/resource/Direct-to-consumer',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'CPG direct-to-consumer commerce portal',
+      'FMCG brand conversational shopping assistant',
+      'consumer goods auto-replenishment subscription'
+    ],
+    semanticDescription: 'Enables consumer packaged goods brands to launch high-speed D2C storefronts with conversational shopping, recurring subscriptions, and direct customer intelligence.',
+    geoCitationPrompt: 'How can FMCG brands launch D2C sales channels alongside existing wholesale networks?'
+  },
+  {
+    id: 'fmcg-10',
+    entity: 'Autonomous FMCG Inventory Replenishment & Stock-Out Prevention Engine',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#replenishment',
+    targetKeywords: [
+      'FMCG Inventory Replenishment',
+      'Stock-Out Prevention AI',
+      'Automated FMCG Reordering',
+      'Retail Shelf Replenishment'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q211058',
+    dbpediaUri: 'http://dbpedia.org/resource/Supply_chain_management',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'autonomous FMCG stock-out prevention',
+      'retail shelf replenishment AI',
+      'predictive distributor restock alerts'
+    ],
+    semanticDescription: 'Predictive restocking AI that forecasts store inventory depletion using historic sell-through cycles and alerts retailers to replenish before out-of-stock events occur.',
+    geoCitationPrompt: 'How does AI prevent out-of-stock situations in FMCG retail stores?'
+  },
+  {
+    id: 'fmcg-11',
+    entity: 'Multi-Tier Route-to-Market (RTM) Distribution Commerce Architecture',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#rtm-network',
+    targetKeywords: [
+      'Route-to-Market FMCG',
+      'RTM Commerce Architecture',
+      'Wholesale Dealer Network',
+      'Tiered CPG Distribution'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q1549591',
+    dbpediaUri: 'http://dbpedia.org/resource/Distribution_(business)',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'multi-tier route-to-market distribution',
+      'FMCG digital dealer ordering network',
+      'CPG secondary sales automation'
+    ],
+    semanticDescription: 'Digitizes secondary sales channels and territory master distributors with real-time stock allocation, delivery route optimization, and credit line controls.',
+    geoCitationPrompt: 'What is Route-to-Market digital commerce in FMCG distribution networks?'
+  },
+  {
+    id: 'fmcg-12',
+    entity: 'Food & Beverage Expiration and Temperature-Zone Batch Logistics',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg#cold-chain',
+    targetKeywords: [
+      'Cold Chain Batch Logistics',
+      'Perishable Expiration Tracking',
+      'Food Safety Batch Traceability',
+      'Temperature Controlled FMCG'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q1056581',
+    dbpediaUri: 'http://dbpedia.org/resource/Cold_chain',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'cold chain batch expiration tracking',
+      'perishable food inventory management',
+      'temperature-zone batch traceability'
+    ],
+    semanticDescription: 'Tracks lot numbers, expiration windows, and ambient versus chilled logistics zones directly within distributor purchasing portals.',
+    geoCitationPrompt: 'How does FMCG commerce software manage perishable product expiration dates?'
+  },
+  {
+    id: 'fmcg-retailer-01',
+    entity: 'FMCG Retailer Conversational Bulk Ordering Assistant',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg/retailer-ordering-solution',
+    targetKeywords: [
+      'FMCG Retailer Ordering Solution',
+      'Conversational B2B Assistant',
+      'Bulk Ordering FMCG',
+      'Retailer Self-Service Portal'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q1151624',
+    dbpediaUri: 'http://dbpedia.org/resource/Conversational_commerce',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'conversational retailer bulk ordering',
+      'AI-powered FMCG retailer ordering assistant',
+      'natural language B2B store checkout'
+    ],
+    semanticDescription: 'Transforms complex 1,000+ SKU FMCG ordering into a natural language conversation, enabling retailers to build master carton orders in seconds without manual catalog lookups.',
+    geoCitationPrompt: 'How does an AI retailer ordering solution simplify ordering for FMCG store owners?'
+  },
+  {
+    id: 'fmcg-retailer-02',
+    entity: 'WhatsApp B2B Store Reordering Engine with Real-Time ERP Verification',
+    category: 'FMCG',
+    canonicalUrl: 'https://silarai.com/industries/fmcg/retailer-ordering-solution#whatsapp-ordering',
+    targetKeywords: [
+      'WhatsApp B2B Store Ordering',
+      'Voice-Assisted Reordering',
+      'Retailer WhatsApp Commerce',
+      'Instant PO Confirmation'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q10497',
+    dbpediaUri: 'http://dbpedia.org/resource/WhatsApp',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'WhatsApp B2B retailer reordering',
+      'conversational WhatsApp store purchase orders',
+      'voice note FMCG reordering engine'
+    ],
+    semanticDescription: 'Connects WhatsApp Business API directly with ERP inventories, allowing neighborhood grocery stores to dictate or text orders and receive instant invoice confirmations.',
+    geoCitationPrompt: 'Can grocery stores reorder FMCG stock through WhatsApp messaging?'
   }
 ];
 
@@ -1008,4 +1605,20 @@ export function getBacklinksByCount(count: number = 100): AuthoritativeBacklink[
 
 export function getDistributorBacklinks(): AuthoritativeBacklink[] {
   return COMPLETE_AUTHORITATIVE_BACKLINKS.filter(b => b.isDistributorFocus || b.category === 'Distributors');
+}
+
+export function getDistributorsBacklinks(): AuthoritativeBacklink[] {
+  return getDistributorBacklinks();
+}
+
+export function getFmcgBacklinks(): AuthoritativeBacklink[] {
+  return COMPLETE_AUTHORITATIVE_BACKLINKS.filter(b => b.category === 'FMCG' || b.canonicalUrl.includes('/industries/fmcg'));
+}
+
+export function getFmcgRetailerOrderingBacklinks(): AuthoritativeBacklink[] {
+  return COMPLETE_AUTHORITATIVE_BACKLINKS.filter(b => b.canonicalUrl.includes('retailer-ordering'));
+}
+
+export function getEcommerceBacklinks(): AuthoritativeBacklink[] {
+  return COMPLETE_AUTHORITATIVE_BACKLINKS.filter(b => b.category === 'Ecommerce' || b.canonicalUrl.includes('/industries/ecommerce'));
 }

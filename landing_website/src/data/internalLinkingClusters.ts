@@ -45,7 +45,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce Platform',
         anchorText: 'Discover Core AI Commerce & Dynamic Pricing Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Dynamic Pricing',
@@ -56,7 +56,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Unify Commerce with Autonomous AI Marketing Automation',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Marketing Cloud',
@@ -94,6 +94,16 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
         iconName: 'ShoppingBag'
       },
       {
+        title: 'Distributors AI Commerce Platform',
+        anchorText: 'Modernize Distribution with AI Shopping Assistants & Dealer Portals',
+        path: '/industries/distributors',
+        view: 'distributors',
+        category: 'Industry Vertical',
+        badge: 'Distributor Portal',
+        description: 'Customer-specific contract pricing, multi-warehouse ATP inventory, and dealer ordering automation.',
+        iconName: 'Building2'
+      },
+      {
         title: 'D2C Brands AI Platform',
         anchorText: 'Accelerate D2C Direct Storefront Revenue with AI Agents',
         path: '/industries/d2c-brands',
@@ -102,6 +112,16 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
         badge: 'Direct-to-Consumer',
         description: 'Tailored conversion optimization, automated WhatsApp cart re-engagement, and 1-to-1 personalization.',
         iconName: 'Sparkles'
+      },
+      {
+        title: 'Ecommerce AI Commerce Platform',
+        anchorText: 'Deploy Autonomous Ecommerce AI Platform & 24/7 Shopping Assistant',
+        path: '/industries/ecommerce',
+        view: 'ecommerce',
+        category: 'Industry Vertical',
+        badge: 'Top 5 Ranking',
+        description: 'Empower online stores with 24/7 conversational shopping assistants, sub-50ms dynamic pricing, and vector catalog discovery.',
+        iconName: 'ShoppingBag'
       },
       {
         title: 'Why Choose SilarAI',
@@ -126,7 +146,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce Platform',
         anchorText: 'Review the Core AI Commerce Platform Architecture',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Dynamic Pricing',
@@ -158,7 +178,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Explore Autonomous Marketing & Growth Automation',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Growth Engine',
@@ -238,7 +258,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Examine SilarAI Headless Commerce Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Commerce Engine',
@@ -260,7 +280,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Explore SilarAI Unified Marketing Automation Cloud',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Marketing Cloud',
@@ -321,7 +341,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Discover SilarAI Enterprise Dynamic Pricing Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Headless Core',
@@ -372,7 +392,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Supercharge Marketing Automation with SilarAI',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Marketing Cloud',
@@ -412,7 +432,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Discover Headless Commerce Engine for WordPress',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Headless Engine',
@@ -454,7 +474,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Automate WooCommerce Marketing with Native AI',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Marketing Cloud',
@@ -494,7 +514,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Connect AI Shopping Assistant to Core Commerce Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Commerce Engine',
@@ -505,7 +525,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Explore Marketing Automation & Buyer Segmentation',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Growth Engine',
@@ -531,6 +551,16 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
         badge: 'WordPress Speed',
         description: 'Offload catalog search from MySQL to AI vector index for instant conversational recommendations.',
         iconName: 'Zap'
+      },
+      {
+        title: 'Distributors AI Commerce Platform',
+        anchorText: 'Explore AI Shopping Assistant & Dealer Portals for Wholesale Distributors',
+        path: '/industries/distributors',
+        view: 'distributors',
+        category: 'Industry Vertical',
+        badge: 'Distributor Hub',
+        description: 'Customer-specific pricing matrices, live ATP stock checks, and conversational 24/7 ordering for dealer networks.',
+        iconName: 'Building2'
       },
       {
         title: 'Retail Omnichannel In-Store App',
@@ -596,7 +626,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Add Autonomous Multi-Channel Marketing Automation',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Marketing Cloud',
@@ -687,7 +717,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Connect Marketing Cloud to Real-Time Commerce Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Dynamic Pricing',
@@ -779,7 +809,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Synchronize Retail POS with Unified Commerce Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Omnichannel Core',
@@ -790,7 +820,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Launch Geo-Targeted Retail Marketing Campaigns',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Retail Marketing',
@@ -871,7 +901,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Power Your D2C Store with High-Velocity Commerce Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Headless Speed',
@@ -882,7 +912,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Automate D2C Email, Social, and Ad Campaigns with AI',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Marketing Cloud',
@@ -972,7 +1002,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core B2B Commerce Platform',
         anchorText: 'Examine SilarAI B2B Commerce Kernel Architecture',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'B2B Core',
@@ -1064,7 +1094,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Discover High-Speed Dynamic Pricing for B2B Wholesale',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'B2B Core',
@@ -1156,7 +1186,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Discover SilarAI Enterprise Manufacturing Commerce Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Commerce Core',
@@ -1279,7 +1309,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Automate FMCG Marketing & Predictive Restock Triggers',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Marketing Cloud',
@@ -1330,7 +1360,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'Core AI Commerce Platform',
         anchorText: 'Review SilarAI Headless Commerce Platform Engine',
-        path: '/ai-commerce-platform',
+        path: '/commerce-platform',
         view: 'ai-commerce-platform',
         category: 'Core Pillar',
         badge: 'Dynamic Pricing',
@@ -1341,7 +1371,7 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
       {
         title: 'AI Commerce & Marketing Platform',
         anchorText: 'Explore SilarAI Unified Marketing Cloud & SEO Taxonomy',
-        path: '/ai-commerce-marketing-platform',
+        path: '/ai-commerce-marketing-platform/',
         view: 'ai-commerce-marketing-platform',
         category: 'Core Pillar',
         badge: 'Marketing Cloud',
@@ -1399,6 +1429,97 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
         iconName: 'Globe'
       }
     ]
+  },
+  'ecommerce': {
+    pageKey: 'ecommerce',
+    pageTitle: 'Autonomous AI Commerce Solutions for Modern E-Commerce Stores',
+    pagePath: '/industries/ecommerce',
+    clusterTheme: 'AI Shopping Assistant, Dynamic Pricing & Conversational Selling',
+    description: 'Autonomous AI tools, platform alternatives, and conversion recovery engines engineered to maximize online retail sales.',
+    links: [
+      {
+        title: 'AI Shopping Assistant',
+        anchorText: 'Deploy 24/7 AI Shopping Assistant & Conversational Agent',
+        path: '/ai-shopping-assistant',
+        view: 'ai-shopping-assistant',
+        category: 'Core Pillar',
+        badge: 'Conversational Buying',
+        description: 'Autonomous conversational commerce agent guiding shoppers from discovery to instant 1-click checkout.',
+        iconName: 'Bot',
+        options: { pageId: 1 }
+      },
+      {
+        title: 'AI Commerce Platform',
+        anchorText: 'Discover Sub-50ms Dynamic Pricing & Headless Commerce',
+        path: '/commerce-platform',
+        view: 'ai-commerce-platform',
+        category: 'Core Pillar',
+        badge: 'Sub-50ms Pricing',
+        description: 'Headless, high-velocity digital commerce foundation with sub-50ms pricing and automated catalog synchronization.',
+        iconName: 'Cpu',
+        options: { pageId: 1 }
+      },
+      {
+        title: 'Shopify vs SilarAI Comparison',
+        anchorText: 'Compare SilarAI Native AI Commerce vs Shopify Plus Stacks',
+        path: '/shopify-vs-silarai',
+        view: 'shopify-comparison',
+        category: 'Platform Comparison',
+        badge: 'Zero App Fees',
+        description: 'In-depth architectural comparison: Native AI shopping assistants, sub-50ms dynamic pricing, and WhatsApp commerce vs Shopify app bloat.',
+        iconName: 'Zap'
+      },
+      {
+        title: 'WooCommerce vs SilarAI Comparison',
+        anchorText: 'Compare SilarAI High-Performance Engine vs WooCommerce',
+        path: '/woocommerce-vs-silarai',
+        view: 'woocommerce-comparison',
+        category: 'Platform Comparison',
+        badge: 'Sub-Second Speed',
+        description: 'Upgrade WooCommerce stores with cloud-hosted AI search, eliminate slow plugin bloat, and unlock sub-second responses.',
+        iconName: 'Workflow'
+      },
+      {
+        title: 'Conversion & Cart Recovery Engine',
+        anchorText: 'Recover 34% of Dropped Carts across Web & WhatsApp',
+        path: '/use-cases/conversion-engine',
+        view: 'use-cases',
+        category: 'Strategic Architecture',
+        badge: '+34% Cart Lift',
+        description: 'Autonomous cart recovery detecting hesitation points and executing conversational re-engagement over web and WhatsApp.',
+        iconName: 'BarChart3'
+      },
+      {
+        title: 'AI Product Discovery Engine',
+        anchorText: 'Enable Sub-100ms Vector Semantic Search & Photo Match',
+        path: '/use-cases/product-discovery',
+        view: 'use-cases',
+        category: 'Strategic Architecture',
+        badge: 'Vector Search',
+        description: 'Neural vector embeddings and multi-modal photo search matching shopper intent to exact catalog items without keyword friction.',
+        iconName: 'Sparkles'
+      },
+      {
+        title: 'D2C Brands AI Commerce',
+        anchorText: 'Explore Autonomous Commerce Suite for D2C Brands',
+        path: '/industries/d2c-brands',
+        view: 'd2c-brands',
+        category: 'Industry Vertical',
+        badge: 'D2C Scaling',
+        description: 'Convert more visitors into buyers with 24/7 autonomous shopping agents, dynamic pricing, and frictionless 1-click checkout.',
+        iconName: 'ShoppingBag'
+      },
+      {
+        title: 'Retail AI Commerce Platform',
+        anchorText: 'Explore Omnichannel AI Solutions for Modern Retailers',
+        path: '/industries/retailers',
+        view: 'retail-commerce',
+        category: 'Industry Vertical',
+        badge: 'Omnichannel POS',
+        description: 'Unify online storefronts and in-store retail with real-time omnichannel inventory and contextual personalized merchandising.',
+        iconName: 'Layers'
+      }
+    ]
   }
 };
 
@@ -1408,33 +1529,25 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
  */
 export function getInternalLinkingForPage(pageKey: string): PageInternalCluster {
   const normalizedKey = pageKey.replace(/^\//, '').replace(/\/$/, '') || 'home';
-
-  // Every lookup falls back to the `home` cluster. A branch that returned an
-  // absent key would hand the caller `undefined`, and the component reads
-  // `cluster.links` unguarded — so a missing cluster would throw rather than
-  // degrade. Keep this shape when adding aliases.
-  const pick = (key: string): PageInternalCluster =>
-    INTERNAL_LINKING_CLUSTERS[key] ?? INTERNAL_LINKING_CLUSTERS['home'];
-
   if (INTERNAL_LINKING_CLUSTERS[normalizedKey]) {
     return INTERNAL_LINKING_CLUSTERS[normalizedKey];
   }
-
-  // Alias matches
-  if (normalizedKey === 'fmcg') return pick('fmcg-commerce');
-  if (normalizedKey.includes('d2c')) return pick('d2c-brands');
-  if (normalizedKey.includes('retail')) return pick('retail-commerce');
-  if (normalizedKey.includes('distributor')) return pick('distributors');
-  if (normalizedKey.includes('wholesaler')) return pick('wholesalers');
-  if (normalizedKey.includes('manufacturing')) return pick('manufacturing');
-  if (normalizedKey.includes('shopify')) return pick('shopify-comparison');
-  if (normalizedKey.includes('woocommerce')) return pick('woocommerce-comparison');
-  if (normalizedKey.includes('shopping-assistant')) return pick('ai-shopping-assistant');
-  if (normalizedKey.includes('marketing-platform')) return pick('ai-commerce-marketing-platform');
-  if (normalizedKey.includes('commerce-platform')) return pick('ai-commerce-platform');
-  if (normalizedKey.includes('why-choose')) return pick('why-choose-us');
-  if (normalizedKey.includes('about')) return pick('about');
-  if (normalizedKey.includes('contact')) return pick('contact-us');
+  // Check alias matches
+  if (normalizedKey === 'ecommerce' || normalizedKey.includes('ecommerce')) return INTERNAL_LINKING_CLUSTERS['ecommerce'];
+  if (normalizedKey === 'fmcg') return INTERNAL_LINKING_CLUSTERS['fmcg-commerce'];
+  if (normalizedKey.includes('d2c')) return INTERNAL_LINKING_CLUSTERS['d2c-brands'];
+  if (normalizedKey.includes('retail')) return INTERNAL_LINKING_CLUSTERS['retail-commerce'];
+  if (normalizedKey.includes('distributor')) return INTERNAL_LINKING_CLUSTERS['distributors'];
+  if (normalizedKey.includes('wholesaler')) return INTERNAL_LINKING_CLUSTERS['wholesalers'];
+  if (normalizedKey.includes('manufacturing')) return INTERNAL_LINKING_CLUSTERS['manufacturing'];
+  if (normalizedKey.includes('shopify')) return INTERNAL_LINKING_CLUSTERS['shopify-comparison'];
+  if (normalizedKey.includes('woocommerce')) return INTERNAL_LINKING_CLUSTERS['woocommerce-comparison'];
+  if (normalizedKey.includes('shopping-assistant')) return INTERNAL_LINKING_CLUSTERS['ai-shopping-assistant'];
+  if (normalizedKey.includes('marketing-platform')) return INTERNAL_LINKING_CLUSTERS['ai-commerce-marketing-platform'];
+  if (normalizedKey.includes('commerce-platform')) return INTERNAL_LINKING_CLUSTERS['ai-commerce-platform'];
+  if (normalizedKey.includes('why-choose')) return INTERNAL_LINKING_CLUSTERS['why-choose-us'];
+  if (normalizedKey.includes('about')) return INTERNAL_LINKING_CLUSTERS['about'];
+  if (normalizedKey.includes('contact')) return INTERNAL_LINKING_CLUSTERS['contact-us'];
 
   return INTERNAL_LINKING_CLUSTERS['home'];
 }
