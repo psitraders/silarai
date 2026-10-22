@@ -1,73 +1,67 @@
 ---
 id: storefront-builder
 status: current
-context: "§4.3 Storefront, §5.1 (to be added when phase 1 ships)"
+prefix: SB
+related: [storefront-builder-editor, storefront-builder-templates, storefront-builder-commerce, storefront-builder-ai, storefront]
 ---
-# Storefront Builder
+# Storefront Builder — Core (Engine, Packs, Data & APIs)
 
 ## Purpose
-Lets merchants build their whole storefront — unlimited pages, shared header/footer, product page/popup, collection and cart designs — from modular sections and layouts. They start from a template pack (picked in the template wizard) and style it with style kits, multi-scheme colour palettes and font pairs, without code.
+Lets merchants build their whole storefront — unlimited pages, shared header/footer, product page/popup, collection and cart designs — from modular sections and layouts. They start from a template pack (picked in the template wizard) and style it with style kits, multi-scheme colour palettes and font pairs, without code. This spec is the family overview: module structure, renderer, theming, documents, backend storage and public APIs. Plan: [`docs/plan-storefront-builder.md`](../docs/plan-storefront-builder.md); options catalogue: [`docs/storefront-builder-catalogue.md`](../docs/storefront-builder-catalogue.md); UI rules: `frontend/design.md` §2.2, §13.
 
 ## Scope
 - **In:**
-  - Builder module (`frontend/src/storefront-builder/`): core engine, `ui/` primitives, packs (sections, headers, footers, product page/popup layouts, product blocks, cards, collection, cart, style kits, palettes, fonts), template packs (Starter, Noor, Mandi, Bloom, Crumb, Volt) with their signature widgets, the template wizard and the editor.
-  - Store shell: header/footer slots, product view, cart host.
-  - Navigation menus.
-  - Backend builder slice: `StorefrontTheme`, `StorefrontPage` layouts, publish, smart values, sanitiser, public site APIs.
-- **Out:**
-  - Checkout and payments (`orders-payments`)
-  - Product and category data (`catalog`)
-  - Customer auth and wishlist (`storefront`)
-  - Custom domains and Cloudflare worker routing (`storefront`)
-  - B2B pricing logic (`b2b-wholesale`)
+  - Builder module `frontend/src/storefront-builder/`: `core/` engine, `ui/` primitives, `packs/` (sections, headers, footers, product page / popup layouts, product blocks, cards, collection, cart, style kits, palettes, fonts), `templates/` (Starter, Noor, Mandi, Bloom, Crumb, Volt), `shell/`, `editor/`, `dev/Gallery.tsx`.
+  - Backend builder slice: `StorefrontTheme`, `StorefrontPage` layouts, `StorefrontVersion`, `StorefrontSavedSection`, publish, smart values, sanitiser, public site APIs.
+  - Family specs: editor (`storefront-builder-editor`), templates + wizard (`storefront-builder-templates`), product / collection / cart designs (`storefront-builder-commerce`), AI generation (`storefront-builder-ai`).
+- **Out:** checkout and payments (`orders-checkout`), product and category data (`catalog-*`), customer auth and wishlist (`storefront-accounts`), custom domains and the Cloudflare worker (`storefront-custom-domains`), B2B pricing logic (`b2b-wholesale`), store settings outside design (`storefront`).
+
+## Functional behaviour
+- A store's design is a **site document** (template, style kit, palette, fonts, behaviour, header, footer, menus) plus one **page layout** per page (Home, catalogue, Product page, extra product designs, custom pages). Both have a **draft** (autosaved by the editor) and a **published** copy (what shoppers see).
+- A page layout is an ordered list of **sections**; each section = pack `type` + `layout` + `settings` + optional `blocks`, colour scheme and visibility (desktop / phone / hidden). Packs are versioned and upgrade old settings on read.
+- Settings may hold **smart values**: `$richtext` (sanitised HTML), `$link` (store-relative link), `$image` (uploaded image), `$products` / `$categories` (rules or ids resolved live on read).
+- **Inventory (2026-10-21):** 33 section packs (incl. `product-main`, `all-products`, `newsletter`, `reviews-summary`), 13 header layouts, 10 footer layouts, 10 card styles, 15 product-page layouts, 15 popup layouts, 5 cart placements, 12 palettes, 10 font pairs, 10 style kits (~40 fine-tune options), 6 templates with 24 signature widgets. Full list: options catalogue.
+- With no published design the store renders the **Starter** template.
 
 ## Rules
 - **SB-R1** — Layouts store product/category *rules or IDs* (`$products`, `$categories`), never prices, stock or product images; data is resolved live (INV-2, CAT-R5).
-- **SB-R2** — Public endpoints return only published theme/pages; drafts are visible only to the authenticated tenant. Publish is all-or-nothing.
+- **SB-R2** — Public endpoints return only published theme/pages; drafts are visible only to the authenticated tenant (and the preview link, SB-R22). Publish is all-or-nothing.
 - **SB-R3** — Every pack has a manifest with `version` + `upgrade()`; the renderer shows a placeholder for unknown/broken packs instead of crashing.
 - **SB-R4** — The backend is schema-agnostic: it validates only the JSON envelope and smart values (`$richtext` sanitised, `$link` allow-listed, `$image` from our uploads, `$products`/`$categories` resolved). New packs never require backend changes.
 - **SB-R5** — A store with no saved theme renders the built-in **Starter** default. (There are no live stores; the old fixed storefront is replaced, not kept in parallel.)
 - **SB-R6** — Packs import only `core/` and `ui/`, never another pack; the rest of the app imports only `storefront-builder/index.ts`. Packs are auto-discovered.
 - **SB-R7** — Layouts use only `--sf-*` tokens and container queries and must work in all 5 colour schemes, light/dark palettes and every style kit (`frontend/design.md` §2.2, §13).
 - **SB-R8** — Every palette generates all 5 schemes; the editor warns when a text/background pair is below WCAG AA.
-- **SB-R9** — Every drag action in the editor has a button/keyboard alternative.
 - **SB-R10** — Header and footer are always present and shared by all pages; no other section is required on any page.
 - **SB-R11** — The store shell (cart, product view, auth, chatbot) is present on every storefront page, including custom pages; SF-R2 still holds.
-- **SB-R12** — Product view mode (popup / page / both) is a store setting; `/{slug}/products/{id}` always resolves (as a page or a popup over the store).
 - **SB-R13** — No plan restrictions for now: every pack manifest has a `tier` (all `free`) and the builder checks `canUse()` in one place, so paid tiers can be added later without layout changes.
-- **SB-R14** — Signature widgets are unlockable in any template (listed first under their own template).
 - **SB-R15** — Merchant links (`$link`) are stored store-relative (`/products`, `/p/about`, `#section-<id>`) and resolved per store, so the same design works on `/{slug}` and on a custom domain.
-- **SB-R16** — The editor autosaves drafts only; shoppers see changes after **Publish**. Publishing also copies the palette's primary / secondary / accent to the store's brand colours (used outside the builder: PWA, chatbot widget, emails); the colour pickers live only in the editor.
-- **SB-R17** — Applying a template writes drafts only, in one save (nothing goes live until Publish). *Keep my pages* replaces only the site document (look, header, footer, behaviour) and keeps menus and pages; *Use the template's pages* also replaces the drafts of Home, the catalogue and product designs and of custom pages with the same address, and adds the template's other pages.
-- **SB-R18** — Templates never ship invented reviews or policy claims: review sections show real approved reviews, and delivery / returns / FAQ copy is written as guidance for the merchant to replace.
-- **SB-R19** — Every publish keeps a snapshot of what went live (site document + every page's published layout); only the newest 10 are kept. Restoring a version writes the **drafts** only (nothing goes live until Publish): the site document and the version's pages (matched by id, then page type / address; custom pages deleted since are re-created); pages added since are left as they are. Undo can't reverse a restore.
-- **SB-R21** — A store can have extra product designs besides the Product page. Each is assigned to categories and/or products; a product uses its own pick, else its category's (a category's pick also covers its sub-categories unless they have their own), else the Product page. A category or product belongs to at most one design — assigning it moves it. Assignments apply immediately; a design only reaches shoppers once published. The product popup uses the same design as the page.
-- **SB-R22** — One shareable preview link per store (`/{slug}?preview={token}`) shows the saved drafts, read-only, to anyone with it, until the merchant turns it off or makes a new one (the old link then shows the live store with a notice). Draft responses are never cached and the preview is marked `noindex`; buying still works normally.
-- **SB-R23** — AI page generation writes a new custom page or sections for the open page using only the editor's section packs and the store's real categories (never images, raw HTML, prices, reviews or policy claims — placeholders in [brackets] instead, SB-R18). The result is previewed and only saved when the merchant applies it (to the draft). Every generation is logged in `AiUsageLogs` (`StorefrontPage`) against the monthly AI count; the plan limit is not enforced yet.
-- **SB-R20** — Undo / redo covers edits made in this editor visit (site and every page, typing merged into one step) and is not saved; it starts again after a template is applied or a version is restored. Saved sections are independent copies — editing or deleting a saved section never changes pages that use it; at most 50 per store.
+- Editor rules SB-R9, R16, R19, R20, R22 → `storefront-builder-editor`; template rules SB-R14, R17, R18 → `storefront-builder-templates`; commerce rules SB-R12, R21 → `storefront-builder-commerce`; AI rule SB-R23 → `storefront-builder-ai`.
 
-## UI
-- `storefront-builder/` — `index.ts` (only public entry), `core/`, `ui/`, `shell/`, `packs/`, `templates/starter/`, `editor/`, `dev/Gallery.tsx` (DEV route `/__storefront/gallery`).
-- Editor: dashboard route `/storefront/editor` (sidebar *Customise store*; `/pages` redirects there). Panes: Sections · Style · Pages · Menus | live preview (desktop / tablet / phone) | settings. Click-to-select in the preview, layout try-on on hover, section gallery with presets, autosave + Publish.
-- Storefront Settings keeps logo, banner, SEO, announcement (Starter only) etc.; colours moved to the editor.
-- Product page: a system page in the editor (*Product page*) holding the `product-main` section (gallery + product blocks, 15 layouts) plus any sections; its blocks also fill the product popup. *Style → Store behaviour* sets the product view (popup / page / popup + page), popup layout (15, with a live popup preview), card style (10) and cart style (5) + cart options.
-- Template wizard (`editor/wizard/`): opens on first run (nothing saved or published) and from *Style → Template → Change*. "What do you sell?" → templates (made-for matches first) with a live, read-only preview of the store's own logo and products (Home / Catalogue / Product page, desktop / tablet / phone) → colours (suggested palettes, brand colours, all palettes) and fonts → *Keep my pages* or *Use the template's pages* (change only) → apply.
-- Section gallery: the store's **Saved** sections first (rename / delete on the card), then signature widgets grouped as "*Template* exclusives" (the store's own template first), then the generic groups.
-- Undo / redo: top-bar buttons and Ctrl/⌘+Z, Ctrl/⌘+Shift+Z or Ctrl+Y (ignored while typing in a field); undoing a page edit switches to that page.
-- Version history (top-bar clock): replaces the left pane with the last 10 publishes (date, who, page count, *Live* on the newest); picking one previews it read-only (page picker for Home / catalogue / product / custom pages) and *Restore* copies it into the draft after a confirm.
-- *Save for reuse*: in the section toolbar (preview) and the section inspector; asks for a name.
-- *Pages → Other product designs*: create (starts as a copy of the Product page), edit like the Product page (sample product), choose categories / products, duplicate, delete.
-- *Share preview* (top bar): create / copy / make a new link / turn off.
-- *Generate with AI*: *Sections → Add sections with AI* and *Pages → New page with AI* open the AI panel in the left pane (prompt + examples → read-only preview → *Create page* / *Add sections* / *Try again*).
-- Collections (*All products*): price filter (min / max) in the Top filters, Sidebar filters and Bento layouts.
-- *Style → Store behaviour → Compare*: product compare — a "Compare" toggle under every product card and a compare tray (up to 4, compared in a table with live prices and specs). *Style → Product cards → Veg / eggless marks* reads product tags `veg`, `non-veg`, `eggless`.
-- *Newsletter* section: email signup; subscribers are Leads tagged `newsletter` (CRM-R3).
-- Options catalogue: [`docs/storefront-builder-catalogue.md`](../docs/storefront-builder-catalogue.md).
+## Backend
+- **Data:** `Storefront/StorefrontTheme` (1 per tenant: `DraftJson`, `PublishedJson`, `PublishedAt`, `Version`, `PreviewToken` nvarchar(64)); `StorefrontPage` (`Title`, `Slug`, `PageType` = Custom 0 | Home 1 | ProductTemplate 2 | QuickViewTemplate 3 | CollectionTemplate 4 | Cart 5 | Search 6 | NotFound 7 | AltProductTemplate 8 — every type except Custom and AltProductTemplate is unique per tenant; `DraftLayoutJson`, `PublishedLayoutJson`, `PublishedAt`, `IsPublished`, `ShowInNav`, `ShowInFooter`, `SortOrder`, `AssignmentJson` [`{categoryIds, productIds}`, product designs only, not drafted], `SeoTitle`, `SeoDescription`, `OgImageUrl`); `StorefrontVersion` (`Version`, `PublishedAt`, `SiteJson`, `PagesJson` = `[{pageId, pageType, title, slug, isPublished, showInNav, showInFooter, sortOrder, layout}]`, `PageCount`; index `TenantId, PublishedAt`; hard-deleted beyond the newest 10); `StorefrontSavedSection` (`Name` ≤ 100, `SectionType` ≤ 60, `SectionJson`; soft delete). Config `Persistence/Configurations/StorefrontBuilderConfiguration.cs`. Migrations `20261014041037_AddStorefrontBuilder`, `20261017120000_AddStorefrontVersionsAndSavedSections`, `20261018120000_AddStorefrontPhase5b` (last two hand-written, idempotent; apply manually, INV-7).
+- **Validation** (`Application/StorefrontBuilder/StorefrontLayoutProcessor`, SB-R4): ids, lowercase `type` / `layout`, scheme / visibility enums, ≤ 60 sections, ≤ 50 blocks, 300 KB page / 150 KB site; `$richtext` sanitised by `IHtmlSanitizerService` (`Infrastructure/Services/HtmlSanitizerService`, Ganss.Xss allow-list, no styles / scripts), `$link` (https / http / mailto / tel / internal / `#`), `$image` (Cloudinary or this API's `/uploads/`), `$products` / `$categories` (shape-checked). Errors: `400 { errors: [...] }` with JSON paths.
+- **Smart-value resolution** (`StorefrontSmartValueResolver`, scoped): fills `items` next to `$products` / `$categories` on public reads with live data (Active + OutOfStock products, same projection as `/public/{slug}/products`, incl. `tags`) and absolutises `$image` paths.
+- **Merchant API — `StorefrontBuilderController` `/api/v1/storefront-builder` 🔒:** `GET|PUT theme` (draft autosave), `GET|POST pages`, `GET|PUT|DELETE pages/{id}` (soft delete; Home / system pages can't be deleted; reserved custom slugs `home, products, product, category, categories, p, order-confirmation, cart, search, account, checkout`), `POST pages/{id}/duplicate`, `PUT pages/{id}/assignment`, `POST publish`, `POST apply-template`, `GET|POST|DELETE preview-link`, `GET versions`, `GET versions/{id}`, `POST versions/{id}/restore`, `GET|POST saved-sections`, `PUT|DELETE saved-sections/{id}` (details in the editor / templates / commerce specs). `POST /business/upload?type=section` stores builder images (`section-{guid}`).
+- **Public API — `PublicStorefrontSiteController` `/api/v1/public/{slug}/site` (anonymous):** `GET` (published site doc or `null`, nav pages, `hasHome`, `productTemplates [{id, categoryIds, productIds}]` — a category's design expanded to sub-categories without their own; `Cache-Control: public, no-cache` so a publish shows at once), `GET pages/{slug|home}` (published layout only), `GET templates/{product|quickview|collection|cart|search|not-found}` (`product?id=` serves that design; unknown / unpublished → default). Pages / templates are `max-age=60, swr=300`; the frontend adds `?v={version}`. Every read takes `?preview={token}` → drafts (SB-R22).
+- **Public data for sections** (`PublicStorefrontController`): products with `minPrice` / `maxPrice` / `withPriceBounds`, `coupons`, `reviews/summary`, `newsletter` (`storefront`, `catalog-*`).
+- **Demo designs:** `Persistence/DemoStorefrontDesigns.cs` seeds `aradhya-jewels` on Noor, `priya-boutique` on Bloom and `sugar-crumbs` on Crumb (draft = published) from JSON generated by each template's `build.ts`; regenerate when those templates change.
+
+## Frontend
+- **Public entry:** `index.ts` exports `StorefrontRoute` (+ `loadEditor`, `loadDevGallery`) — enforced by the ESLint rule `storefront-builder/boundaries` (`eslint.config.js`; `core/` + `ui/` never import packs / templates / shell; a pack imports only its folder, `core/`, `ui/` and app basics `api`, `utils`, `context`, `hooks`, `lib`, `components/storefront`).
+- **`core/`:** `types.ts` (documents, smart values, manifests, data packs), `registry.ts` (`import.meta.glob` discovery of `packs/*/*/manifest.ts`, `templates/*/widgets/*/manifest.ts`, palettes / fonts / style kits, `templates/*/template.ts`), `renderer/` (`PageRenderer`, `SectionFrame` = pack + layout resolution, lazy layout cache, settings merge + `upgrade()`, scheme, visibility, error boundary), `theme/` (palette → 5 schemes → `--sf-*` vars, style kit + overrides → tokens in `styleTokens.ts` / `rootAttributes.ts`, font loading, `storefront.css` `sf-*` classes in `@layer components`), `data/` (public API + hooks; `useResolvedProducts` / `useResolvedCategories` use server `items` or resolve client-side for Starter / drafts), `storefront-context.tsx` (`useStorefront()`), `shell-context.ts` (`useShell()`), `canUse.ts`, `sanitize.ts` (lazy DOMPurify), `blocks.ts`, `theme/useStyleOptions.ts`, `commerce/` (`storefront-builder-commerce`). In editor / gallery previews data is read but orders, inquiries and reviews are not sent. Sections get DOM id `section-<id>`; `hidden` sections are skipped live and dimmed in the editor.
+- **`ui/`:** token-driven primitives — `ProductCard`, `ProductRow`, `Overlay` (popup / drawer / sheet / full, focus trap, Esc, scroll lock), `product/` blocks, `Price`, `ProductImage`, `SmartImage`, `CtaLink`, `SectionHeading`, `RichText`, `SmartLinkAnchor`, `Scroller`, `EditorHint`, `StoreIcon`, `useCountdown`, `FoodMark`, `CompareTable`.
+- **`shell/`:** `StorefrontRoute`, `ShellFrame` (theme CSS, `.sf-root`, header slot with sticky / hide-on-scroll / overlay / sidebar placement, `--sf-header-h`, footer slot, overlay root — shared by the live store and the editor preview), `StoreShell` (page by route kind, product view, cart, toasts, recently viewed, auth / account, return policy, back-to-top, mobile bar, compare tray, lazy chatbot), `seo.ts`, `PreviewBanner`.
+- **Packs:** each = runtime `manifest.ts` (+ `layouts/`, lazy chunks) and editor-only `editor.ts` (fields with `group` / `showIf`, blocks, presets, keywords, per-layout description + thumb).
+- **Dev gallery:** `/__storefront/gallery` (DEV only) renders every card / header / section / footer layout with fixtures under any palette × kit × font × scheme × width.
+- **Bundles:** `chunk-storefront` = `core/` + `ui/` + `shell/` (~125 kB / 39 kB gzip); each layout its own chunk; editor chunk ~231 kB / 65 kB gzip incl. `@dnd-kit` (`../context.md` §5.6).
+
+## Known issues
+Open items in [known-issues](known-issues.md): KI-035.
 
 ## Suggestions
 - Template data manager (SuperAdmin) — deferred; templates stay code packs (D2).
 - Enforce the monthly AI limit for every AI feature, not only the builder (see *Changes to be done*).
-- AI suggestions that reuse the merchant's own product photos for image fields (today AI leaves images empty).
 
 ## Changes to be done
 Full plan: [`docs/plan-storefront-builder.md`](../docs/plan-storefront-builder.md). Decisions D1–D11 agreed 2026-10-11 (plan §9); D12 to be confirmed per phase.

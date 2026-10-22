@@ -1,13 +1,20 @@
 ## specs
 
-Per-feature specs live in `specs/` (index: `specs/README.md`). They hold purpose, scope, rules, UI, suggestions and agreed changes; `context.md` holds implementation detail; `changes.md` holds history.
+Per-feature specs live in `specs/` — table of contents: `specs/index.md`; how specs work: `specs/README.md`. Each spec covers one feature end to end (purpose, scope, functional behaviour, rules, backend data / API / logic, frontend routes / screens / code, known-issue IDs, suggestions, agreed changes). All open problems are in `specs/known-issues.md` (`KI-NNN`). `context.md` holds architecture and cross-cutting detail; `changes.md` holds history.
 
-Rules:
-- Before changing a feature, read `context.md`, `specs/_invariants.md` and that feature's spec. Do not break a listed rule (e.g. `CAT-R3`, `INV-2`) without the user's approval.
-- Planned work goes into the spec's *Changes to be done* before implementation. New feature: copy `specs/_template.md`, set `status: draft`, add it to `specs/README.md`.
-- In the same change: update the spec's Rules/Scope/UI if behaviour changed and remove the shipped item from *Changes to be done*; update `context.md` if implementation detail changed; add one line to `changes.md` tagged with the spec id (e.g. `[catalog]`).
+Before making any change:
+- Find the affected feature(s) in `specs/index.md` and read each spec, `specs/_invariants.md`, the spec's *Known issues* entries in `specs/known-issues.md`, and the relevant `context.md` sections.
+- Do not break a listed rule (e.g. `CAT-R3`, `INV-2`) without the user's approval.
+- Write planned work into the spec's *Changes to be done* before implementing. New feature: copy `specs/_template.md`, set `status: draft`, add it to `specs/index.md`.
 - Before building or changing any UI in `frontend/`, read `frontend/design.md` (design rulebook) and follow it.
-- Keep specs high-level; do not copy implementation detail from `context.md` into them. `landing_website/` has no specs.
+
+After making a change (same change, not later):
+- Update every affected spec so it describes what the code now does — *Functional behaviour*, *Rules*, *Backend*, *Frontend* — and remove the shipped item from *Changes to be done*.
+- `specs/known-issues.md`: delete issues the change fixed (and their IDs from the specs); add any new problem found with the next free ID and list the ID in the affected specs.
+- Update `specs/index.md` if a spec was added, renamed or removed; take new rule numbers from the table in `specs/README.md` and update it.
+- Update `context.md` only if architecture or cross-cutting detail changed; add one line to `changes.md` tagged with the spec id (e.g. `[catalog-products]`).
+
+Conventions: feature detail lives in the owning spec only (others link to it); spec families share a file-name prefix (e.g. `storefront-builder-*`, `catalog-*`) and a rule-ID prefix; rule and KI IDs are never renumbered or reused. `landing_website/` has no specs.
 
 ## graphify
 
