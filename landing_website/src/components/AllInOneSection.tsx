@@ -18,8 +18,7 @@ import {
   CreditCard,
   Copy,
   Check,
-  ShieldCheck,
-  ExternalLink
+  ShieldCheck
 } from 'lucide-react';
 
 interface AllInOneSectionProps {

@@ -4,20 +4,14 @@ import {
   Sparkles,
   Bot,
   Search,
-  TrendingUp,
-  Layers,
-  Zap,
   CheckCircle2,
   ArrowRight,
   ChevronDown,
   ChevronUp,
-  ChevronRight,
   BookOpen,
   Wrench,
   FlaskConical,
-  Pill,
   Zap as ZapIcon,
-  Cpu,
   Car,
   HardHat,
   Box,
@@ -27,16 +21,9 @@ import {
   Building2,
   FileText,
   DollarSign,
-  Package,
-  Warehouse,
-  Clock,
   Database,
   Users,
-  MessageSquare,
-  RefreshCw,
-  Target,
   ShoppingCart,
-  Percent,
   Sprout,
   BarChart3,
   Truck,
@@ -285,68 +272,6 @@ export const WholesalersIndustryPage: React.FC<WholesalersIndustryPageProps> = (
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
-      {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@graph': [
-              {
-                '@type': 'WebPage',
-                '@id': 'https://silarai.com/?page=wholesalers#webpage',
-                url: 'https://silarai.com/?page=wholesalers',
-                name: 'AI Commerce Platform for Wholesalers | B2B AI Shopping Assistant | SilarAI',
-                description:
-                  'Modernize wholesale commerce with AI Shopping Assistants, B2B ordering, dealer portals, RFQ automation, ERP integration, and AI-powered product discovery.',
-              },
-              {
-                '@type': 'SoftwareApplication',
-                name: 'SilarAI Wholesale Commerce AI Platform',
-                operatingSystem: 'Cloud Native / Web / Headless API',
-                applicationCategory: 'BusinessApplication, ECommerceApplication',
-                description:
-                  'Enterprise AI Commerce Platform for Wholesalers featuring AI Shopping Assistants, B2B Customer Portals, Customer-Specific Pricing, RFQ Automation, and Real-Time ERP Integration.',
-                aggregateRating: {
-                  '@type': 'AggregateRating',
-                  ratingValue: '4.98',
-                  ratingCount: '210',
-                },
-              },
-              {
-                '@type': 'Service',
-                name: 'AI Commerce Platform for Wholesalers',
-                provider: {
-                  '@type': 'Organization',
-                  name: 'SilarAI Technologies',
-                  url: 'https://silarai.com',
-                },
-                areaServed: 'Worldwide',
-                serviceType: 'Wholesale B2B AI Commerce Solutions',
-              },
-              {
-                '@type': 'FAQPage',
-                mainEntity: WHOLESALE_FAQS.map((faq) => ({
-                  '@type': 'Question',
-                  name: faq.q,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: faq.a,
-                  },
-                })),
-              },
-              {
-                '@type': 'BreadcrumbList',
-                itemListElement: [
-                  { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://silarai.com' },
-                  { '@type': 'ListItem', position: 2, name: 'Industries', item: 'https://silarai.com/#industries' },
-                  { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for Wholesalers', item: 'https://silarai.com/?page=wholesalers' },
-                ],
-              },
-            ],
-          }),
-        }}
-      />
 
       {/* Top Banner & Breadcrumb Navigation */}
       <Breadcrumbs

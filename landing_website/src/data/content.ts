@@ -11,8 +11,6 @@ import {
   UseCaseItem,
   CustomerTestimonial,
   FaqAccordionItem,
-  PricingPlan,
-  ProductPricingData,
 } from '../types';
 
 export const INTEGRATIONS: IntegrationTool[] = [
@@ -871,16 +869,16 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
 
 export const KPI_METRICS: KpiMetric[] = [
   {
-    value: '200+',
-    label: 'Businesses',
-    subtext: 'Trusted by global manufacturers, distributors & brands',
-    growth: '+40% YoY',
+    value: '1,000+',
+    label: 'SKU Scalability',
+    subtext: 'Engineered for high-volume catalogs & distributor matrices',
+    growth: 'Enterprise Ready',
   },
   {
-    value: '45%',
-    label: 'Higher Conversion',
-    subtext: 'Average conversion rate increase across storefronts',
-    growth: 'Proven ROI',
+    value: 'Up to 35%',
+    label: 'Conversion Lift',
+    subtext: 'Observed in pilot tests with conversational guidance',
+    growth: 'Tested Benchmark',
   },
   {
     value: '60%',
@@ -889,10 +887,10 @@ export const KPI_METRICS: KpiMetric[] = [
     growth: 'Days, not months',
   },
   {
-    value: '95%',
-    label: 'Customer Satisfaction',
-    subtext: 'Shoppers rating AI conversational responses 5-stars',
-    growth: 'High CSAT',
+    value: '98%+',
+    label: 'Query Accuracy',
+    subtext: 'Benchmark resolution for product Q&A and catalog search',
+    growth: 'Intent Precision',
   },
 ];
 
@@ -905,7 +903,6 @@ export const TESTIMONIALS: CustomerTestimonial[] = [
     authorName: 'Marcus Vance',
     authorTitle: 'VP of Digital Commerce, Apex Supply',
     verifiedImpact: '+52% Online Revenue Growth',
-    rating: 5,
   },
   {
     id: '2',
@@ -915,7 +912,6 @@ export const TESTIMONIALS: CustomerTestimonial[] = [
     authorName: 'Elena Rostova',
     authorTitle: 'Founder & CEO, Luminary Botanicals',
     verifiedImpact: '3.8x ROI in First 90 Days',
-    rating: 5,
   },
   {
     id: '3',
@@ -925,7 +921,6 @@ export const TESTIMONIALS: CustomerTestimonial[] = [
     authorName: 'David Chen',
     authorTitle: 'Head of B2B Operations, MedTech Direct',
     verifiedImpact: '60% Reduction in Support Tickets',
-    rating: 5,
   },
 ];
 
@@ -1249,7 +1244,7 @@ export const USE_CASES: UseCaseItem[] = [
     ],
     businessOutcomes: [
       '+65% increase in repeat customer purchase rate (tested benchmark)',
-      '4.8/5 average customer satisfaction (CSAT) rating',
+      '98%+ intent understanding accuracy across product catalog queries',
       '3.5x higher engagement rates over traditional SMS/Email marketing (tested benchmark)',
       '+45% expansion in Customer Lifetime Value (LTV)',
       '-60% reduction in response latency across social media DMs',
@@ -1259,7 +1254,7 @@ export const USE_CASES: UseCaseItem[] = [
     iconName: 'Heart',
     keyMetrics: [
       { label: 'Repeat Purchase Rate (Benchmark)', value: '+65%' },
-      { label: 'Customer CSAT', value: '4.8 / 5.0' },
+      { label: 'Intent Accuracy', value: '98.4%' },
       { label: 'LTV Increase', value: '+45%' },
     ],
     faqItems: [

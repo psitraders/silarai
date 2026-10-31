@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bot, ChevronDown, Menu, X, ArrowRight, Sparkles, Building2, ShoppingBag, ShieldCheck, UserPlus, TrendingUp, Heart, Compass, Briefcase, Palette, LogIn, BookOpen } from 'lucide-react';
+import { Bot, ChevronDown, Menu, X, ArrowRight, Sparkles, Building2, ShoppingBag, ShieldCheck, TrendingUp, Rocket } from 'lucide-react';
 import { SilarAiBrandLogo } from './SilarAiBrandLogo';
 
 interface NavbarProps {
@@ -14,6 +14,8 @@ interface NavbarProps {
   onNavigateShopifyAiShoppingAssistant?: () => void;
   onNavigateWoocommerceComparison?: () => void;
   onNavigateAiCommerceMarketingPlatform?: () => void;
+  onNavigateLaunchOnlineStore?: () => void;
+  onNavigatePricing?: () => void;
   onSelectAiShoppingPage?: (pageId: 1 | 2 | 3) => void;
   onSelectAiCommercePage?: (pageId: 1 | 2 | 3) => void;
   onSelectD2cPage?: (sectionId?: string) => void;
@@ -36,6 +38,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateShopifyAiShoppingAssistant,
   onNavigateWoocommerceComparison,
   onNavigateAiCommerceMarketingPlatform,
+  onNavigateLaunchOnlineStore,
+  onNavigatePricing,
   onSelectAiShoppingPage,
   onSelectAiCommercePage,
   onSelectD2cPage,
@@ -50,8 +54,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [quickNavOpen, setQuickNavOpen] = useState(false);
 
   const [platformDropdownOpen, setPlatformDropdownOpen] = useState(false);
-  const [industriesDropdownOpen, setIndustriesDropdownOpen] = useState(false);
-  const [useCasesDropdownOpen, setUseCasesDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,8 +67,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     setQuickNavOpen(false);
     setMobileMenuOpen(false);
     setPlatformDropdownOpen(false);
-    setIndustriesDropdownOpen(false);
-    setUseCasesDropdownOpen(false);
     if (onGoHome) {
       onGoHome();
     }
@@ -207,6 +207,31 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">
                         Ecommerce store, AI Shopping &amp; Meta marketing
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setPlatformDropdownOpen(false);
+                      if (onNavigateLaunchOnlineStore) {
+                        onNavigateLaunchOnlineStore();
+                      } else {
+                        window.location.href = '/launch-online-store';
+                      }
+                    }}
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-plum-50 transition-colors flex items-start gap-3 group/item cursor-pointer"
+                  >
+                    <div className="p-2 rounded-lg bg-teal-100 text-teal-800 group-hover/item:bg-plum-700 group-hover/item:text-peach-300 transition-colors">
+                      <Rocket className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-slate-900 group-hover/item:text-plum-700 flex items-center gap-1.5">
+                        <span>Launch Online Store</span>
+                        <span className="text-[10px] font-bold text-white bg-teal-600 px-1.5 py-0.2 rounded">30 Mins ↗</span>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        Brand styling, custom domain &amp; turnkey B2B/B2C store
                       </div>
                     </div>
                   </button>
@@ -488,7 +513,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                   <div className="pt-3 mt-3 border-t border-plum-800/70">
                     <button
-                      onClick={() => scrollToSection('pricing')}
+                      onClick={() => {
+                        setQuickNavOpen(false);
+                        setMobileMenuOpen(false);
+                        setPlatformDropdownOpen(false);
+                        if (onNavigatePricing) {
+                          onNavigatePricing();
+                        } else {
+                          scrollToSection('pricing');
+                        }
+                      }}
                       className="w-full py-2 px-3 rounded-xl bg-plum-800/80 hover:bg-plum-700 text-peach-300 font-bold text-xs transition-colors flex items-center justify-between group cursor-pointer border border-plum-700/60"
                     >
                       <span className="flex items-center gap-1.5">

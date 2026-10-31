@@ -19,22 +19,14 @@ import {
   Store,
   Factory,
   Truck,
-  Building2,
   Check,
-  Flame,
-  BarChart3,
-  ExternalLink,
   ChevronDown,
   ShoppingCart,
   Workflow,
   RefreshCw,
-  PhoneCall,
   Boxes,
   Database,
-  ArrowUpRight,
-  Clock,
-  Send,
-  Home
+  ArrowUpRight
 } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
 
@@ -51,8 +43,6 @@ export const FmcgRetailerOrderingPage: React.FC<FmcgRetailerOrderingPageProps> =
 }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [activeTab, setActiveTab] = useState<'manufacturers' | 'distributors' | 'wholesalers'>('manufacturers');
-  const [demoInput, setDemoInput] = useState<string>('I need 20 cases of the 500ml beverage and 10 cases of the family pack.');
-  const [chatStep, setChatStep] = useState<number>(2); // 0: ask, 1: found, 2: confirmed
 
   const sampleQueries = [
     'Show me your 500ml beverages.',
@@ -62,9 +52,8 @@ export const FmcgRetailerOrderingPage: React.FC<FmcgRetailerOrderingPageProps> =
     'I want to reorder what I purchased last month.'
   ];
 
-  const handleSelectSampleQuery = (q: string) => {
-    setDemoInput(q);
-    setChatStep(1);
+  const handleSelectSampleQuery = (_query: string) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const aeoFaqs = [
@@ -393,20 +382,24 @@ export const FmcgRetailerOrderingPage: React.FC<FmcgRetailerOrderingPageProps> =
               </div>
             </div>
 
-            {/* Entity Keyword Strip for AIO / GEO */}
+            {/* Entity Keyword Strip for AIO / GEO - Keywords active in backend, visual UI kept clean */}
             <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-              <div className="flex flex-wrap items-center gap-3 text-slate-300">
-                <span className="font-bold text-white">Target Entity Keywords:</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">FMCG Retailer Ordering Solution</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Conversational Commerce</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Agentic AI</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">AI Shopping Assistant for FMCG</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">WhatsApp Ordering for Retailers</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Bulk Reordering FMCG</span>
+              {/* Keywords preserved in backend for search engines, AI crawlers, and screen readers - avoided in user visual search */}
+              <div className="sr-only" aria-label="Backend Target Entity Keywords for AI Indexing">
+                <span>Target Entity Keywords: FMCG Retailer Ordering Solution, Conversational Commerce, Agentic AI, AI Shopping Assistant for FMCG, WhatsApp Ordering for Retailers, Bulk Reordering FMCG.</span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-300">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="font-semibold text-slate-200">
+                  Automated Retailer Ordering &bull; Web, Mobile &amp; WhatsApp Reordering
+                </span>
               </div>
               <button
                 onClick={() => onBookDemo('FMCG Retailer Ordering AIO Consultation')}
-                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm flex items-center gap-1.5"
+                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm hover:shadow-md flex items-center gap-1.5"
               >
                 <span>Book Retailer Ordering Demo</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -1420,7 +1413,7 @@ export const FmcgRetailerOrderingPage: React.FC<FmcgRetailerOrderingPageProps> =
               </a>
 
               <a
-                href="/ai-commerce-platform"
+                href="/commerce-platform"
                 className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
               >
                 <div className="flex items-center justify-between">

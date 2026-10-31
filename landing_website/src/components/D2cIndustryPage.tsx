@@ -3,47 +3,28 @@ import {
   ShoppingBag,
   Sparkles,
   Bot,
-  Search,
   TrendingUp,
   Layers,
-  Zap,
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
   ChevronRight,
-  BookOpen,
   MessageSquare,
   Users,
-  RefreshCw,
   Target,
   ShoppingCart,
-  Percent,
   Check,
-  Globe,
-  Share2,
   Cpu,
-  BarChart3,
-  HelpCircle,
-  ShieldCheck,
   Gift,
-  PackageCheck,
-  Send,
   Smartphone,
-  Eye,
   Store,
   ChevronDown,
   Calculator,
-  Sliders,
-  DollarSign,
-  Award,
   Network,
   GitBranch,
-  Workflow,
   ExternalLink,
   Link,
-  Compass,
   CornerDownRight,
-  Activity,
   Home,
   Building2
 } from 'lucide-react';
@@ -66,7 +47,6 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
   onNavigateD2cSection,
   initialSection,
 }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'shopping-assistant' | 'commerce-platform' | 'increase-sales' | 'roi-calculator'>('all');
   const [selectedArchitectureNode, setSelectedArchitectureNode] = useState<string>('ai-shopping-assistant');
 
   // 9 Semantic Topic Hubs in the D2C Interlinking Architecture Tree
@@ -218,7 +198,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
     intent: string;
     productRecommendation: string;
     price: string;
-    rating: string;
+    stockStatus: string;
     explanation: string;
     bundleSuggestion: string;
   }>({
@@ -226,7 +206,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
     intent: 'Dry Skin Hydration & Barrier Repair (Fragrance-Free)',
     productRecommendation: 'Hydra-Barrier 5X Ceramide Cream (50ml)',
     price: '₹1,299',
-    rating: '4.9 ★ (1,420 reviews)',
+    stockStatus: 'In Stock • Ready to Dispatch',
     explanation:
       'Formulated with 5 essential skin-identical ceramides, centella asiatica, and hyaluronic acid to replenish lipid moisture for 48 hours without clogging pores. 100% fragrance-free and clinically dermatologically tested.',
     bundleSuggestion: 'Pair with Gentle Oat Hydrating Cleanser for 15% bundle savings (Total: ₹1,899)',
@@ -238,7 +218,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
       intent: 'Dry Skin Hydration & Barrier Repair (Fragrance-Free)',
       productRecommendation: 'Hydra-Barrier 5X Ceramide Cream (50ml)',
       price: '₹1,299',
-      rating: '4.9 ★ (1,420 reviews)',
+      stockStatus: 'In Stock • Ready to Dispatch',
       explanation:
         'Formulated with 5 essential skin-identical ceramides, centella asiatica, and hyaluronic acid to replenish lipid moisture for 48 hours without clogging pores. 100% fragrance-free and dermatologically tested.',
       bundleSuggestion: 'Pair with Gentle Oat Hydrating Cleanser for 15% bundle savings (Total: ₹1,899)',
@@ -248,7 +228,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
       intent: 'Daily UV Protection & Matte/Invisible Finish',
       productRecommendation: 'Invisible Fluid Sunscreen SPF 50+ PA++++ (50g)',
       price: '₹849',
-      rating: '4.8 ★ (2,850 reviews)',
+      stockStatus: 'In Stock • Fast Shipping',
       explanation:
         'Water-light gel formulation with new-gen UV filters and niacinamide. Blends transparently on all skin tones with zero white cast and controls midday shine for 8+ hours.',
       bundleSuggestion: 'Pair with Vitamin C Brightening Serum for complete photo-aging defense (Save ₹350)',
@@ -258,7 +238,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
       intent: 'Curated Gifting & Specialty Coffee Set',
       productRecommendation: 'Artisan Pour-Over Barista Gift Box',
       price: '₹2,699',
-      rating: '5.0 ★ (890 reviews)',
+      stockStatus: 'In Stock • Gift Packaging Ready',
       explanation:
         'Includes double-wall borosilicate dripper, hand-crank conical burr grinder, and 250g estate single-origin beans in custom gold-foiled luxury gift packaging with a handwritten note option.',
       bundleSuggestion: 'Add insulated ceramic travel mug for just ₹499 (Standard price: ₹899)',
@@ -268,7 +248,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
       intent: 'Road Running & Joint Shock Absorption',
       productRecommendation: 'CloudStride Pro Max Road Cushion (Size 9-11 in stock)',
       price: '₹4,499',
-      rating: '4.9 ★ (3,120 reviews)',
+      stockStatus: 'In Stock • Verified Sizing ATP',
       explanation:
         'Engineered with dual-density nitrogen-infused foam and anatomical arch support to absorb 42% more pavement impact, protecting knees and Achilles tendons over daily 5K–10K runs.',
       bundleSuggestion: 'Add 3-pack anti-blister technical running socks for ₹599',
@@ -387,10 +367,10 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
       />
 
       {/* TOP OF PAGE: Primary 3-Chapter Navigation & Exploration Switcher */}
-      <div className="bg-plum-900/95 text-white border-b border-plum-700/80 shadow-lg sticky top-0 z-40 backdrop-blur-md">
+      <div className="bg-[#0e222b]/95 text-white border-b border-[#245668]/70 shadow-lg sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-2 text-xs font-bold shrink-0">
-            <span className="text-peach-300 font-black text-[11px] uppercase tracking-wider mr-1 hidden lg:inline-flex items-center gap-1">
+            <span className="text-[#0D8F81] font-black text-[11px] uppercase tracking-wider mr-1 hidden lg:inline-flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Guide Navigation:</span>
             </span>
@@ -399,11 +379,11 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               onClick={() => scrollToAnchor('shopping-assistant')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
                 activeSection === 'shopping-assistant'
-                  ? 'bg-peach-300 text-plum-950 font-black shadow-md ring-2 ring-peach-200'
-                  : 'bg-plum-800/80 text-slate-200 hover:bg-plum-700 hover:text-white border border-plum-700/60'
+                  ? 'bg-[#0D8F81] text-white font-black shadow-md ring-2 ring-[#0D8F81]/40'
+                  : 'bg-[#183a47]/80 text-slate-200 hover:bg-[#245668] hover:text-white border border-[#245668]/60'
               }`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${activeSection === 'shopping-assistant' ? 'bg-plum-950 text-peach-300' : 'bg-plum-950/60 text-slate-300'}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${activeSection === 'shopping-assistant' ? 'bg-white/20 text-white' : 'bg-[#0e222b] text-teal-300'}`}>
                 1
               </span>
               <Bot className="w-3.5 h-3.5 shrink-0" />
@@ -414,11 +394,11 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               onClick={() => scrollToAnchor('commerce-platform')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
                 activeSection === 'commerce-platform'
-                  ? 'bg-peach-300 text-plum-950 font-black shadow-md ring-2 ring-peach-200'
-                  : 'bg-plum-800/80 text-slate-200 hover:bg-plum-700 hover:text-white border border-plum-700/60'
+                  ? 'bg-[#0D8F81] text-white font-black shadow-md ring-2 ring-[#0D8F81]/40'
+                  : 'bg-[#183a47]/80 text-slate-200 hover:bg-[#245668] hover:text-white border border-[#245668]/60'
               }`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${activeSection === 'commerce-platform' ? 'bg-plum-950 text-peach-300' : 'bg-plum-950/60 text-slate-300'}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${activeSection === 'commerce-platform' ? 'bg-white/20 text-white' : 'bg-[#0e222b] text-teal-300'}`}>
                 2
               </span>
               <Layers className="w-3.5 h-3.5 shrink-0" />
@@ -429,11 +409,11 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               onClick={() => scrollToAnchor('increase-sales')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
                 activeSection === 'increase-sales'
-                  ? 'bg-peach-300 text-plum-950 font-black shadow-md ring-2 ring-peach-200'
-                  : 'bg-plum-800/80 text-slate-200 hover:bg-plum-700 hover:text-white border border-plum-700/60'
+                  ? 'bg-[#0D8F81] text-white font-black shadow-md ring-2 ring-[#0D8F81]/40'
+                  : 'bg-[#183a47]/80 text-slate-200 hover:bg-[#245668] hover:text-white border border-[#245668]/60'
               }`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${activeSection === 'increase-sales' ? 'bg-plum-950 text-peach-300' : 'bg-plum-950/60 text-slate-300'}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${activeSection === 'increase-sales' ? 'bg-white/20 text-white' : 'bg-[#0e222b] text-teal-300'}`}>
                 3
               </span>
               <TrendingUp className="w-3.5 h-3.5 shrink-0" />
@@ -444,8 +424,8 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               onClick={() => scrollToAnchor('roi-calculator')}
               className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
                 activeSection === 'roi-calculator'
-                  ? 'bg-emerald-400 text-slate-950 font-black shadow-md ring-2 ring-emerald-300'
-                  : 'bg-plum-950/60 text-peach-200 hover:bg-plum-800 border border-peach-300/30'
+                  ? 'bg-[#0D8F81] text-white font-black shadow-md ring-2 ring-[#0D8F81]/40'
+                  : 'bg-[#183a47]/70 text-teal-200 hover:bg-[#245668] border border-[#245668]/50'
               }`}
             >
               <Calculator className="w-3.5 h-3.5 shrink-0" />
@@ -456,8 +436,8 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               onClick={() => scrollToAnchor('interlinking-architecture')}
               className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
                 activeSection === 'interlinking-architecture'
-                  ? 'bg-peach-300 text-plum-950 font-black shadow-md ring-2 ring-peach-200'
-                  : 'bg-plum-950/60 text-peach-200 hover:bg-plum-800 border border-peach-300/30'
+                  ? 'bg-[#0D8F81] text-white font-black shadow-md ring-2 ring-[#0D8F81]/40'
+                  : 'bg-[#183a47]/70 text-teal-200 hover:bg-[#245668] border border-[#245668]/50'
               }`}
             >
               <Network className="w-3.5 h-3.5 shrink-0" />
@@ -467,7 +447,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
 
           <button
             onClick={() => onBookDemo('D2C Top Navigation Bar')}
-            className="shrink-0 px-4 py-1.5 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-sm"
+            className="shrink-0 px-4 py-2 bg-gradient-to-r from-[#F48C68] via-[#F47A38] to-[#E97A52] hover:from-[#F47A38] hover:to-[#DE6B44] text-white font-black text-xs rounded-xl shadow-md transition-all cursor-pointer hidden sm:flex items-center gap-1.5"
           >
             <span>Book Demo</span>
             <ArrowRight className="w-3 h-3" />
@@ -476,20 +456,20 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
       </div>
 
       {/* Hero Master Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-plum-950 via-plum-900 to-slate-900 text-white py-12 sm:py-20">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#0e222b] via-[#183a47] to-slate-900 text-white py-12 sm:py-20">
         {/* Subtle background glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-peach-300/10 blur-[130px] pointer-events-none rounded-full" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#0D8F81]/15 blur-[130px] pointer-events-none rounded-full" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="max-w-3xl space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-peach-300/10 border border-peach-300/30 text-peach-300 text-xs font-black uppercase tracking-wider">
-              <ShoppingBag className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0D8F81]/15 border border-[#0D8F81]/35 text-emerald-300 text-xs font-black uppercase tracking-wider">
+              <ShoppingBag className="w-3.5 h-3.5 text-[#0D8F81]" />
               <span>Direct-to-Consumer Commerce Intelligence</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
               AI Commerce Platform <br />
-              <span className="text-peach-300">for D2C Brands</span>
+              <span className="text-[#0D8F81]">for D2C Brands</span>
             </h1>
 
             <p className="text-base sm:text-xl text-slate-300 leading-relaxed font-normal">
@@ -499,7 +479,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
                 onClick={() => onBookDemo('D2C Hero CTA')}
-                className="px-8 py-4 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-sm rounded-xl shadow-xl shadow-peach-300/10 transition-all flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
+                className="px-8 py-4 bg-gradient-to-r from-[#F48C68] via-[#F47A38] to-[#E97A52] hover:from-[#F47A38] hover:to-[#DE6B44] text-white font-black text-sm rounded-xl shadow-xl shadow-[#F47A38]/20 transition-all flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
               >
                 <span>Request Custom D2C Demo</span>
                 <ArrowRight className="w-4 h-4" />
@@ -507,17 +487,17 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
 
               <button
                 onClick={() => scrollToAnchor('shopping-assistant')}
-                className="px-6 py-4 bg-plum-800/80 hover:bg-plum-700/80 text-white font-bold text-sm rounded-xl border border-plum-700 transition-all flex items-center gap-2 cursor-pointer"
+                className="px-6 py-4 bg-[#183a47]/90 hover:bg-[#245668] text-white font-bold text-sm rounded-xl border border-[#245668] transition-all flex items-center gap-2 cursor-pointer"
               >
                 <span>Explore 3-Part Guide Below</span>
-                <ChevronDown className="w-4 h-4 text-peach-300" />
+                <ChevronDown className="w-4 h-4 text-emerald-400" />
               </button>
             </div>
           </div>
 
           {/* Interactive 3-Chapter Clickable Exploration Cards at Top of Page */}
           <div className="space-y-3 pt-2">
-            <div className="text-xs font-black uppercase tracking-wider text-peach-300 flex items-center gap-1.5">
+            <div className="text-xs font-black uppercase tracking-wider text-[#0D8F81] flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Click to Navigate Any Chapter Instantly</span>
             </div>
@@ -526,26 +506,26 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               {/* Card 1 */}
               <button
                 onClick={() => scrollToAnchor('shopping-assistant')}
-                className="p-5 rounded-2xl bg-plum-900/60 hover:bg-plum-800/90 border border-plum-700/80 hover:border-peach-300/80 text-left transition-all group cursor-pointer space-y-3 shadow-md flex flex-col justify-between"
+                className="p-5 rounded-2xl bg-[#183a47]/50 hover:bg-[#183a47]/90 border border-[#245668]/70 hover:border-[#0D8F81]/70 text-left transition-all group cursor-pointer space-y-3 shadow-md flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="w-7 h-7 rounded-lg bg-peach-300 text-plum-950 font-black text-xs flex items-center justify-center shadow-xs">
+                    <span className="w-7 h-7 rounded-lg bg-[#0D8F81] text-white font-black text-xs flex items-center justify-center shadow-xs">
                       01
                     </span>
-                    <span className="text-[11px] font-bold text-peach-300 bg-plum-950/80 px-2 py-0.5 rounded-md border border-plum-800">
+                    <span className="text-[11px] font-bold text-teal-300 bg-[#0e222b]/80 px-2 py-0.5 rounded-md border border-[#245668]">
                       Guided Shopping
                     </span>
                   </div>
-                  <h3 className="text-base font-black text-white group-hover:text-peach-300 transition-colors flex items-center gap-1.5">
-                    <Bot className="w-4 h-4 text-peach-300" />
+                  <h3 className="text-base font-black text-white group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+                    <Bot className="w-4 h-4 text-[#0D8F81]" />
                     <span>AI Shopping Assistant</span>
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     Interactive live discovery demo, multi-attribute parsing, SKU matching, and instant technical Q&amp;A.
                   </p>
                 </div>
-                <div className="pt-2 flex items-center gap-1 text-xs font-bold text-peach-300 group-hover:translate-x-1 transition-transform">
+                <div className="pt-2 flex items-center gap-1 text-xs font-bold text-[#0D8F81] group-hover:translate-x-1 transition-transform">
                   <span>Read Chapter 1</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
@@ -554,26 +534,26 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               {/* Card 2 */}
               <button
                 onClick={() => scrollToAnchor('commerce-platform')}
-                className="p-5 rounded-2xl bg-plum-900/60 hover:bg-plum-800/90 border border-plum-700/80 hover:border-peach-300/80 text-left transition-all group cursor-pointer space-y-3 shadow-md flex flex-col justify-between"
+                className="p-5 rounded-2xl bg-[#183a47]/50 hover:bg-[#183a47]/90 border border-[#245668]/70 hover:border-[#0D8F81]/70 text-left transition-all group cursor-pointer space-y-3 shadow-md flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="w-7 h-7 rounded-lg bg-peach-300 text-plum-950 font-black text-xs flex items-center justify-center shadow-xs">
+                    <span className="w-7 h-7 rounded-lg bg-[#0D8F81] text-white font-black text-xs flex items-center justify-center shadow-xs">
                       02
                     </span>
-                    <span className="text-[11px] font-bold text-peach-300 bg-plum-950/80 px-2 py-0.5 rounded-md border border-plum-800">
+                    <span className="text-[11px] font-bold text-teal-300 bg-[#0e222b]/80 px-2 py-0.5 rounded-md border border-[#245668]">
                       Full Platform
                     </span>
                   </div>
-                  <h3 className="text-base font-black text-white group-hover:text-peach-300 transition-colors flex items-center gap-1.5">
-                    <Layers className="w-4 h-4 text-peach-300" />
+                  <h3 className="text-base font-black text-white group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-[#0D8F81]" />
                     <span>AI Commerce Platform</span>
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     Full-funnel customer journey, vector catalog knowledge layer, and 15-minute Shopify/WooCommerce sync.
                   </p>
                 </div>
-                <div className="pt-2 flex items-center gap-1 text-xs font-bold text-peach-300 group-hover:translate-x-1 transition-transform">
+                <div className="pt-2 flex items-center gap-1 text-xs font-bold text-[#0D8F81] group-hover:translate-x-1 transition-transform">
                   <span>Read Chapter 2</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
@@ -582,26 +562,26 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               {/* Card 3 */}
               <button
                 onClick={() => scrollToAnchor('increase-sales')}
-                className="p-5 rounded-2xl bg-plum-900/60 hover:bg-plum-800/90 border border-plum-700/80 hover:border-peach-300/80 text-left transition-all group cursor-pointer space-y-3 shadow-md flex flex-col justify-between"
+                className="p-5 rounded-2xl bg-[#183a47]/50 hover:bg-[#183a47]/90 border border-[#245668]/70 hover:border-[#0D8F81]/70 text-left transition-all group cursor-pointer space-y-3 shadow-md flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="w-7 h-7 rounded-lg bg-peach-300 text-plum-950 font-black text-xs flex items-center justify-center shadow-xs">
+                    <span className="w-7 h-7 rounded-lg bg-[#0D8F81] text-white font-black text-xs flex items-center justify-center shadow-xs">
                       03
                     </span>
-                    <span className="text-[11px] font-bold text-peach-300 bg-plum-950/80 px-2 py-0.5 rounded-md border border-plum-800">
+                    <span className="text-[11px] font-bold text-teal-300 bg-[#0e222b]/80 px-2 py-0.5 rounded-md border border-[#245668]">
                       Growth Levers
                     </span>
                   </div>
-                  <h3 className="text-base font-black text-white group-hover:text-peach-300 transition-colors flex items-center gap-1.5">
-                    <TrendingUp className="w-4 h-4 text-peach-300" />
+                  <h3 className="text-base font-black text-white group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+                    <TrendingUp className="w-4 h-4 text-[#0D8F81]" />
                     <span>Increase Sales (9 Levers)</span>
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     9 strategic growth levers including cart recovery, dynamic upselling, WhatsApp commerce, and ROI model.
                   </p>
                 </div>
-                <div className="pt-2 flex items-center gap-1 text-xs font-bold text-peach-300 group-hover:translate-x-1 transition-transform">
+                <div className="pt-2 flex items-center gap-1 text-xs font-bold text-[#0D8F81] group-hover:translate-x-1 transition-transform">
                   <span>Read Chapter 3</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
@@ -610,29 +590,29 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
           </div>
 
           {/* Quick Metrics Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-plum-800/80">
-            <div className="bg-plum-900/40 border border-plum-800/60 p-4 rounded-2xl">
-              <div className="text-2xl sm:text-3xl font-black text-peach-300">+35%</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-[#245668]/80">
+            <div className="bg-[#183a47]/40 border border-[#245668]/60 p-4 rounded-2xl">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-400">+35%</div>
               <div className="text-xs font-bold text-white mt-1">Conversion Uplift</div>
-              <div className="text-[11px] text-plum-300">Guided shopping vs. static browse</div>
+              <div className="text-[11px] text-teal-200/80">Guided shopping vs. static browse</div>
             </div>
 
-            <div className="bg-plum-900/40 border border-plum-800/60 p-4 rounded-2xl">
-              <div className="text-2xl sm:text-3xl font-black text-peach-300">+28%</div>
+            <div className="bg-[#183a47]/40 border border-[#245668]/60 p-4 rounded-2xl">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-400">+28%</div>
               <div className="text-xs font-bold text-white mt-1">Higher AOV</div>
-              <div className="text-[11px] text-plum-300">Contextual bundling &amp; cross-sells</div>
+              <div className="text-[11px] text-teal-200/80">Contextual bundling &amp; cross-sells</div>
             </div>
 
-            <div className="bg-plum-900/40 border border-plum-800/60 p-4 rounded-2xl">
-              <div className="text-2xl sm:text-3xl font-black text-peach-300">&lt; 3s</div>
+            <div className="bg-[#183a47]/40 border border-[#245668]/60 p-4 rounded-2xl">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-400">&lt; 3s</div>
               <div className="text-xs font-bold text-white mt-1">Instant Q&amp;A</div>
-              <div className="text-[11px] text-plum-300">Grounded catalog specifications</div>
+              <div className="text-[11px] text-teal-200/80">Grounded catalog specifications</div>
             </div>
 
-            <div className="bg-plum-900/40 border border-plum-800/60 p-4 rounded-2xl">
-              <div className="text-2xl sm:text-3xl font-black text-peach-300">4.2x</div>
+            <div className="bg-[#183a47]/40 border border-[#245668]/60 p-4 rounded-2xl">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-400">4.2x</div>
               <div className="text-xs font-bold text-white mt-1">WhatsApp ROAS</div>
-              <div className="text-[11px] text-plum-300">Conversational recovery workflows</div>
+              <div className="text-[11px] text-teal-200/80">Conversational recovery workflows</div>
             </div>
           </div>
         </div>
@@ -646,8 +626,8 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
         <section id="shopping-assistant" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           {/* Chapter Header */}
           <div className="space-y-4 border-b border-slate-200 pb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-peach-100 text-plum-950 text-xs font-black uppercase tracking-wider">
-              <Bot className="w-3.5 h-3.5 text-plum-900" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200/80 text-[#0D8F81] text-xs font-black uppercase tracking-wider">
+              <Bot className="w-3.5 h-3.5 text-[#0D8F81]" />
               <span>Chapter 01 • Conversational Guided Shopping</span>
             </div>
 
@@ -660,10 +640,10 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
           </div>
 
           {/* Interactive Live Shopping Demo */}
-          <div className="bg-gradient-to-br from-plum-950 via-plum-900 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl space-y-8 border border-plum-800">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-plum-800 pb-6">
+          <div className="bg-gradient-to-br from-[#0e222b] via-[#183a47] to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl space-y-8 border border-[#245668]/80">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#245668]/80 pb-6">
               <div className="space-y-1">
-                <span className="text-xs font-black uppercase tracking-wider text-peach-300 flex items-center gap-1.5">
+                <span className="text-xs font-black uppercase tracking-wider text-[#0D8F81] flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Interactive Shopping Experience Demo</span>
                 </span>
@@ -671,7 +651,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                   See How Customers Shop With SilarAI
                 </h3>
               </div>
-              <span className="text-xs px-3 py-1 rounded-full bg-plum-800 text-plum-200 font-medium">
+              <span className="text-xs px-3 py-1 rounded-full bg-[#183a47] text-teal-200 border border-[#245668] font-medium">
                 Live Simulation
               </span>
             </div>
@@ -695,8 +675,8 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                       }}
                       className={`p-3 rounded-xl text-left text-xs font-semibold transition-all border cursor-pointer space-y-1 ${
                         isSelected
-                          ? 'bg-peach-300 text-plum-950 border-peach-300 shadow-md font-bold'
-                          : 'bg-plum-900/60 text-slate-200 border-plum-800 hover:bg-plum-800'
+                          ? 'bg-[#0D8F81] text-white border-[#0D8F81] shadow-md font-bold'
+                          : 'bg-[#183a47]/60 text-slate-200 border-[#245668]/60 hover:bg-[#245668]'
                       }`}
                     >
                       <div className="line-clamp-2">{preset.query}</div>
@@ -720,14 +700,14 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
 
               {/* AI Bubble with rich commerce card */}
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-peach-300 flex items-center justify-center text-xs font-black text-plum-950 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0D8F81] to-[#38b9a5] flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm">
                   <Bot className="w-4 h-4" />
                 </div>
 
-                <div className="bg-plum-950 border border-plum-800 rounded-2xl rounded-tl-none p-5 text-sm space-y-4 max-w-2xl shadow-lg">
-                  <div className="flex items-center justify-between border-b border-plum-800/80 pb-2">
-                    <span className="text-xs font-extrabold text-peach-300 flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3" />
+                <div className="bg-[#0e222b] border border-[#245668]/80 rounded-2xl rounded-tl-none p-5 text-sm space-y-4 max-w-2xl shadow-lg">
+                  <div className="flex items-center justify-between border-b border-[#245668]/80 pb-2">
+                    <span className="text-xs font-extrabold text-emerald-300 flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-[#0D8F81]" />
                       <span>Identified Intent: {demoResponse.intent}</span>
                     </span>
                     <span className="text-[11px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800/50">
@@ -740,20 +720,20 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                   </p>
 
                   {/* SKU Card */}
-                  <div className="bg-plum-900/80 border border-plum-700/80 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+                  <div className="bg-[#183a47]/70 border border-[#245668]/80 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="font-black text-white text-base">
                         {demoResponse.productRecommendation}
                       </div>
                       <div className="flex items-center gap-3 text-xs">
-                        <span className="text-peach-300 font-extrabold text-sm">{demoResponse.price}</span>
-                        <span className="text-slate-300">{demoResponse.rating}</span>
+                        <span className="text-emerald-400 font-extrabold text-sm">{demoResponse.price}</span>
+                        <span className="text-emerald-300 font-medium">{demoResponse.stockStatus}</span>
                       </div>
                     </div>
 
                     <button
                       onClick={() => onBookDemo('D2C Shopping Assistant Demo Click')}
-                      className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2 bg-gradient-to-r from-[#F48C68] via-[#F47A38] to-[#E97A52] hover:from-[#F47A38] hover:to-[#DE6B44] text-white font-black text-xs rounded-lg shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" />
                       <span>Add to Cart (1-Click)</span>
@@ -761,8 +741,8 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                   </div>
 
                   {/* Contextual Bundle suggestion */}
-                  <div className="p-3 bg-plum-900/40 rounded-xl border border-peach-300/30 text-xs text-peach-200 flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-peach-300 shrink-0" />
+                  <div className="p-3 bg-[#183a47]/40 rounded-xl border border-[#0D8F81]/30 text-xs text-teal-200 flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-[#0D8F81] shrink-0" />
                     <span><strong>Proactive Cross-Sell:</strong> {demoResponse.bundleSuggestion}</span>
                   </div>
                 </div>
@@ -810,9 +790,9 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               ].map((cap, cIdx) => (
                 <div
                   key={cIdx}
-                  className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2 hover:border-plum-400 hover:bg-white transition-all shadow-xs"
+                  className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2 hover:border-[#0D8F81]/50 hover:bg-white transition-all shadow-xs"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-plum-100 text-plum-900 flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-xl bg-teal-50 text-[#0D8F81] border border-teal-200/60 flex items-center justify-center font-bold">
                     <Check className="w-4 h-4" />
                   </div>
                   <h4 className="text-base font-black text-slate-900">{cap.title}</h4>
@@ -838,13 +818,13 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               </p>
             </div>
 
-            <div className="bg-plum-950 text-white rounded-3xl p-6 sm:p-8 space-y-4 border border-plum-800 shadow-lg">
-              <span className="text-xs font-black uppercase text-peach-300 tracking-wider">
+            <div className="bg-[#0e222b] text-white rounded-3xl p-6 sm:p-8 space-y-4 border border-[#245668]/80 shadow-lg">
+              <span className="text-xs font-black uppercase text-emerald-300 tracking-wider">
                 SilarAI Conversational Commerce (High Conversion)
               </span>
-              <div className="p-4 bg-plum-900 rounded-2xl border border-plum-700 space-y-2 text-xs font-black text-peach-200">
+              <div className="p-4 bg-[#183a47] rounded-2xl border border-[#245668] space-y-2 text-xs font-black text-teal-200">
                 <div className="flex items-center justify-between">
-                  <span className="text-white">1. Ask Intent</span> → <span className="text-peach-300">2. Grounded AI</span> → <span className="text-peach-300">3. Match SKU</span> → <span className="text-emerald-400">4. Direct Buy</span>
+                  <span className="text-white">1. Ask Intent</span> → <span className="text-[#0D8F81]">2. Grounded AI</span> → <span className="text-teal-300">3. Match SKU</span> → <span className="text-emerald-400">4. Direct Buy</span>
                 </div>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
@@ -856,15 +836,15 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
 
         {/* CONNECTING BRIDGE: AI Shopping Assistant → AI Product Recommendations → AI Commerce Platform */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-          <div className="bg-gradient-to-r from-plum-950 via-plum-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 border border-plum-800 shadow-xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-plum-800 pb-4">
+          <div className="bg-gradient-to-r from-[#0e222b] via-[#183a47] to-slate-900 text-white rounded-3xl p-6 sm:p-8 border border-[#245668]/80 shadow-xl space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#245668]/80 pb-4">
               <div className="space-y-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-peach-300/10 border border-peach-300/30 text-[11px] font-black uppercase text-peach-300 tracking-wider">
-                  <Target className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0D8F81]/15 border border-[#0D8F81]/30 text-[11px] font-black uppercase text-emerald-300 tracking-wider">
+                  <Target className="w-3 h-3 text-[#0D8F81]" />
                   <span>Contextual Interlink Flow • Step 01 ➔ Step 02</span>
                 </span>
                 <h4 className="text-lg sm:text-2xl font-black text-white">
-                  AI Shopping Assistant <span className="text-peach-300">→</span> AI Product Recommendations
+                  AI Shopping Assistant <span className="text-[#0D8F81]">→</span> AI Product Recommendations
                 </h4>
               </div>
               <div className="flex items-center gap-2">
@@ -876,9 +856,9 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                       scrollToAnchor('shopping-assistant');
                     }
                   }}
-                  className="px-3.5 py-1.5 bg-plum-800 hover:bg-plum-700 text-xs font-bold text-slate-200 rounded-lg border border-plum-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 bg-[#183a47] hover:bg-[#245668] text-xs font-bold text-slate-200 rounded-lg border border-[#245668] transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  <ExternalLink className="w-3 h-3 text-peach-300" />
+                  <ExternalLink className="w-3 h-3 text-[#0D8F81]" />
                   <span>Deep Dive: Shopping Assistant</span>
                 </button>
               </div>
@@ -893,33 +873,33 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                   <span className="text-[11px] font-bold text-slate-400">Contextual Keywords &amp; Sub-modules:</span>
                   <button
                     onClick={() => scrollToAnchor('shopping-assistant')}
-                    className="px-2.5 py-1 rounded-md bg-plum-800/80 hover:bg-plum-700 text-peach-300 text-[11px] font-bold border border-plum-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-md bg-[#183a47] hover:bg-[#245668] text-teal-300 text-[11px] font-bold border border-[#245668] transition-colors cursor-pointer"
                   >
                     #AI-Sales-Assistant
                   </button>
                   <button
                     onClick={() => scrollToAnchor('shopping-assistant')}
-                    className="px-2.5 py-1 rounded-md bg-plum-800/80 hover:bg-plum-700 text-peach-300 text-[11px] font-bold border border-plum-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-md bg-[#183a47] hover:bg-[#245668] text-teal-300 text-[11px] font-bold border border-[#245668] transition-colors cursor-pointer"
                   >
                     #Conversational-Commerce
                   </button>
                   <button
                     onClick={() => scrollToAnchor('commerce-platform')}
-                    className="px-2.5 py-1 rounded-md bg-plum-800/80 hover:bg-plum-700 text-peach-300 text-[11px] font-bold border border-plum-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-md bg-[#183a47] hover:bg-[#245668] text-teal-300 text-[11px] font-bold border border-[#245668] transition-colors cursor-pointer"
                   >
                     #AI-Product-Recommendations
                   </button>
                   <button
                     onClick={() => scrollToAnchor('commerce-platform')}
-                    className="px-2.5 py-1 rounded-md bg-plum-800/80 hover:bg-plum-700 text-peach-300 text-[11px] font-bold border border-plum-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-md bg-[#183a47] hover:bg-[#245668] text-teal-300 text-[11px] font-bold border border-[#245668] transition-colors cursor-pointer"
                   >
                     #Ecommerce-AI
                   </button>
                 </div>
               </div>
 
-              <div className="md:col-span-4 bg-plum-950/90 p-4 rounded-2xl border border-plum-700 space-y-3">
-                <div className="text-xs font-black text-peach-300 uppercase tracking-wider">
+              <div className="md:col-span-4 bg-[#0e222b]/90 p-4 rounded-2xl border border-[#245668] space-y-3">
+                <div className="text-xs font-black text-emerald-300 uppercase tracking-wider">
                   Next Step in Commerce Chain:
                 </div>
                 <div className="text-xs text-slate-300 leading-snug">
@@ -927,7 +907,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                 </div>
                 <button
                   onClick={() => scrollToAnchor('commerce-platform')}
-                  className="w-full py-2.5 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+                  className="w-full py-2.5 bg-gradient-to-r from-[#F48C68] via-[#F47A38] to-[#E97A52] hover:from-[#F47A38] hover:to-[#DE6B44] text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span>Explore AI Commerce Platform</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -943,8 +923,8 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
         <section id="commerce-platform" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           {/* Chapter Header */}
           <div className="space-y-4 border-b border-slate-200 pb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-plum-100 text-plum-950 text-xs font-black uppercase tracking-wider">
-              <Layers className="w-3.5 h-3.5 text-plum-900" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200/80 text-[#0D8F81] text-xs font-black uppercase tracking-wider">
+              <Layers className="w-3.5 h-3.5 text-[#0D8F81]" />
               <span>Chapter 02 • Full-Stack Commerce Platform</span>
             </div>
 
@@ -1002,10 +982,10 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
               ].map((stage, idx) => (
                 <div
                   key={idx}
-                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-2 hover:border-plum-500 transition-colors"
+                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-2 hover:border-[#0D8F81]/50 transition-colors"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="w-8 h-8 rounded-xl bg-plum-950 text-peach-300 font-black text-xs flex items-center justify-center">
+                    <span className="w-8 h-8 rounded-xl bg-[#0e222b] text-emerald-300 font-black text-xs flex items-center justify-center">
                       {stage.step}
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase">Stage {stage.step}</span>
@@ -1018,9 +998,9 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
           </div>
 
           {/* Product Catalog to AI Knowledge Layer Card */}
-          <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 space-y-6 border border-slate-800 shadow-xl">
+          <div className="bg-gradient-to-br from-[#0e222b] via-[#183a47] to-slate-900 text-white rounded-3xl p-6 sm:p-10 space-y-6 border border-[#245668] shadow-xl">
             <div className="space-y-3 max-w-3xl">
-              <span className="text-xs font-black uppercase tracking-wider text-peach-300 bg-plum-900 px-3 py-1 rounded-full border border-plum-700">
+              <span className="text-xs font-black uppercase tracking-wider text-emerald-300 bg-[#183a47] px-3 py-1 rounded-full border border-[#245668]">
                 Vector Catalog Intelligence
               </span>
               <h3 className="text-2xl sm:text-3xl font-black text-white">
@@ -1033,14 +1013,14 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs text-center font-bold text-slate-200">
               {['Formulations & Specs', 'Ingredients & Fabrics', 'Real-Time Inventory', 'Variant Matrices', 'Usage & Tutorials', 'Customer Reviews'].map((item, i) => (
-                <div key={i} className="p-3 bg-slate-800 rounded-xl border border-slate-700">
+                <div key={i} className="p-3 bg-[#183a47]/60 rounded-xl border border-[#245668]/70">
                   {item}
                 </div>
               ))}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 text-xs">
-              <div className="bg-slate-800/80 p-4 rounded-2xl space-y-1.5 border border-slate-700">
+              <div className="bg-[#183a47]/50 p-4 rounded-2xl space-y-1.5 border border-[#245668]/70">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Conventional Keyword Search:</span>
                 <p className="text-slate-300 font-mono text-xs">"running shoes size 10"</p>
                 <p className="text-[11px] text-slate-400">
@@ -1048,9 +1028,9 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                 </p>
               </div>
 
-              <div className="bg-plum-950 p-4 rounded-2xl space-y-1.5 border border-plum-700 shadow-md">
-                <span className="text-[10px] font-bold text-peach-300 uppercase">SilarAI Semantic Understanding:</span>
-                <p className="text-peach-200 font-bold text-xs">
+              <div className="bg-[#0e222b] p-4 rounded-2xl space-y-1.5 border border-[#245668] shadow-md">
+                <span className="text-[10px] font-bold text-emerald-400 uppercase">SilarAI Semantic Understanding:</span>
+                <p className="text-teal-200 font-bold text-xs">
                   "I have flat feet and run on road pavement. What provides the best stability?"
                 </p>
                 <p className="text-emerald-400 text-[11px] font-semibold">
@@ -1061,17 +1041,17 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
           </div>
 
           {/* Integration Ecosystem: Shopify, WooCommerce, Custom APIs */}
-          <div className="bg-plum-50/70 border border-plum-200 rounded-3xl p-6 sm:p-10 space-y-6">
+          <div className="bg-[#edf9f7]/70 border border-[#0D8F81]/25 rounded-3xl p-6 sm:p-10 space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-xs font-black uppercase text-plum-950 bg-peach-300 px-3 py-1 rounded-full">
+                <span className="text-xs font-black uppercase text-white bg-[#0D8F81] px-3 py-1 rounded-full shadow-xs">
                   Zero Infrastructure Replacement
                 </span>
                 <h3 className="text-2xl font-black text-slate-900">
                   Connects Natively With Your Existing Tech Stack
                 </h3>
               </div>
-              <span className="text-xs font-bold text-plum-900 bg-white px-3.5 py-1.5 rounded-full border border-plum-200 shadow-2xs">
+              <span className="text-xs font-bold text-[#0D8F81] bg-white px-3.5 py-1.5 rounded-full border border-[#0D8F81]/25 shadow-2xs">
                 15-Minute One-Click Setup
               </span>
             </div>
@@ -1081,36 +1061,36 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-bold text-slate-800">
-              <div className="p-3.5 bg-white rounded-2xl border border-plum-200 flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3.5 bg-white rounded-2xl border border-[#0D8F81]/20 flex items-center gap-2.5 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#0D8F81] shrink-0" />
                 <span>Shopify &amp; Shopify Plus</span>
               </div>
-              <div className="p-3.5 bg-white rounded-2xl border border-plum-200 flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3.5 bg-white rounded-2xl border border-[#0D8F81]/20 flex items-center gap-2.5 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#0D8F81] shrink-0" />
                 <span>WooCommerce</span>
               </div>
-              <div className="p-3.5 bg-white rounded-2xl border border-plum-200 flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3.5 bg-white rounded-2xl border border-[#0D8F81]/20 flex items-center gap-2.5 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#0D8F81] shrink-0" />
                 <span>Custom Headless APIs</span>
               </div>
-              <div className="p-3.5 bg-white rounded-2xl border border-plum-200 flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3.5 bg-white rounded-2xl border border-[#0D8F81]/20 flex items-center gap-2.5 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#0D8F81] shrink-0" />
                 <span>WhatsApp Business API</span>
               </div>
-              <div className="p-3.5 bg-white rounded-2xl border border-plum-200 flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3.5 bg-white rounded-2xl border border-[#0D8F81]/20 flex items-center gap-2.5 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#0D8F81] shrink-0" />
                 <span>Razorpay &amp; Stripe</span>
               </div>
-              <div className="p-3.5 bg-white rounded-2xl border border-plum-200 flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3.5 bg-white rounded-2xl border border-[#0D8F81]/20 flex items-center gap-2.5 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#0D8F81] shrink-0" />
                 <span>Shiprocket &amp; Delhivery</span>
               </div>
-              <div className="p-3.5 bg-white rounded-2xl border border-plum-200 flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3.5 bg-white rounded-2xl border border-[#0D8F81]/20 flex items-center gap-2.5 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#0D8F81] shrink-0" />
                 <span>Klaviyo &amp; Omnisend</span>
               </div>
-              <div className="p-3.5 bg-white rounded-2xl border border-plum-200 flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3.5 bg-white rounded-2xl border border-[#0D8F81]/20 flex items-center gap-2.5 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#0D8F81] shrink-0" />
                 <span>Meta Ads &amp; Google Feed</span>
               </div>
             </div>
@@ -1119,15 +1099,15 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
 
         {/* CONNECTING BRIDGE: AI Product Recommendations → AI Commerce Platform → D2C Industry Page */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-          <div className="bg-gradient-to-r from-plum-950 via-slate-900 to-plum-950 text-white rounded-3xl p-6 sm:p-8 border border-plum-800 shadow-xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-plum-800 pb-4">
+          <div className="bg-gradient-to-r from-[#0e222b] via-[#183a47] to-slate-900 text-white rounded-3xl p-6 sm:p-8 border border-[#245668]/80 shadow-xl space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#245668]/80 pb-4">
               <div className="space-y-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-peach-300/10 border border-peach-300/30 text-[11px] font-black uppercase text-peach-300 tracking-wider">
-                  <Layers className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0D8F81]/15 border border-[#0D8F81]/30 text-[11px] font-black uppercase text-emerald-300 tracking-wider">
+                  <Layers className="w-3 h-3 text-[#0D8F81]" />
                   <span>Contextual Interlink Flow • Step 02 ➔ Step 03 ➔ Step 04</span>
                 </span>
                 <h4 className="text-lg sm:text-2xl font-black text-white">
-                  AI Product Recommendations <span className="text-peach-300">→</span> AI Commerce Platform <span className="text-peach-300">→</span> D2C Industry Page
+                  AI Product Recommendations <span className="text-[#0D8F81]">→</span> AI Commerce Platform <span className="text-[#0D8F81]">→</span> D2C Industry Page
                 </h4>
               </div>
               <div className="flex items-center gap-2">
@@ -1139,9 +1119,9 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                       scrollToAnchor('commerce-platform');
                     }
                   }}
-                  className="px-3.5 py-1.5 bg-plum-800 hover:bg-plum-700 text-xs font-bold text-slate-200 rounded-lg border border-plum-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 bg-[#183a47] hover:bg-[#245668] text-xs font-bold text-slate-200 rounded-lg border border-[#245668] transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  <ExternalLink className="w-3 h-3 text-peach-300" />
+                  <ExternalLink className="w-3 h-3 text-[#0D8F81]" />
                   <span>Deep Dive: Commerce Platform</span>
                 </button>
               </div>
@@ -1156,33 +1136,33 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                   <span className="text-[11px] font-bold text-slate-400">Contextual Keywords &amp; Levers:</span>
                   <button
                     onClick={() => scrollToAnchor('commerce-platform')}
-                    className="px-2.5 py-1 rounded-md bg-plum-800/80 hover:bg-plum-700 text-peach-300 text-[11px] font-bold border border-plum-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-md bg-[#183a47] hover:bg-[#245668] text-teal-300 text-[11px] font-bold border border-[#245668] transition-colors cursor-pointer"
                   >
                     #AI-Commerce-Platform
                   </button>
                   <button
                     onClick={() => scrollToAnchor('increase-sales')}
-                    className="px-2.5 py-1 rounded-md bg-plum-800/80 hover:bg-plum-700 text-peach-300 text-[11px] font-bold border border-plum-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-md bg-[#183a47] hover:bg-[#245668] text-teal-300 text-[11px] font-bold border border-[#245668] transition-colors cursor-pointer"
                   >
                     #AI-Cart-Recovery
                   </button>
                   <button
                     onClick={() => scrollToAnchor('increase-sales')}
-                    className="px-2.5 py-1 rounded-md bg-plum-800/80 hover:bg-plum-700 text-peach-300 text-[11px] font-bold border border-plum-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-md bg-[#183a47] hover:bg-[#245668] text-teal-300 text-[11px] font-bold border border-[#245668] transition-colors cursor-pointer"
                   >
                     #WhatsApp-AI-Sales
                   </button>
                   <button
                     onClick={() => scrollToAnchor('roi-calculator')}
-                    className="px-2.5 py-1 rounded-md bg-plum-800/80 hover:bg-plum-700 text-peach-300 text-[11px] font-bold border border-plum-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-md bg-[#183a47] hover:bg-[#245668] text-teal-300 text-[11px] font-bold border border-[#245668] transition-colors cursor-pointer"
                   >
                     #Increase-D2C-Sales-With-AI
                   </button>
                 </div>
               </div>
 
-              <div className="md:col-span-4 bg-plum-950/90 p-4 rounded-2xl border border-plum-700 space-y-3">
-                <div className="text-xs font-black text-peach-300 uppercase tracking-wider">
+              <div className="md:col-span-4 bg-[#0e222b]/90 p-4 rounded-2xl border border-[#245668] space-y-3">
+                <div className="text-xs font-black text-emerald-300 uppercase tracking-wider">
                   Next Step in Commerce Chain:
                 </div>
                 <div className="text-xs text-slate-300 leading-snug">
@@ -1190,7 +1170,7 @@ export const D2cIndustryPage: React.FC<D2cIndustryPageProps> = ({
                 </div>
                 <button
                   onClick={() => scrollToAnchor('increase-sales')}
-                  className="w-full py-2.5 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+                  className="w-full py-2.5 bg-gradient-to-r from-[#F48C68] via-[#F47A38] to-[#E97A52] hover:from-[#F47A38] hover:to-[#DE6B44] text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span>Explore 9 Growth Levers</span>
                   <ArrowRight className="w-3.5 h-3.5" />

@@ -21,14 +21,10 @@ import {
   Laptop,
   Check,
   Flame,
-  BarChart3,
-  ExternalLink,
   ChevronDown,
   ArrowLeft,
-  Smartphone,
   RefreshCw,
   ShoppingBag as CartIcon,
-  Tag,
   HeartHandshake
 } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -45,7 +41,6 @@ export const ShopifyAiShoppingAssistantPage: React.FC<ShopifyAiShoppingAssistant
   onNavigateShopifyComparison,
 }) => {
   const [activeIntentTab, setActiveIntentTab] = useState<number>(0);
-  const [activeJourneyStep, setActiveJourneyStep] = useState<number>(0);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const intentExamples = [
@@ -388,7 +383,7 @@ export const ShopifyAiShoppingAssistantPage: React.FC<ShopifyAiShoppingAssistant
                       </div>
                       <div className="text-[11px] text-slate-300 flex items-center gap-2">
                         <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-bold text-slate-200">Plush Heel Cushion</span>
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-[10px] font-bold text-emerald-400">In Stock • 4.9★</span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-[10px] font-bold text-emerald-400">In Stock • Fast Shipping</span>
                       </div>
                       <div className="flex items-center gap-2 pt-1">
                         <button

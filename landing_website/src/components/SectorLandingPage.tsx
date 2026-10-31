@@ -1,40 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Store,
   Zap,
-  Gem,
-  Home,
-  Heart,
-  Package,
-  Palette,
-  Sparkles,
-  Factory,
-  Truck,
-  Boxes,
   ArrowRight,
   CheckCircle2,
   XCircle,
   Clock,
-  DollarSign,
-  TrendingUp,
-  ShieldCheck,
   Code2,
   Copy,
   Check,
-  MessageCircle,
-  ShoppingBag,
-  Sliders,
-  ExternalLink,
   ChevronRight,
-  ArrowUpRight,
   Bot,
   Layers,
-  Search,
-  Share2,
-  Globe2,
   HelpCircle,
-  Filter,
-  RefreshCw,
   Sparkle
 } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -67,7 +44,6 @@ export const SectorLandingPage: React.FC<SectorLandingPageProps> = ({
   const [chatHistory, setChatHistory] = useState<Array<{ sender: 'user' | 'assistant'; text: string; recs?: any[] }>>([]);
 
   const sector = SECTORS[currentSectorKey] || SECTORS.boutiques;
-  const SectorIcon = sector.icon;
 
   useEffect(() => {
     if (initialSectorSlug && SECTORS[initialSectorSlug]) {
@@ -654,37 +630,6 @@ export const SectorLandingPage: React.FC<SectorLandingPageProps> = ({
             </ul>
           </div>
 
-          {/* Embedded Schema.org JSON-LD Structured Data */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'WebPage',
-                name: `${sector.name} AI Commerce Platform | Launch B2B2C Store in Hours`,
-                headline: sector.launchInHoursTitle,
-                description: `Launch a modern ${sector.name} & B2B2C store in hours. Includes AI Shopping Assistant for existing stores (Shopify, WooCommerce), wholesale pricing matrices, and WhatsApp commerce.`,
-                url: `https://silarai.com/sector/${sector.slug}`,
-                keywords: sector.seoKeywords.flatMap((g) => g.keywords).join(', '),
-                mainEntity: {
-                  '@type': 'SoftwareApplication',
-                  name: `SilarAI for ${sector.name}`,
-                  applicationCategory: 'BusinessApplication',
-                  operatingSystem: 'Web, iOS, Android',
-                  offers: {
-                    '@type': 'Offer',
-                    price: '25.00',
-                    priceCurrency: 'USD',
-                  },
-                },
-                citation: sector.backlinks.map((l) => ({
-                  '@type': 'CreativeWork',
-                  name: l.anchorText,
-                  url: l.url,
-                })),
-              }),
-            }}
-          />
         </section>
 
         {/* TAB 4: FREQUENTLY ASKED QUESTIONS */}

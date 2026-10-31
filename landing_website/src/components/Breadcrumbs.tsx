@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Home,
   ChevronRight,
   ArrowLeft,
   Share2,
@@ -60,17 +59,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     }
   };
 
-  // Schema.org BreadcrumbList JSON-LD
-  const schemaBreadcrumbs = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: item.label,
-      item: item.href || (typeof window !== 'undefined' ? window.location.href : 'https://silarai.com')
-    }))
-  };
+
 
   // Styling presets based on variant
   const isBar = variant === 'bar';
@@ -94,10 +83,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaBreadcrumbs) }}
-      />
 
       <nav aria-label="Breadcrumb" className={containerClasses}>
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">

@@ -124,6 +124,16 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
         iconName: 'ShoppingBag'
       },
       {
+        title: 'Launch Online Store in 30 Minutes',
+        anchorText: 'Launch an Online Store in Under 30 Minutes with Custom Domain',
+        path: '/launch-online-store',
+        view: 'launch-online-store',
+        category: 'Core Pillar',
+        badge: 'Turnkey Launch',
+        description: 'Complete 8-step storefront launch workflow: brand colors, logo, banner, SEO tags, custom domain CNAME, and return policies.',
+        iconName: 'Sparkles'
+      },
+      {
         title: 'Why Choose SilarAI',
         anchorText: 'Review SilarAI Architectural Benchmark & Performance Proof',
         path: '/why-choose-us',
@@ -1520,6 +1530,98 @@ export const INTERNAL_LINKING_CLUSTERS: Record<string, PageInternalCluster> = {
         iconName: 'Layers'
       }
     ]
+  },
+
+  'launch-online-store': {
+    pageKey: 'launch-online-store',
+    pageTitle: 'Launch an Online Store in 30 Minutes | SilarAI Turnkey Commerce',
+    pagePath: '/launch-online-store',
+    clusterTheme: 'Turnkey Storefront Launch, Custom Domain & Commerce Setup',
+    description: 'Explore core commerce engines, conversational AI assistants, and enterprise integrations to scale your new online storefront.',
+    links: [
+      {
+        title: 'AI Shopping Assistant',
+        anchorText: 'Add 24/7 AI Shopping Assistant to Your New Storefront',
+        path: '/ai-shopping-assistant',
+        view: 'ai-shopping-assistant',
+        category: 'Core Pillar',
+        badge: 'Conversational Sales',
+        description: 'Provide natural language product recommendations and instant checkout assistance for every visitor.',
+        iconName: 'Bot',
+        options: { pageId: 1 }
+      },
+      {
+        title: 'Core AI Commerce Platform',
+        anchorText: 'Explore Core Commerce Engine, Dynamic Pricing & ATP Stock',
+        path: '/commerce-platform',
+        view: 'ai-commerce-platform',
+        category: 'Core Pillar',
+        badge: 'Commerce Engine',
+        description: 'Manage bulk products, multi-currency checkout, and sub-50ms dynamic pricing rules.',
+        iconName: 'Cpu',
+        options: { pageId: 1 }
+      },
+      {
+        title: 'AI Commerce & Marketing Platform',
+        anchorText: 'Automate Meta & Google Ad Retargeting for New Stores',
+        path: '/ai-commerce-marketing-platform/',
+        view: 'ai-commerce-marketing-platform',
+        category: 'Core Pillar',
+        badge: 'Growth Engine',
+        description: 'Connect automated campaign orchestration and customer segmentation to drive immediate traffic.',
+        iconName: 'Workflow'
+      },
+      {
+        title: 'Shopify vs SilarAI Comparison',
+        anchorText: 'Compare SilarAI Turnkey Storefronts with Shopify Plus Stacks',
+        path: '/shopify-vs-silarai',
+        view: 'shopify-comparison',
+        category: 'Platform Comparison',
+        badge: 'No Plugin Bloat',
+        description: 'Evaluate why modern brands choose unified AI commerce over 20+ fragmented app store plugins.',
+        iconName: 'Layers'
+      },
+      {
+        title: 'WooCommerce vs SilarAI Comparison',
+        anchorText: 'Compare SilarAI Headless Speed with WordPress WooCommerce',
+        path: '/woocommerce-vs-silarai',
+        view: 'woocommerce-comparison',
+        category: 'Platform Comparison',
+        badge: 'Zero Maintenance',
+        description: 'Achieve sub-50ms catalog responses without managing WordPress servers, databases, or PHP caching.',
+        iconName: 'Zap'
+      },
+      {
+        title: 'B2B Distributors Commerce Platform',
+        anchorText: 'Launch Wholesale Dealer Portals with Tiered Contract Pricing',
+        path: '/industries/distributors',
+        view: 'distributors',
+        category: 'Industry Vertical',
+        badge: 'B2B Wholesale',
+        description: 'Add wholesale account approvals, MOQ thresholds, and territory dealer order routing.',
+        iconName: 'Building2'
+      },
+      {
+        title: 'D2C Brands AI Commerce',
+        anchorText: 'Scale Direct-to-Consumer Storefronts with WhatsApp Commerce',
+        path: '/industries/d2c-brands',
+        view: 'd2c-brands',
+        category: 'Industry Vertical',
+        badge: 'D2C Scaling',
+        description: 'Recover abandoned carts automatically and turn mobile shoppers into repeat subscribers.',
+        iconName: 'Sparkles'
+      },
+      {
+        title: 'Why Choose SilarAI',
+        anchorText: 'Review Verified Speed, Conversion & Architecture Benchmarks',
+        path: '/why-choose-us',
+        view: 'why-choose-us',
+        category: 'Strategic Architecture',
+        badge: 'ROI Proof',
+        description: 'Discover how SilarAI stores achieve +35% higher checkout completion with built-in AI copilot.',
+        iconName: 'ShieldCheck'
+      }
+    ]
   }
 };
 
@@ -1533,6 +1635,7 @@ export function getInternalLinkingForPage(pageKey: string): PageInternalCluster 
     return INTERNAL_LINKING_CLUSTERS[normalizedKey];
   }
   // Check alias matches
+  if (normalizedKey.includes('launch') || normalizedKey.includes('online-store')) return INTERNAL_LINKING_CLUSTERS['launch-online-store'];
   if (normalizedKey === 'ecommerce' || normalizedKey.includes('ecommerce')) return INTERNAL_LINKING_CLUSTERS['ecommerce'];
   if (normalizedKey === 'fmcg') return INTERNAL_LINKING_CLUSTERS['fmcg-commerce'];
   if (normalizedKey.includes('d2c')) return INTERNAL_LINKING_CLUSTERS['d2c-brands'];

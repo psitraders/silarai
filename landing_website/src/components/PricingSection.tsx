@@ -1,5 +1,11 @@
 import React, { useState, Suspense } from 'react';
+import { ErrorBoundary } from './ErrorBoundary';
 import { PRODUCTS_PRICING, WHY_SILARAI_BENEFITS } from '../data/pricingData';
+
+// Lazy so recharts (~430 KB) loads only when the calculator renders, not with the pricing chunk.
+const RoiCalculator = React.lazy(() =>
+  import('./RoiCalculator').then(m => ({ default: m.RoiCalculator }))
+);
 import { 
   Check, 
   X, 
@@ -8,11 +14,9 @@ import {
   Bot, 
   Store, 
   ShieldCheck, 
-  Zap, 
   Building2, 
   FileText, 
   Info, 
-  HelpCircle, 
   Lock, 
   RefreshCw, 
   CreditCard,
@@ -57,10 +61,6 @@ const formatPrice = (usd: number | string, region: RegionConfig) => {
   const converted = Math.round(usd * region.rate);
   return `${region.symbol}${converted}`;
 };
-
-const RoiCalculator = React.lazy(() => 
-  import('./RoiCalculator').then(m => ({ default: m.RoiCalculator }))
-);
 
 interface PricingSectionProps {
   onSelectPlan: (planName: string) => void;
@@ -486,14 +486,16 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan }) 
         </div>
 
         {/* Interactive ROI Calculator with D3 & Recharts Visualizations */}
-        <Suspense fallback={
-          <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm text-center py-16 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-plum-900 border-t-transparent animate-spin" />
-            <span className="text-xs font-semibold text-slate-500">Loading Interactive ROI &amp; Revenue Projection Engine...</span>
-          </div>
-        }>
-          <RoiCalculator onBookDemo={(summary) => onSelectPlan(summary || 'ROI Projection Demo')} />
-        </Suspense>
+        <ErrorBoundary fallbackTitle="Interactive ROI & Revenue Projection Engine">
+          <Suspense fallback={
+            <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm text-center py-16 flex flex-col items-center justify-center gap-3">
+              <div className="w-8 h-8 rounded-full border-2 border-plum-900 border-t-transparent animate-spin" />
+              <span className="text-xs font-semibold text-slate-500">Loading Interactive ROI &amp; Revenue Projection Engine...</span>
+            </div>
+          }>
+            <RoiCalculator onBookDemo={(summary) => onSelectPlan(summary || 'ROI Projection Demo')} />
+          </Suspense>
+        </ErrorBoundary>
 
         {/* Why SilarAI? Benefits Card & Enterprise Contact */}
         <div className="bg-gradient-to-r from-plum-950 via-plum-900 to-plum-950 text-white rounded-3xl p-8 sm:p-12 border border-plum-800 shadow-xl space-y-8">

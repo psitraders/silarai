@@ -7,15 +7,12 @@ import {
   TrendingUp,
   Boxes,
   Layers,
-  ShoppingBag,
   Zap,
   CheckCircle2,
   ArrowRight,
   ChevronDown,
   ChevronUp,
   ChevronRight,
-  RefreshCw,
-  Users,
   Building2,
   BookOpen,
   ArrowUpRight,
@@ -29,7 +26,6 @@ import {
   Dog,
   HeartPulse,
   ShieldCheck,
-  Check,
   XCircle,
   Store,
   Truck,
@@ -227,133 +223,7 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
   const [demoQueryResult, setDemoQueryResult] = useState<string | null>('Retrieved 14 high-fiber organic cereal SKUs. Available in 250g & 500g boxes with instant distributor trade discount application.');
 
   useEffect(() => {
-    const pageTitle = 'AI Commerce Platform for FMCG & CPG Brands | B2B & D2C Ordering | SilarAI';
-    const pageDesc = 'Top-ranked FMCG AI commerce platform. Automate distributor matrix ordering, trade credit promotions, 24/7 AI shopping assistants, and D2C brand stores.';
-    const canonicalUrl = 'https://silarai.com/industries/fmcg';
-
-    document.title = pageTitle;
-
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute('content', pageDesc);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute('href', canonicalUrl);
-
-    // Schema.org Structured Data
-    const schemaData = {
-      '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'SoftwareApplication',
-          '@id': 'https://silarai.com/industries/fmcg#software',
-          name: 'SilarAI FMCG & CPG Commerce Platform',
-          operatingSystem: 'All Web Browsers, iOS, Android, Headless',
-          applicationCategory: 'BusinessApplication, ECommerceApplication',
-          description: pageDesc,
-          offers: {
-            '@type': 'Offer',
-            price: '99.00',
-            priceCurrency: 'USD',
-            availability: 'https://schema.org/InStock',
-          },
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: '4.93',
-            reviewCount: '186',
-            bestRating: '5',
-            worstRating: '1',
-          },
-        },
-        {
-          '@type': 'BreadcrumbList',
-          '@id': 'https://silarai.com/industries/fmcg#breadcrumb',
-          itemListElement: [
-            {
-              '@type': 'ListItem',
-              position: 1,
-              name: 'Home',
-              item: 'https://silarai.com/',
-            },
-            {
-              '@type': 'ListItem',
-              position: 2,
-              name: 'Industries',
-              item: 'https://silarai.com/#industries',
-            },
-            {
-              '@type': 'ListItem',
-              position: 3,
-              name: 'FMCG & Consumer Goods',
-              item: canonicalUrl,
-            },
-          ],
-        },
-        {
-          '@type': 'FAQPage',
-          '@id': 'https://silarai.com/industries/fmcg#faq',
-          mainEntity: [
-            {
-              '@type': 'Question',
-              name: 'What is an AI Commerce platform for FMCG and CPG brands?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'An AI Commerce platform for FMCG digitizes high-volume ordering across distributor networks, wholesalers, supermarkets, and D2C storefronts. It provides automated 1-click reordering, distributor pricing matrices, trade credit terms, and 24/7 AI shopping assistants.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'How does SilarAI handle complex FMCG distributor pricing and credit terms?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'SilarAI synchronizes with enterprise ERPs (SAP S/4HANA, NetSuite, Microsoft Dynamics) to enforce account-specific price tiers, promotional rebates, quantity break discounts, and Net-30/60 trade credit lines automatically at checkout.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'Can retail shop owners order FMCG products via WhatsApp?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Yes. SilarAI embeds autonomous conversational AI directly on WhatsApp and mobile web, allowing retailers to text or voice-record reorders in 20+ languages and receive instant order confirmation.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'How does SilarAI compare with Shopify for FMCG brands?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Unlike standard Shopify which requires dozens of third-party plugins for wholesale matrices, credit terms, and voice search, SilarAI provides native enterprise B2B distributor ordering and D2C commerce in a single high-speed cloud platform with zero plugin bloat.',
-              },
-            },
-          ],
-        },
-      ],
-    };
-
-    let scriptTag = document.getElementById('fmcg-schema-ld') as HTMLScriptElement | null;
-    if (!scriptTag) {
-      scriptTag = document.createElement('script');
-      scriptTag.id = 'fmcg-schema-ld';
-      scriptTag.type = 'application/ld+json';
-      document.head.appendChild(scriptTag);
-    }
-    scriptTag.textContent = JSON.stringify(schemaData);
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    return () => {
-      const existing = document.getElementById('fmcg-schema-ld');
-      if (existing) existing.remove();
-    };
   }, []);
 
   const handleSearchDemo = (q: string) => {
@@ -418,68 +288,6 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
-      {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@graph': [
-              {
-                '@type': 'WebPage',
-                '@id': 'https://silarai.com/industries/fmcg#webpage',
-                url: 'https://silarai.com/industries/fmcg',
-                name: 'FMCG AI Commerce Platform & Order Management | CPG Brands | SilarAI',
-                description:
-                  'Scale FMCG brand distribution with SilarAI AI Commerce: automated retailer replenishment, distributor B2B ordering, trade promotion optimization & ERP sync.',
-              },
-              {
-                '@type': 'SoftwareApplication',
-                name: 'SilarAI FMCG Commerce AI Platform',
-                operatingSystem: 'Cloud Native / Web / Headless API',
-                applicationCategory: 'BusinessApplication',
-                description:
-                  'Enterprise AI Commerce Platform for FMCG Companies featuring AI Shopping Assistants, B2B Commerce, Distributor Portals, Retailer Ordering, and ERP Integration.',
-                aggregateRating: {
-                  '@type': 'AggregateRating',
-                  ratingValue: '4.9',
-                  ratingCount: '215',
-                },
-              },
-              {
-                '@type': 'Service',
-                name: 'AI Commerce Platform for FMCG Companies',
-                provider: {
-                  '@type': 'Organization',
-                  name: 'SilarAI Technologies',
-                  url: 'https://silarai.com',
-                },
-                areaServed: 'Worldwide',
-                serviceType: 'FMCG & CPG AI Commerce Solutions',
-              },
-              {
-                '@type': 'FAQPage',
-                mainEntity: FMCG_FAQS.map((faq) => ({
-                  '@type': 'Question',
-                  name: faq.q,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: faq.a,
-                  },
-                })),
-              },
-              {
-                '@type': 'BreadcrumbList',
-                itemListElement: [
-                  { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://silarai.com' },
-                  { '@type': 'ListItem', position: 2, name: 'Industries', item: 'https://silarai.com/#industries' },
-                  { '@type': 'ListItem', position: 3, name: 'FMCG Commerce AI', item: 'https://silarai.com/?page=fmcg-commerce' },
-                ],
-              },
-            ],
-          }),
-        }}
-      />
 
       {/* Top Banner & Breadcrumb Navigation */}
       <Breadcrumbs
@@ -782,20 +590,24 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
               </div>
             </div>
 
-            {/* Entity Keyword Strip for AIO / GEO */}
+            {/* Entity Keyword Strip for AIO / GEO - Keywords active in backend, visual UI kept clean */}
             <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-              <div className="flex flex-wrap items-center gap-3 text-slate-300">
-                <span className="font-bold text-white">Target Entity Keywords:</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">FMCG AI Commerce</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Conversational Commerce</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Agentic AI</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Retailer Ordering Solution</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Distributor Reorder Portal</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">WhatsApp FMCG Ordering</span>
+              {/* Keywords preserved in backend for search engines, AI crawlers, and screen readers - avoided in user visual search */}
+              <div className="sr-only" aria-label="Backend Target Entity Keywords for AI Indexing">
+                <span>Target Entity Keywords: FMCG AI Commerce, Conversational Commerce, Agentic AI, Retailer Ordering Solution, Distributor Reorder Portal, WhatsApp FMCG Ordering.</span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-300">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="font-semibold text-slate-200">
+                  High-Velocity FMCG Commerce &bull; Automated Reordering &amp; Supply Chain Sync
+                </span>
               </div>
               <button
                 onClick={() => onBookDemo('FMCG AIO & GEO Consultation')}
-                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm flex items-center gap-1.5"
+                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm hover:shadow-md flex items-center gap-1.5"
               >
                 <span>Book FMCG Demo</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -1752,7 +1564,7 @@ export const FmcgIndustryPage: React.FC<FmcgIndustryPageProps> = ({
               </a>
 
               <a
-                href="/ai-commerce-platform"
+                href="/commerce-platform"
                 className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
               >
                 <div className="flex items-center justify-between">

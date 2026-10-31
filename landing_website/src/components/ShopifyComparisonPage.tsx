@@ -3,21 +3,11 @@ import {
   Sparkles,
   Check,
   X,
-  ArrowLeft,
   ArrowRight,
   Search,
-  Zap,
-  ShoppingBag,
   Bot,
   Layers,
-  BarChart3,
   MessageSquare,
-  Globe,
-  Database,
-  Users,
-  Layout,
-  TrendingUp,
-  ShieldCheck,
   CheckCircle2,
   Home,
   Scale
@@ -123,43 +113,7 @@ export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const pageTitle = 'Shopify vs SilarAI (2026 Comparison) | Native AI Commerce Platform | SilarAI';
-    const pageDesc = 'In-depth comparison: Shopify Plus vs SilarAI. Compare native AI shopping assistants, zero app store fees, sub-50ms dynamic pricing, and WhatsApp commerce.';
-    const canonicalUrl = 'https://silarai.com/shopify-vs-silarai';
-
-    document.title = pageTitle;
-
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute('content', pageDesc);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute('href', canonicalUrl);
-
-    let scriptTag = document.getElementById('shopify-vs-silarai-schema') as HTMLScriptElement | null;
-    if (!scriptTag) {
-      scriptTag = document.createElement('script');
-      scriptTag.id = 'shopify-vs-silarai-schema';
-      scriptTag.type = 'application/ld+json';
-      document.head.appendChild(scriptTag);
-    }
-    scriptTag.textContent = JSON.stringify(jsonLdData);
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    return () => {
-      const existing = document.getElementById('shopify-vs-silarai-schema');
-      if (existing) existing.remove();
-    };
   }, []);
 
   const filteredItems = SHOPIFY_COMPARISON_DATA.filter((item) => {
@@ -172,85 +126,8 @@ export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
     );
   });
 
-  const jsonLdData = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'TechArticle',
-        '@id': 'https://silarai.com/shopify-vs-silarai#article',
-        headline: 'SilarAI vs Shopify Plus: 2026 Technical & Architecture Comparison',
-        description:
-          'Comprehensive engineering and business comparison between SilarAI unified agentic commerce and Shopify Plus multi-app architecture.',
-        url: 'https://silarai.com/shopify-vs-silarai',
-        author: {
-          '@type': 'Organization',
-          name: 'SilarAI Technologies',
-          url: 'https://silarai.com',
-        },
-      },
-      {
-        '@type': 'SoftwareApplication',
-        name: 'SilarAI Enterprise Commerce AI Platform',
-        operatingSystem: 'Cloud Native / Web / Headless API',
-        applicationCategory: 'BusinessApplication, ECommerceApplication',
-        description:
-          'Enterprise AI-first commerce platform uniting 24/7 AI shopping assistants, sub-50ms dynamic pricing, native B2B wholesale portals, and omnichannel marketing.',
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.96',
-          reviewCount: '194',
-          bestRating: '5',
-          worstRating: '1',
-        },
-      },
-      {
-        '@type': 'FAQPage',
-        '@id': 'https://silarai.com/shopify-vs-silarai#faq',
-        mainEntity: [
-          {
-            '@type': 'Question',
-            name: 'Can I keep my existing Shopify store while using SilarAI?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Yes. SilarAI offers a 1-line script embed tag that embeds our AI Shopping Assistant and dynamic pricing engine directly onto your live Shopify storefront without migrating host systems.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'How does SilarAI compare to Shopify Sidekick or Shopify Magic?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Shopify Magic focuses primarily on backend merchant copy generation. SilarAI is a consumer-facing agentic AI platform that conducts multimodal voice, camera photo search, and automated 1-click cart checkouts directly for buyers.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'Does SilarAI require Shopify Plus for B2B portal features?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'No. B2B net terms, dealer pricing tiers, custom bulk price schedules, and wholesale registration forms are built into all SilarAI core plans without upgrading to $2,000/mo Shopify Plus tiers.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'How long does catalog vectorization and setup take?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'SilarAI automatically syncs and indexes your Shopify product catalog, metadata, and FAQ spec sheets in under 5 minutes using automated API connectors.',
-            },
-          },
-        ],
-      },
-    ],
-  };
-
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-900 pt-20 pb-20">
-      {/* Rich Snippets Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
-      />
       {/* Top Breadcrumb Navigation */}
       <Breadcrumbs
         items={[

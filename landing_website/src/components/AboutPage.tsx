@@ -8,12 +8,8 @@ import {
   CheckCircle2,
   Building2,
   ArrowRight,
-  ArrowLeft,
   Rocket,
-  TrendingUp,
-  Users,
   Check,
-  Compass,
   ShieldCheck,
   Layers,
   Globe,
@@ -442,15 +438,15 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBackToHome, onBookDemo }
               SilarAI Executive Summary & Performance Metrics
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Verified benchmark metrics compiled from 500+ active merchant deployments between 2024–2026:
+              Verified benchmark metrics compiled from merchant pilot deployments and automated catalog simulations:
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
             <div className="p-4 rounded-xl bg-plum-900/80 border border-plum-800 space-y-1">
-              <div className="text-2xl font-black text-peach-300">+3.8x</div>
-              <div className="text-xs font-bold text-white">Average Conversion Lift</div>
-              <p className="text-[11px] text-slate-400">Validated across B2B & D2C storefronts</p>
+              <div className="text-2xl font-black text-peach-300">+35%</div>
+              <div className="text-xs font-bold text-white">Pilot Conversion Lift</div>
+              <p className="text-[11px] text-slate-400">Validated across pilot B2B &amp; D2C storefronts</p>
             </div>
 
             <div className="p-4 rounded-xl bg-plum-900/80 border border-plum-800 space-y-1">

@@ -81,6 +81,9 @@ const sitemapUrls: { loc: string; priority: string; changefreq: string }[] = [
   { loc: `${BASE_URL}/shopify-ai-shopping-assistant`, priority: '0.90', changefreq: 'weekly' },
   { loc: `${BASE_URL}/industries/ecommerce`, priority: '0.90', changefreq: 'weekly' },
   { loc: `${BASE_URL}/industries/fmcg/retailer-ordering-solution`, priority: '0.85', changefreq: 'weekly' },
+  // Added from the 2026-10-31 AI Studio import round.
+  { loc: `${BASE_URL}/pricing`, priority: '0.85', changefreq: 'weekly' },
+  { loc: `${BASE_URL}/launch-online-store`, priority: '0.90', changefreq: 'weekly' },
   // Sector landing pages — one per SECTORS entry, so adding a sector adds its URL here.
   ...Object.values(SECTORS).map((sector) => ({
     loc: `${BASE_URL}/sector/${sector.slug}`,

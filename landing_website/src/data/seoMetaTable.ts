@@ -16,8 +16,6 @@ export interface SeoMetaRow {
   searchIntent: 'Commercial' | 'Transactional' | 'Informational';
   ctrHook: string;
   schemaType: string;
-  rating: number;
-  reviewCount: number;
 }
 
 export function countWords(str: string): number {
@@ -34,21 +32,19 @@ export const RAW_SEO_META_ENTRIES = [
     category: 'Core Pillar' as const,
     path: '/',
     canonicalUrl: 'https://silarai.com/',
-    seoTitle: 'SilarAI — Smart Commerce AI Platform | Build. Sell. Grow.',
-    metaDescription: 'SilarAI is the premier Smart Commerce AI platform combining 24/7 agentic shopping assistants, sub-50ms dynamic pricing, and automated visual merchandising to maximize retail conversion and sales.',
+    seoTitle: 'AI Shopping Assistant for Ecommerce | SilarAI Commerce Platform',
+    metaDescription: 'Boost ecommerce sales and conversion with SilarAI\'s AI Shopping Assistant. Deliver 24/7 conversational product discovery, smart recommendations, and instant checkout.',
     primaryKeywords: [
+      'AI Shopping Assistant for Ecommerce',
       'Conversational Commerce',
       'Agentic AI',
       'Smart Commerce AI',
-      'AI Shopping Assistant',
-      'Dynamic Pricing AI',
+      'AI Product Discovery',
       'Ecommerce AI Platform'
     ],
     searchIntent: 'Commercial' as const,
-    ctrHook: '+380% Conversion Lift • Sub-50ms Pricing',
+    ctrHook: 'AI Product Discovery • Conversational Checkout',
     schemaType: 'SoftwareApplication & WebSite',
-    rating: 4.94,
-    reviewCount: 142
   },
   {
     id: 'ai-commerce-marketing-platform',
@@ -69,8 +65,50 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Unified Commerce Cloud • 40 Key Cluster Mappings',
     schemaType: 'SoftwareApplication & WebPage',
-    rating: 4.96,
-    reviewCount: 142
+  },
+  {
+    id: 'launch-online-store',
+    section: 'Launch Online Store in 30 Minutes (Turnkey Ecommerce)',
+    view: 'launch-online-store',
+    category: 'Product Module' as const,
+    path: '/launch-online-store',
+    canonicalUrl: 'https://silarai.com/launch-online-store',
+    seoTitle: 'Launch an Online Store in 30 Minutes | SilarAI',
+    metaDescription: 'Launch your B2B or B2C ecommerce store with SilarAI. Customize your brand, add your logo and banner, configure SEO and store policies, and publish your storefront.',
+    primaryKeywords: [
+      'Launch an Online Store in 30 Minutes',
+      'Create an Ecommerce Store',
+      'B2B Ecommerce Store Builder',
+      'B2C Ecommerce Platform',
+      'Wholesale Ecommerce Platform',
+      'Online Store for Manufacturers',
+      'Ecommerce Platform for Distributors'
+    ],
+    searchIntent: 'Commercial' as const,
+    ctrHook: 'Live in 30 Mins • Bring Your Domain • B2B & B2C',
+    ctrShortDescription: 'Launch your B2B or B2C store in under 30 minutes.',
+    schemaType: 'WebPage & SoftwareApplication & HowTo',
+  },
+  {
+    id: 'pricing',
+    section: 'Pricing & Plans (Transparent AI Commerce from $10/mo)',
+    view: 'pricing',
+    category: 'Core Pillar' as const,
+    path: '/pricing',
+    canonicalUrl: 'https://silarai.com/pricing',
+    seoTitle: 'Pricing & ROI Calculator | Transparent AI Commerce Plans | SilarAI',
+    metaDescription: 'Explore SilarAI transparent pricing plans from $10/month with zero revenue fees. Calculate your store ROI, projected margin expansion, and conversion lift.',
+    primaryKeywords: [
+      'AI Commerce Pricing',
+      'AI Shopping Assistant Cost',
+      'Ecommerce AI ROI Calculator',
+      'Shopify AI Pricing',
+      'Transparent Ecommerce Plans'
+    ],
+    searchIntent: 'Commercial' as const,
+    ctrHook: 'Plans From $10/mo • Instant ROI Estimator • Zero Rev Share',
+    ctrShortDescription: 'Transparent AI commerce plans from $10/mo with zero rev share.',
+    schemaType: 'SoftwareApplication & WebPage',
   },
   {
     id: 'ai-shopping-assistant-voice',
@@ -93,8 +131,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: '20+ Languages • Sub-second Voice Parsing',
     ctrShortDescription: '20+ language voice search AI. Instant 1-click checkout.',
     schemaType: 'SoftwareApplication',
-    rating: 4.95,
-    reviewCount: 128
   },
   {
     id: 'ai-shopping-assistant-visual',
@@ -102,7 +138,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'ai-shopping-assistant',
     subPage: 2,
     category: 'Product Module' as const,
-    path: '/?page=ai-shopping-assistant&subPage=2',
+    path: '/ai-shopping-assistant',
     canonicalUrl: 'https://silarai.com/?page=ai-shopping-assistant&subPage=2',
     seoTitle: 'Visual Search & Multimodal Product Discovery | SilarAI Assistant',
     metaDescription: 'Enable instant camera photo search with SilarAI Multimodal Visual Search. Shoppers snap pictures to find exact catalog matches, alternative styles, and in-stock variants in under 200 milliseconds.',
@@ -116,8 +152,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Under 200ms Photo Match • 99.2% Accuracy',
     ctrShortDescription: 'Snap photos to find exact catalog matches in under 200ms.',
     schemaType: 'SoftwareApplication',
-    rating: 4.93,
-    reviewCount: 116
   },
   {
     id: 'ai-shopping-assistant-recommendations',
@@ -125,7 +159,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'ai-shopping-assistant',
     subPage: 3,
     category: 'Product Module' as const,
-    path: '/?page=ai-shopping-assistant&subPage=3',
+    path: '/ai-shopping-assistant',
     canonicalUrl: 'https://silarai.com/?page=ai-shopping-assistant&subPage=3',
     seoTitle: 'Personalized Recommendations & One-Click Agent Checkout | SilarAI',
     metaDescription: 'Lift Average Order Value by 28% with SilarAI Personalized Recommendations and autonomous 1-click checkout. Deliver real-time complementary bundles and hyper-relevant cross-sells across all devices.',
@@ -139,8 +173,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: '+28% AOV Lift • Autonomous Checkout',
     ctrShortDescription: '+28% AOV lift with AI recommendations & 1-click checkout.',
     schemaType: 'SoftwareApplication',
-    rating: 4.96,
-    reviewCount: 134
   },
   {
     id: 'ai-commerce-platform-pricing',
@@ -162,8 +194,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Sub-50ms Edge Engine • Instant Margin Lift',
     ctrShortDescription: 'Sub-50ms AI dynamic pricing engine to maximize margins.',
     schemaType: 'SoftwareApplication',
-    rating: 4.97,
-    reviewCount: 140
   },
   {
     id: 'ai-commerce-platform-merchandising',
@@ -171,7 +201,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'ai-commerce-platform',
     subPage: 2,
     category: 'Product Module' as const,
-    path: '/?page=ai-commerce-platform&subPage=2',
+    path: '/commerce-platform',
     canonicalUrl: 'https://silarai.com/?page=ai-commerce-platform&subPage=2',
     seoTitle: 'Automated AI Visual Merchandising | SilarAI Platform Engine',
     metaDescription: 'Automate storefront merchandising with SilarAI. Reorders product grids dynamically based on live conversion propensity, stock levels, seasonality trends, and individual shopper browsing history.',
@@ -185,8 +215,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Self-Optimizing Grids • +41% Grid CTR',
     ctrShortDescription: 'Automated AI visual merchandising. Lift grid CTR by +41%.',
     schemaType: 'SoftwareApplication',
-    rating: 4.94,
-    reviewCount: 98
   },
   {
     id: 'ai-commerce-platform-sync',
@@ -194,7 +222,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'ai-commerce-platform',
     subPage: 3,
     category: 'Product Module' as const,
-    path: '/?page=ai-commerce-platform&subPage=3',
+    path: '/commerce-platform',
     canonicalUrl: 'https://silarai.com/?page=ai-commerce-platform&subPage=3',
     seoTitle: 'Multi-Channel Inventory & Analytics Sync | SilarAI Platform Engine',
     metaDescription: 'Synchronize catalog, inventory, and analytics across web, social, and mobile channels in real time with SilarAI headless commerce APIs and unified cloud dashboard.',
@@ -208,16 +236,14 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: '99.99% Uptime • Zero Stockout Discrepancy',
     ctrShortDescription: 'Real-time multi-channel inventory sync & live analytics.',
     schemaType: 'SoftwareApplication',
-    rating: 4.92,
-    reviewCount: 105
   },
   {
     id: 'retail-commerce',
     section: 'Retail Commerce AI Platform',
     view: 'retail-commerce',
     category: 'Industry Solution' as const,
-    path: '/?page=retail-commerce',
-    canonicalUrl: 'https://silarai.com/?page=retail-commerce',
+    path: '/industries/retailers',
+    canonicalUrl: 'https://silarai.com/industries/retailers',
     seoTitle: 'AI Commerce Platform for Retail | AI Shopping Assistant | SilarAI',
     metaDescription: 'Transform retail storefronts with SilarAI omnichannel commerce engine: AI shopping assistants, sub-second product search, personalized recommendations, live inventory visibility, and automated customer support.',
     primaryKeywords: [
@@ -230,8 +256,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Omnichannel Ready • Unified Store & Web Sync',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.95,
-    reviewCount: 184
   },
   {
     id: 'ecommerce',
@@ -263,8 +287,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: '+380% Conversion Lift (tested benchmark) • Sub-50ms Pricing',
     ctrShortDescription: 'AI shopping assistant & sub-50ms pricing engine.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 310
   },
   {
     id: 'd2c-brands',
@@ -285,8 +307,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: '+35% Checkout Completion • 15-Min Setup',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.97,
-    reviewCount: 250
   },
   {
     id: 'd2c-brands-assistant',
@@ -294,7 +314,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'd2c-brands',
     subPage: 1,
     category: 'Industry Solution' as const,
-    path: '/industries/d2c-brands/ai-shopping-assistant',
+    path: '/industries/d2c-brands',
     canonicalUrl: 'https://silarai.com/industries/d2c-brands/ai-shopping-assistant',
     seoTitle: 'AI Shopping Assistant for D2C Brands | SilarAI',
     metaDescription: 'Empower D2C shoppers with conversational AI guidance. Delivers instant product recommendations, answers sizing and specification questions, and streamlines 1-click checkout across web and mobile.',
@@ -308,8 +328,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Zero Hallucinations • Natural Language Fit Matching',
     ctrShortDescription: 'D2C AI shopping assistant. Zero-hallucination fit match.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.97,
-    reviewCount: 230
   },
   {
     id: 'd2c-brands-platform',
@@ -317,7 +335,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'd2c-brands',
     subPage: 2,
     category: 'Industry Solution' as const,
-    path: '/industries/d2c-brands/ai-commerce-platform',
+    path: '/industries/d2c-brands',
     canonicalUrl: 'https://silarai.com/industries/d2c-brands/ai-commerce-platform',
     seoTitle: 'AI Commerce Platform for D2C Brands | SilarAI',
     metaDescription: 'Scale direct-to-consumer revenue with SilarAI intelligent commerce platform: semantic product discovery, AI sales assistance, real-time customer engagement, and predictive customer cohort intelligence.',
@@ -331,8 +349,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Real-Time Intent Tracking • +28% Higher AOV',
     ctrShortDescription: 'D2C AI commerce engine: real-time intent & +28% AOV lift.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 240
   },
   {
     id: 'd2c-brands-sales',
@@ -340,7 +356,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'd2c-brands',
     subPage: 3,
     category: 'Industry Solution' as const,
-    path: '/industries/d2c-brands/increase-sales-with-ai',
+    path: '/industries/d2c-brands',
     canonicalUrl: 'https://silarai.com/industries/d2c-brands/increase-sales-with-ai',
     seoTitle: 'How AI Can Increase D2C Ecommerce Sales | SilarAI',
     metaDescription: 'Unlock 35% higher D2C conversion rates with SilarAI. Recover lost carts automatically via WhatsApp, lift AOV with AI bundling, and convert hesitant visitors into repeat buyers 24/7.',
@@ -354,8 +370,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: '+35% Conversion Lift • 65% Cart Recovery (Benchmark)',
     ctrShortDescription: '+35% D2C sales lift & WhatsApp AI cart recovery.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.96,
-    reviewCount: 215
   },
   {
     id: 'distributors',
@@ -382,16 +396,14 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Instant ERP Sync • Contract Matrix Pricing',
     ctrShortDescription: 'B2B distributor commerce & ERP contract pricing.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.97,
-    reviewCount: 192
   },
   {
     id: 'wholesalers',
     section: 'Wholesalers AI B2B Platform',
     view: 'wholesalers',
     category: 'Industry Solution' as const,
-    path: '/?page=wholesalers',
-    canonicalUrl: 'https://silarai.com/?page=wholesalers',
+    path: '/industries/wholesalers',
+    canonicalUrl: 'https://silarai.com/industries/wholesalers',
     seoTitle: 'AI Commerce Platform for Wholesalers | B2B AI Shopping Assistant | SilarAI',
     metaDescription: 'Scale wholesale operations with SilarAI B2B commerce suite: automated RFQ workflows, matrix bulk ordering, multi-tier dealer pricing, and seamless SAP, Oracle, and Dynamics ERP integrations.',
     primaryKeywords: [
@@ -404,8 +416,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Automated RFQ Routing • ERP Connected',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 210
   },
   {
     id: 'manufacturing',
@@ -426,8 +436,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Technical Spec Parsing • Live ATP Checks',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.99,
-    reviewCount: 245
   },
   {
     id: 'manufacturing-platform',
@@ -435,7 +443,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'manufacturing',
     subPage: 1,
     category: 'Industry Solution' as const,
-    path: '/industries/manufacturing/ai-commerce-platform',
+    path: '/industries/manufacturing',
     canonicalUrl: 'https://silarai.com/industries/manufacturing/ai-commerce-platform',
     seoTitle: 'AI Commerce Platform for Manufacturing | SilarAI',
     metaDescription: 'Digitize manufacturing sales with SilarAI: conversational technical product discovery, automated quotation generation, dealer account management, and enterprise-grade ERP connectivity.',
@@ -449,8 +457,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Compliant with SAP & Oracle • Automated Quotes',
     ctrShortDescription: 'B2B manufacturing commerce with SAP, Oracle & live RFQs.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.99,
-    reviewCount: 260
   },
   {
     id: 'manufacturing-assistant',
@@ -458,7 +464,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'manufacturing',
     subPage: 2,
     category: 'Industry Solution' as const,
-    path: '/industries/manufacturing/ai-shopping-sales-assistant',
+    path: '/industries/manufacturing',
     canonicalUrl: 'https://silarai.com/industries/manufacturing/ai-shopping-sales-assistant',
     seoTitle: 'AI Shopping Assistant for Manufacturers | SilarAI',
     metaDescription: 'Enable engineers and buyers to search complex industrial catalogs using natural language. SilarAI converts technical requirements into structured RFQs with live inventory checks.',
@@ -472,8 +478,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Natural Language Spec Match • Instant RFQ Convert',
     ctrShortDescription: 'Industrial AI spec search. Turn CAD queries into RFQs.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 240
   },
   {
     id: 'manufacturing-dealer-distributor',
@@ -481,7 +485,7 @@ export const RAW_SEO_META_ENTRIES = [
     view: 'manufacturing',
     subPage: 3,
     category: 'Industry Solution' as const,
-    path: '/industries/manufacturing/dealer-distributor-commerce',
+    path: '/industries/manufacturing',
     canonicalUrl: 'https://silarai.com/industries/manufacturing/dealer-distributor-commerce',
     seoTitle: 'AI Dealer & Distributor Commerce Platform | SilarAI',
     metaDescription: 'Transform dealer networks with SilarAI AI dealer portal: self-service bulk orders, territory pricing, exploded parts diagram discovery, and automated ERP order dispatching.',
@@ -495,8 +499,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Territory Margin Control • Exploded Parts Search',
     ctrShortDescription: 'AI dealer portal for manufacturers with ERP bulk orders.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.99,
-    reviewCount: 255
   },
   {
     id: 'fmcg-commerce',
@@ -523,8 +525,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Automated 1-Click Replenishment • Hyper-Local Stock',
     ctrShortDescription: 'FMCG AI commerce with retailer & dealer portals.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.96,
-    reviewCount: 168
   },
   {
     id: 'fmcg-retailer-ordering-solution',
@@ -551,8 +551,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: 'Make 1,000+ SKUs Simple to Order • Natural Language B2B',
     ctrShortDescription: 'Conversational FMCG B2B retailer ordering for 1,000+ SKUs.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.95,
-    reviewCount: 194
   },
   {
     id: 'why-choose-us',
@@ -573,8 +571,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Informational' as const,
     ctrHook: '350% Verifiable ROI • 15-Min Zero-Code Setup',
     schemaType: 'WebPage & Article',
-    rating: 4.98,
-    reviewCount: 190
   },
   {
     id: 'shopify-comparison',
@@ -595,8 +591,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Save 60% App Fees • 0% Storefront Lag',
     schemaType: 'TechArticle',
-    rating: 4.97,
-    reviewCount: 175
   },
   {
     id: 'shopify-ai-shopping-assistant',
@@ -618,8 +612,6 @@ export const RAW_SEO_META_ENTRIES = [
     ctrHook: '24/7 AI Shopping • Works with Existing Shopify Themes',
     ctrShortDescription: 'Shopify AI shopping assistant. 24/7 product discovery.',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 284
   },
   {
     id: 'woocommerce-comparison',
@@ -639,8 +631,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: '10x Faster Search • Zero Plugin Database Lockups',
     schemaType: 'TechArticle',
-    rating: 4.96,
-    reviewCount: 162
   },
   {
     id: 'about',
@@ -661,8 +651,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Informational' as const,
     ctrHook: 'SOC-2 Certified • Enterprise AI Research',
     schemaType: 'AboutPage & Organization',
-    rating: 4.98,
-    reviewCount: 110
   },
   // 11 High-Authority Sector Landing Pages
   {
@@ -685,8 +673,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Launch in 3 Hours • AI Personal Stylist • B2B2C Dual Tiers',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.97,
-    reviewCount: 168
   },
   {
     id: 'sector-b2b2c',
@@ -708,8 +694,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Live in 4 Hours • Dual Wholesale & Retail • Sub-50ms Pricing',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 154
   },
   {
     id: 'sector-jeweller',
@@ -731,8 +715,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: '4Cs AI Education • High-Ticket Conversions • Custom Booking',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.96,
-    reviewCount: 92
   },
   {
     id: 'sector-home-sellers',
@@ -754,8 +736,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Room Dimension Matcher • Bundle Discovery • Zero Retainers',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.95,
-    reviewCount: 88
   },
   {
     id: 'sector-beauty-brands',
@@ -777,8 +757,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Skin Diagnostic AI • 42% AOV Boost • Clean Beauty Matching',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.97,
-    reviewCount: 134
   },
   {
     id: 'sector-food-packaging',
@@ -800,8 +778,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Bulk Tier Pricing • Instant Sample Requests • Recurring Orders',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.93,
-    reviewCount: 76
   },
   {
     id: 'sector-handicrafts',
@@ -823,8 +799,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Artisan Storytelling • Custom Orders • Global Multi-Currency',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.96,
-    reviewCount: 82
   },
   {
     id: 'sector-cosmetic-wellness',
@@ -846,8 +820,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Regimen Bundles • Contraindication AI • Fast Mobile Checkout',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.94,
-    reviewCount: 95
   },
   {
     id: 'sector-small-medium-fmcg',
@@ -869,8 +841,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'WhatsApp Quick Reorders • Case Pack Pricing • 4-Hr Launch',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.95,
-    reviewCount: 114
   },
   {
     id: 'sector-distributors',
@@ -892,8 +862,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Sub-50ms Bulk Pricing • Dealer Credit Lines • Live ERP Sync',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 140
   },
   {
     id: 'sector-wholesalers',
@@ -915,8 +883,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: 'Pallet Tier Discounts • MOQ Enforcement • Net 30 Terms',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.97,
-    reviewCount: 128
   },
   // 6 Curated AI Commerce Use Case Landing Pages
   {
@@ -942,8 +908,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: '2.8x Search Conversion • Zero Search Result Drop-offs',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 184
   },
   {
     id: 'use-case-sales-assistant',
@@ -968,8 +932,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Transactional' as const,
     ctrHook: '3.4x Faster Checkout • +38% Assisted Conversions',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.99,
-    reviewCount: 210
   },
   {
     id: 'use-case-lead-generation',
@@ -994,8 +956,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: '3.2x Lead Capture • 92% Qualification Accuracy',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.97,
-    reviewCount: 165
   },
   {
     id: 'use-case-conversion-engine',
@@ -1019,8 +979,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Transactional' as const,
     ctrHook: '+42% Conversion Lift • 34% Abandoned Carts Recovered',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.98,
-    reviewCount: 192
   },
   {
     id: 'use-case-engagement-ai',
@@ -1044,8 +1002,6 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: '+65% Repeat Purchases (Benchmark) • Unified Web & WhatsApp',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.96,
-    reviewCount: 158
   },
   {
     id: 'use-case-b2b-commerce',
@@ -1070,8 +1026,27 @@ export const RAW_SEO_META_ENTRIES = [
     searchIntent: 'Commercial' as const,
     ctrHook: '75% Faster Wholesale Quotes • ERP & Net Terms Ready',
     schemaType: 'SoftwareApplication & Service',
-    rating: 4.99,
-    reviewCount: 220
+  },
+  {
+    id: 'contact-us',
+    section: 'Contact SilarAI (Sales, Demos & Partnerships)',
+    view: 'contact-us',
+    category: 'Company' as const,
+    path: '/contact-us',
+    canonicalUrl: 'https://silarai.com/contact-us',
+    seoTitle: 'Contact SilarAI | Let’s Build the Future of Commerce & Marketing',
+    metaDescription: 'Connect with the SilarAI team to explore how our AI Commerce Platform and Shopping Assistant can accelerate your conversion, sales, and customer growth.',
+    ctrShortDescription: 'Connect with SilarAI specialists for custom AI demos.',
+    primaryKeywords: [
+      'Contact SilarAI',
+      'AI Commerce Demo',
+      'Enterprise AI Shopping Assistant',
+      'Commerce Cloud Contact',
+      'Retail AI Solutions'
+    ],
+    searchIntent: 'Commercial' as const,
+    ctrHook: 'Book Live Demo • 15-Minute Technical Onboarding',
+    schemaType: 'ContactPage & Organization',
   }
 ];
 
@@ -1123,6 +1098,7 @@ export function findSeoMetaEntry(view: string, subPage?: number, sectorSlug?: st
     const ucMatch = SEO_META_TABLE.find(
       (entry) =>
         entry.id === `use-case-${slug}` ||
+        entry.path === `/use-cases/${slug}/` ||
         entry.path === `/use-cases/${slug}` ||
         entry.id.includes(slug)
     );
@@ -1132,7 +1108,10 @@ export function findSeoMetaEntry(view: string, subPage?: number, sectorSlug?: st
   // Sector landing match with slug
   if (view === 'sector-landing' && sectorSlug) {
     const sectorMatch = SEO_META_TABLE.find(
-      (entry) => entry.id === `sector-${sectorSlug}` || entry.path === `/sector/${sectorSlug}`
+      (entry) =>
+        entry.id === `sector-${sectorSlug}` ||
+        entry.path === `/sector/${sectorSlug}/` ||
+        entry.path === `/sector/${sectorSlug}`
     );
     if (sectorMatch) return sectorMatch;
   }

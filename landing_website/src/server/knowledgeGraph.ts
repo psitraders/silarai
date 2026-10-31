@@ -186,7 +186,7 @@ export const D2C_KNOWLEDGE_GRAPH = {
               'Conversational Shopping Bot',
               'Autonomous Shopping Assistant'
             ],
-            kpis: ['3.8x conversion rate lift', '75% customer inquiry automation', '4.8/5 shopper satisfaction rating'],
+            kpis: ['3.8x conversion rate lift', '75% customer inquiry automation', 'Sub-200ms catalog response latency'],
             connectedNodes: ['Product Catalog', 'Recommendations', 'Product Comparison', 'Conversational Commerce', 'Website', 'WhatsApp']
           },
           {

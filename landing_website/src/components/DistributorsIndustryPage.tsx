@@ -29,20 +29,13 @@ import {
   DollarSign,
   Package,
   Warehouse,
-  Clock,
   Database,
   Users,
-  MessageSquare,
-  RefreshCw,
-  Target,
   ShoppingCart,
-  Percent,
-  Check,
   Home
 } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
 
-import { COMPLETE_AUTHORITATIVE_BACKLINKS } from '../data/authoritativeBacklinks';
 import { DistributorsBacklinkHub } from './DistributorsBacklinkHub';
 
 interface DistributorsIndustryPageProps {
@@ -296,68 +289,6 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
-      {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@graph': [
-              {
-                '@type': 'WebPage',
-                '@id': 'https://silarai.com/industries/distributors#webpage',
-                url: 'https://silarai.com/industries/distributors',
-                name: 'AI Commerce Platform for Distributors | AI Shopping Assistant | SilarAI',
-                description:
-                  'SilarAI Commerce AI enables distributors to deliver intelligent B2B commerce through AI Shopping Assistants, dealer portals, AI-powered product discovery, customer-specific pricing, quotation automation, and ERP-integrated ordering across SAP, Oracle, and Dynamics 365.',
-              },
-              {
-                '@type': 'SoftwareApplication',
-                name: 'SilarAI Distribution Commerce AI Platform',
-                operatingSystem: 'Cloud Native / Web / Headless API',
-                applicationCategory: 'BusinessApplication, ECommerceApplication',
-                description:
-                  'Enterprise AI Commerce Platform for Wholesale Distributors featuring AI Shopping Assistants, B2B Dealer Portals, Customer-Specific Pricing, RFQ Automation, and Multi-Warehouse Inventory Visibility.',
-                aggregateRating: {
-                  '@type': 'AggregateRating',
-                  ratingValue: '4.97',
-                  ratingCount: '192',
-                },
-              },
-              {
-                '@type': 'Service',
-                name: 'AI Commerce Platform for Distributors',
-                provider: {
-                  '@type': 'Organization',
-                  name: 'SilarAI Technologies',
-                  url: 'https://silarai.com',
-                },
-                areaServed: 'Worldwide',
-                serviceType: 'B2B Wholesale Distribution AI Solutions',
-              },
-              {
-                '@type': 'FAQPage',
-                mainEntity: DISTRIBUTOR_FAQS.map((faq) => ({
-                  '@type': 'Question',
-                  name: faq.q,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: faq.a,
-                  },
-                })),
-              },
-              {
-                '@type': 'BreadcrumbList',
-                itemListElement: [
-                  { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://silarai.com' },
-                  { '@type': 'ListItem', position: 2, name: 'Industries', item: 'https://silarai.com/#industries' },
-                  { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for Distributors', item: 'https://silarai.com/industries/distributors' },
-                ],
-              },
-            ],
-          }),
-        }}
-      />
 
       {/* Top Banner & Breadcrumb Navigation */}
       <Breadcrumbs
@@ -467,6 +398,7 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
                     value={searchDemoQuery}
                     onChange={(e) => setSearchDemoQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearchDemo(searchDemoQuery)}
+                    placeholder="Search products, SKUs, or technical specs..."
                     className="w-full pl-9 pr-20 py-2.5 rounded-xl border border-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-plum-600 bg-slate-50"
                   />
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -580,20 +512,24 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
               </div>
             </div>
 
-            {/* Entity Keyword Strip for AIO / GEO */}
+            {/* Entity Keyword Strip for AIO / GEO - Keywords active in backend, visual UI kept clean */}
             <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-              <div className="flex flex-wrap items-center gap-3 text-slate-300">
-                <span className="font-bold text-white">Target Entity Keywords:</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">AI Commerce Platform for Distributors</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Conversational Commerce</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Agentic AI</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Dealer Portal Software</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Customer-Specific Pricing AI</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Multi-Warehouse Inventory Visibility</span>
+              {/* Keywords preserved in backend for search engines, AI crawlers, and screen readers - avoided in user visual search */}
+              <div className="sr-only" aria-label="Backend Target Entity Keywords for AI Indexing">
+                <span>Target Entity Keywords: AI Commerce Platform for Distributors, Conversational Commerce, Agentic AI, Dealer Portal Software, Customer-Specific Pricing AI, Multi-Warehouse Inventory Visibility.</span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-300">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="font-semibold text-slate-200">
+                  Verified Enterprise Architecture &bull; Real-Time ERP &amp; Catalog Synchronization
+                </span>
               </div>
               <button
                 onClick={() => onBookDemo('Distributor AIO & GEO Consultation')}
-                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm flex items-center gap-1.5"
+                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm hover:shadow-md flex items-center gap-1.5"
               >
                 <span>Book Distributor Demo</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -1231,7 +1167,7 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
               </a>
 
               <a
-                href="/dealer-portal"
+                href="/commerce-platform"
                 className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
               >
                 <div className="flex items-center justify-between">
@@ -1247,7 +1183,7 @@ export const DistributorsIndustryPage: React.FC<DistributorsIndustryPageProps> =
               </a>
 
               <a
-                href="/ai-commerce-platform"
+                href="/commerce-platform"
                 className="p-4 rounded-xl bg-white hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
               >
                 <div className="flex items-center justify-between">

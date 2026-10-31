@@ -12,11 +12,16 @@ Read this before every import round. Background and the reasons behind each rule
 ## 1. Workflow
 
 1. **Export** from AI Studio into `imported_landing_website/` (replace its contents).
-2. **Diff** against this folder:
+2. **Diff** against this folder. Normalise a copy of the export first, so the diff shows
+   real upstream changes rather than our standing URL adaptations, and ignore CR (a
+   Windows checkout makes our files CRLF; the export is LF):
    ```bash
-   diff -rq imported_landing_website landing_website -x node_modules -x dist -x .idea
+   cp -r imported_landing_website/src /tmp/imp && \
+   find /tmp/imp -name '*.ts*' -exec sh -c 'python3 landing_website/scripts/normalize-import.py "$1" "$1"' _ {} \;
+   diff -rq --strip-trailing-cr /tmp/imp landing_website/src
    ```
-   Classify every changed/new file: *port*, *port with adaptation*, or *exclude* (§3).
+   Classify every changed/new/deleted file: *port*, *port with adaptation*, or *exclude* (§3).
+   Files the export deleted are dead code here too — delete them (asks for permission).
 3. **Pause on anomalies.** Anything that changes contact details, URLs/canonicals, the
    no-backend rule, published claims or the build pipeline needs a decision before
    porting — list them and ask.
@@ -48,14 +53,19 @@ python3 landing_website/scripts/normalize-import.py imported_landing_website/src
 ```
 
 `scripts/normalize-import.py` (dev tool, not part of the build): `www.` → apex;
-`/api/<x>` → matching `/ai/*.json`; strip trailing slashes on site paths except `/` and
-`/ai-commerce-marketing-platform/`. Then review the diff by hand — it does not cover
-contact details, copy, or route logic.
+`/api/<x>` → matching `/ai/*.json`; strip trailing slashes on site paths — quoted strings
+and `${CANONICAL_HOST}/…/` / `${origin}/…/` templates — except `/` and
+`/ai-commerce-marketing-platform/`. Prefix strings passed to `startsWith` / `replace` /
+`includes` etc. are left alone (stripping `'/sector/'` there breaks slug parsing). Then
+review the diff by hand — it does not cover contact details, copy, or route logic.
 
 `/api` → `/ai` map: `aeo/faq`→`aeo-faq.json` · `ai-discovery`→`discovery.json` ·
 `d2c-knowledge-graph`, `knowledge-graph/d2c`→`d2c-knowledge-graph.json` ·
 `geo-knowledge`→`geo-knowledge.json` · `rag/context`→`rag-chunks.json` ·
 `site-architecture` and any `*/keywords`, `*/seo`→`site-architecture.json`.
+Links to `/ai/*.json` files the generator does not emit (e.g. `/ai/keywords.json`,
+`/ai/seo.json`, `/ai/seo-meta-table.json`) → point at `site-architecture.json` /
+`geo-knowledge.json`, or drop them.
 
 ## 3. Standing exclusions (do not port)
 
@@ -66,7 +76,12 @@ contact details, copy, or route logic.
   `/seo-meta-table` routes, the hidden Footer entry points and the
   `onOpenSeoMetaTable` / `onOpenBacklinkHub` / `onOpenFullTable` props.
 - **`AiDiscoveryModal`** — the export embeds `SearchPreviewPane`; keep ours.
-- **`src/lib/canonicalUrls.ts`** and the export's `scripts/generateStaticFiles.ts`.
+- **`src/lib/canonicalUrls.ts`** and the export's `scripts/generateStaticFiles.ts`. When the
+  export's `SeoHead` calls `getCanonicalUrlForView()`, keep our local `CANONICAL_PATHS`
+  map in `SeoHead` instead and add any new view to it.
+- **The export's hosting configs**: `staticwebapp.config.json` (root and `public/` —
+  `trailingSlash: "always"` + 301 map), `nginx.conf`, `web.config`. Ours stays; port
+  individual rules only on request (the WordPress `410` rules were taken 2026-10-31).
 - **Dark-mode CSS** in `index.css` — no toggle exists (declined 2026-10-19).
 - Everything in A6/A7.
 
@@ -82,12 +97,18 @@ These have come back in more than one round:
   `handleNavigateUniversal`.
 - Forms/widget setting success from a `catch`/`finally`, or hardcoding the inbox.
 - Internal-link `path` values that the router doesn't resolve (soft 404 via SWA fallback).
+- Sub-page canonicals collapsed into the parent in `seoMetaTable` / `SeoHead` (AI Shopping
+  Assistant 2–3, Commerce Platform 2–3, D2C 1–3, Manufacturing 1–3) → restore per-sub-page URLs.
+- `SeoHead` dropping the `noindex` for preview/AI Studio/localhost hosts.
+- `RoiCalculator` imported eagerly → keep it `React.lazy` inside `PricingSection`.
+- Type errors the export ships with (2026-10-31: `ErrorBoundary`'s cast-based class
+  declaration) — `npm run lint` must pass before anything else.
 
 ## 5. Verification checklist
 
 Run from a Linux copy if the Windows `node_modules` can't execute (`npm ci` there).
 
-- [ ] `npm run lint` (tsc) passes.
+- [ ] `npm run lint` (tsc) passes; `tsc --noEmit --noUnusedLocals` shows nothing new in ported files.
 - [ ] `npm run build` passes; sitemap count printed matches expectations.
 - [ ] `grep -r "/api/\|www\.silarai" dist/ai dist/.well-known dist/*.json dist/*.txt` → nothing.
 - [ ] `grep -rl "SeoMetaTableModal\|BacklinkAuthorityHub" dist/assets` → nothing.
@@ -103,3 +124,4 @@ Run from a Linux copy if the Windows `node_modules` can't execute (`npm ci` ther
 | 2026-09-14 | Forms use `mailto:` handoff; author SEO tooling excluded. |
 | 2026-09-20 | Chat widget kept as canned demo (export needed `/api/chat`). `AiDiscoveryModal` kept. |
 | 2026-10-19 | Inbox stays `psitraders@outlook.com` until `silarai.com` has a working MX. URL scheme kept (no www, no trailing slashes, sub-pages kept); URL migration deferred. Export's client-side chat widget ported with honest `mailto:` lead form. Ported: PWA manifest, hero-image preload, non-blocking CSS + inline critical CSS. Declined: dark-mode CSS. |
+| 2026-10-31 | URL migration still deferred (export now ships real SWA 301s + `trailingSlash: always`, but on `www` and with a `/contact*` loop); only its WordPress `410` rules taken. Dead components the export deleted were deleted here. `SeoHead` is the single owner of head metadata/JSON-LD (inline JSON-LD removed upstream). `RoiCalculator` kept lazy. Preview-host `noindex` kept. |

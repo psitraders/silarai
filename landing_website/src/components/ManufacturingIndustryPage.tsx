@@ -4,9 +4,7 @@ import {
   Sparkles,
   Bot,
   Search,
-  TrendingUp,
   Layers,
-  Zap,
   CheckCircle2,
   ArrowRight,
   ChevronDown,
@@ -23,22 +21,13 @@ import {
   Box,
   UtensilsCrossed,
   Stethoscope,
-  ShieldCheck,
   Building2,
   FileText,
   DollarSign,
-  Package,
   Warehouse,
-  Clock,
   Database,
   Users,
-  MessageSquare,
-  RefreshCw,
-  Target,
   ShoppingCart,
-  Percent,
-  Sprout,
-  BarChart3,
   Truck,
   Plane,
   Paintbrush,
@@ -291,68 +280,6 @@ export const ManufacturingIndustryPage: React.FC<ManufacturingIndustryPageProps>
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
-      {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@graph': [
-              {
-                '@type': 'WebPage',
-                '@id': 'https://silarai.com/?page=manufacturing#webpage',
-                url: 'https://silarai.com/?page=manufacturing',
-                name: 'AI Commerce Platform for Manufacturers | B2B AI Shopping Assistant | SilarAI',
-                description:
-                  'Transform manufacturing sales with AI Shopping Assistants, B2B commerce, dealer portals, RFQ automation, ERP integration, AI product search, and intelligent customer experiences.',
-              },
-              {
-                '@type': 'SoftwareApplication',
-                name: 'SilarAI Manufacturing Commerce AI Platform',
-                operatingSystem: 'Cloud Native / Web / Headless API',
-                applicationCategory: 'BusinessApplication, ECommerceApplication',
-                description:
-                  'Enterprise AI Commerce Platform for Manufacturers featuring AI Shopping Assistants, Dealer Portals, Customer-Specific Pricing, RFQ Automation, Knowledge AI, and Real-Time ERP Integration.',
-                aggregateRating: {
-                  '@type': 'AggregateRating',
-                  ratingValue: '4.99',
-                  ratingCount: '245',
-                },
-              },
-              {
-                '@type': 'Service',
-                name: 'AI Commerce Platform for Manufacturers',
-                provider: {
-                  '@type': 'Organization',
-                  name: 'SilarAI Technologies',
-                  url: 'https://silarai.com',
-                },
-                areaServed: 'Worldwide',
-                serviceType: 'Industrial Manufacturing AI Commerce Solutions',
-              },
-              {
-                '@type': 'FAQPage',
-                mainEntity: MANUFACTURING_FAQS.map((faq) => ({
-                  '@type': 'Question',
-                  name: faq.q,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: faq.a,
-                  },
-                })),
-              },
-              {
-                '@type': 'BreadcrumbList',
-                itemListElement: [
-                  { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://silarai.com' },
-                  { '@type': 'ListItem', position: 2, name: 'Industries', item: 'https://silarai.com/#industries' },
-                  { '@type': 'ListItem', position: 3, name: 'AI Commerce Platform for Manufacturers', item: 'https://silarai.com/?page=manufacturing' },
-                ],
-              },
-            ],
-          }),
-        }}
-      />
 
       {/* Top Banner & Breadcrumb Navigation */}
       <Breadcrumbs

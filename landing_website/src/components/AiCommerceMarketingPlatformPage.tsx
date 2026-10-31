@@ -1,36 +1,21 @@
 import React, { useState } from 'react';
 import {
-  Layers,
   Sparkles,
   Bot,
   Megaphone,
-  BarChart3,
   Cpu,
   ArrowRight,
   CheckCircle2,
-  Globe,
   Database,
-  Search,
-  ShoppingCart,
-  Zap,
-  ShieldCheck,
   Users,
   ChevronRight,
-  TrendingUp,
-  Store,
-  Building2,
   Workflow,
   ExternalLink,
   Code2,
   Terminal,
   Share2,
-  MessageSquare,
-  HelpCircle,
   FolderTree,
-  Server,
-  RefreshCw,
-  Eye,
-  Sliders
+  Server
 } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
 
@@ -974,21 +959,21 @@ export const AiCommerceMarketingPlatformPage: React.FC<AiCommerceMarketingPlatfo
 
               <div className="flex flex-wrap gap-2">
                 <a
-                  href="/ai/keywords.json"
+                  href="/ai/site-architecture.json"
                   target="_blank"
                   rel="noreferrer"
                   className="px-3.5 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-mono transition-colors flex items-center gap-1.5"
                 >
-                  <span>/ai/keywords.json</span>
+                  <span>/ai/site-architecture.json</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
                 <a
-                  href="/ai/seo.json"
+                  href="/ai/geo-knowledge.json"
                   target="_blank"
                   rel="noreferrer"
                   className="px-3.5 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-teal-300 border border-teal-500/30 text-xs font-mono transition-colors flex items-center gap-1.5"
                 >
-                  <span>/ai/seo.json</span>
+                  <span>/ai/geo-knowledge.json</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
                 <a

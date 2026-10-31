@@ -21,6 +21,7 @@ interface FooterProps {
   onOpenLogoModal?: () => void;
   onOpenAiDiscoveryModal?: () => void;
   onNavigateContactUs?: () => void;
+  onNavigateLaunchOnlineStore?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -41,7 +42,8 @@ export const Footer: React.FC<FooterProps> = ({
   customLogoImg,
   onOpenLogoModal,
   onOpenAiDiscoveryModal,
-  onNavigateContactUs
+  onNavigateContactUs,
+  onNavigateLaunchOnlineStore
 }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -246,13 +248,37 @@ export const Footer: React.FC<FooterProps> = ({
                 </ul>
               </li>
 
+              {/* Link to Launch Online Store (30 Mins) */}
+              <li className="pt-2">
+                <a
+                  href="/launch-online-store"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onNavigateLaunchOnlineStore) onNavigateLaunchOnlineStore();
+                    else window.location.href = '/launch-online-store';
+                  }}
+                  className="hover:text-peach-300 transition-colors font-bold text-white flex items-center justify-between group cursor-pointer"
+                  title="Launch Your Online Store in Under 30 Minutes"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-peach-300"></span>
+                    <span>Launch Store (30 Mins)</span>
+                  </span>
+                  <span className="text-[10px] font-black uppercase bg-teal-500/20 text-teal-300 px-1.5 py-0.5 rounded border border-teal-500/30">
+                    Fast Launch
+                  </span>
+                </a>
+              </li>
+
               {/* SEO Hyperlink for Pricing Page */}
               <li className="pt-2">
                 <a
-                  href="/#pricing"
+                  href="/pricing"
                   onClick={(e) => {
                     e.preventDefault();
-                    scrollToSection('pricing');
+                    window.history.pushState(null, '', '/pricing');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   className="hover:text-peach-300 transition-colors font-extrabold text-peach-300 flex items-center justify-between group"
                   title="SilarAI Pricing & Plans — Starter $10, Growth $50, Enterprise"
@@ -557,10 +583,12 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <a
-                  href="/#pricing"
+                  href="/pricing"
                   onClick={(e) => {
                     e.preventDefault();
-                    scrollToSection('pricing');
+                    window.history.pushState(null, '', '/pricing');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   className="hover:text-peach-300 transition-colors text-left flex items-center gap-1.5 font-bold text-white"
                   title="SilarAI Simple & Transparent Pricing ($10/mo)"

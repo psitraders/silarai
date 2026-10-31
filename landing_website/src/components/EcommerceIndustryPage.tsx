@@ -24,7 +24,6 @@ import {
   Building2,
   Laptop,
   Check,
-  Flame,
   BarChart3,
   ExternalLink,
   ChevronDown
@@ -299,7 +298,7 @@ export const EcommerceIndustryPage: React.FC<EcommerceIndustryPageProps> = ({
                           <span className="font-black text-emerald-700 text-xs">₹4,499</span>
                         </div>
                         <p className="text-[11px] text-slate-500 leading-tight">
-                          Dual-density foam, breathable mesh, 320g light. 4.8★ (420 reviews).
+                          Dual-density foam, breathable mesh, 320g ultralight road architecture.
                         </p>
                         <div className="flex items-center justify-between pt-1 border-t border-slate-100">
                           <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
@@ -393,19 +392,24 @@ export const EcommerceIndustryPage: React.FC<EcommerceIndustryPageProps> = ({
               </div>
             </div>
 
-            {/* Quick Answer Key Takeaways for AI Overviews */}
+            {/* Quick Answer Key Takeaways for AI Overviews - Keywords active in backend, visual UI kept clean */}
             <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-              <div className="flex flex-wrap items-center gap-4 text-slate-300">
-                <span className="font-bold text-white">Target Entity Keywords:</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Conversational Commerce</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Agentic AI</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">AI Shopping Assistant</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Sub-50ms Dynamic Pricing</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-peach-200">Autonomous Ecommerce Store</span>
+              {/* Keywords preserved in backend for search engines, AI crawlers, and screen readers - avoided in user visual search */}
+              <div className="sr-only" aria-label="Backend Target Entity Keywords for AI Indexing">
+                <span>Target Entity Keywords: Conversational Commerce, Agentic AI, AI Shopping Assistant, Sub-50ms Dynamic Pricing, Autonomous Ecommerce Store.</span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-300">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="font-semibold text-slate-200">
+                  Autonomous Store Intelligence &bull; Sub-50ms Edge Pricing &amp; Conversational Checkout
+                </span>
               </div>
               <button
                 onClick={() => onBookDemo('AIO & GEO Architecture Consultation')}
-                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm flex items-center gap-1.5"
+                className="px-4 py-2 bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs rounded-xl transition-all shrink-0 cursor-pointer shadow-sm hover:shadow-md flex items-center gap-1.5"
               >
                 <span>Deploy AI Store Assistant</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -1509,7 +1513,7 @@ export const EcommerceIndustryPage: React.FC<EcommerceIndustryPageProps> = ({
               </a>
 
               <a
-                href="/ai-commerce-platform"
+                href="/commerce-platform"
                 className="p-4 rounded-xl bg-slate-50 hover:bg-peach-50/50 border border-slate-200 hover:border-peach-300 transition-all group block space-y-2"
               >
                 <div className="flex items-center justify-between">

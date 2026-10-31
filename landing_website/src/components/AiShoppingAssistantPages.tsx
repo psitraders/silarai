@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Sparkles,
-  ArrowLeft,
   ArrowRight,
   BookOpen,
   Zap,
@@ -10,7 +9,6 @@ import {
   HelpCircle,
   ChevronRight,
   Bot,
-  ShoppingBag,
   Building2,
   Globe,
   Layers,
@@ -18,11 +16,7 @@ import {
   Check,
   ShieldCheck,
   MessageSquare,
-  BarChart3,
-  Users,
   Compass,
-  Cpu,
-  Star,
   BrainCircuit,
   Share2,
   Home,
@@ -89,118 +83,12 @@ export const AiShoppingAssistantPages: React.FC<AiShoppingAssistantPagesProps> =
   const currentMeta = AI_SHOPPING_PAGES_META[activePage];
   const [selectedFeature, setSelectedFeature] = useState<string>('Conversational Shopping');
 
-  // Update document title, meta description, and canonical dynamically
   useEffect(() => {
-    document.title = currentMeta.metaTitle;
-
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute('content', currentMeta.metaDescription);
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute('href', 'https://silarai.com/ai-shopping-assistant');
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [activePage, currentMeta]);
-
-  const jsonLdData = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'SoftwareApplication',
-        '@id': 'https://silarai.com/ai-shopping-assistant#software',
-        name: 'SilarAI Autonomous Shopping Assistant',
-        operatingSystem: 'All Web Browsers, iOS, Android, Headless',
-        applicationCategory: 'BusinessApplication, ECommerceApplication',
-        description:
-          'Enterprise AI Shopping Assistant software enabling conversational voice discovery in 20+ languages, visual camera product search, and 1-click agentic checkout.',
-        offers: {
-          '@type': 'Offer',
-          price: '49.00',
-          priceCurrency: 'USD',
-          availability: 'https://schema.org/InStock',
-        },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.95',
-          reviewCount: '248',
-          bestRating: '5',
-          worstRating: '1',
-        },
-      },
-      {
-        '@type': 'FAQPage',
-        '@id': 'https://silarai.com/ai-shopping-assistant#faq',
-        mainEntity: [
-          {
-            '@type': 'Question',
-            name: 'What is an AI Shopping Assistant in ecommerce?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'An AI Shopping Assistant is an autonomous conversational agent embedded on an ecommerce website or mobile app that guides shoppers through natural language product discovery, visual camera searches, product comparisons, and 1-click checkout 24/7.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'How does an AI shopping assistant increase conversion rates?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'AI shopping assistants reduce buyer friction and decision fatigue by answering product questions in under 200ms, suggesting contextual cross-sells, resolving sizing doubts, and guiding shoppers to the exact SKU they need, lifting sales conversions by up to 380%.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'Does SilarAI Shopping Assistant support multiple languages and voice?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Yes. SilarAI natively supports speech-to-intent voice commerce in over 20 global languages with dialect recognition, allowing shoppers to speak naturally to find items without typing.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'Can SilarAI Shopping Assistant be embedded on Shopify or WooCommerce?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Yes. SilarAI provides a simple one-line script tag embed and native app connectors that install in under 5 minutes on Shopify, Shopify Plus, WooCommerce, Magento, BigCommerce, and custom headless storefronts.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'How does multimodal visual camera search work?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Shoppers upload or snap a photo of any outfit, home decor, or product part. SilarAIs vector neural network extracts color, texture, silhouette, and pattern to return matching and complementary items from your inventory instantly.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'What is 1-click agentic checkout?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Agentic checkout allows the AI shopping assistant to bundle recommended items, apply valid coupon codes, calculate taxes, and present an instant checkout modal directly inside the chat interface without leaving the page.',
-            },
-          },
-        ],
-      },
-    ],
-  };
+  }, [activePage]);
 
   return (
     <div className="min-h-screen bg-slate-50/60 text-slate-900 pt-20 pb-20">
-      {/* Search Engine Rich Snippet JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
-      />
       {/* Top Breadcrumb Navigation */}
       <Breadcrumbs
         items={[

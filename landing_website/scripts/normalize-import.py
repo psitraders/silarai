@@ -19,6 +19,7 @@ API_MAP = [
  ('/api/aeo/faq', '/ai/aeo-faq.json'),
 ]
 KEEP = {'/ai-commerce-marketing-platform'}
+PREFIX_CALL = re.compile(r'(startsWith|endsWith|replace|replaceAll|includes|indexOf|split)\(\s*$')
 def norm(s):
     s = s.replace('https://www.silarai.com', 'https://silarai.com')
     for a, b in API_MAP:
@@ -27,8 +28,17 @@ def norm(s):
         return m.group(0) if m.group(2) in KEEP else m.group(1)
     s = re.sub(r'(https://silarai\.com(/[A-Za-z0-9_\-/]*?[A-Za-z0-9_\-]))/(?=[#\'"`?\s)\]]|$)', abs_strip, s)
     def rel_strip(m):
-        return m.group(0) if m.group(2) in KEEP else m.group(1) + m.group(2) + m.group(3)
+        # Keep prefix strings used for matching, e.g. startsWith('/sector/') or
+        # replace('/use-cases/', '') — stripping their slash changes behaviour.
+        before = m.string[max(0, m.start() - 20):m.start()]
+        if m.group(2) in KEEP or PREFIX_CALL.search(before):
+            return m.group(0)
+        return m.group(1) + m.group(2) + m.group(3)
     s = re.sub(r'([\'"`])(/[A-Za-z0-9_\-][A-Za-z0-9_\-/]*?[A-Za-z0-9_\-])/([\'"`])', rel_strip, s)
+    # Template literals built on a host variable, e.g. `${CANONICAL_HOST}/about/` or `${origin}/use-cases/${slug}/`.
+    def tpl_strip(m):
+        return m.group(0) if m.group(2) in KEEP else m.group(1)
+    s = re.sub(r'(\$\{(?:CANONICAL_HOST|origin|BASE_URL|baseUrl)\}(/[^`\s#]*?[A-Za-z0-9_\-}]))/(?=[`#])', tpl_strip, s)
     return s
 src, dst = sys.argv[1], sys.argv[2]
 open(dst, 'w', encoding='utf-8', newline='').write(norm(open(src, encoding='utf-8').read()))

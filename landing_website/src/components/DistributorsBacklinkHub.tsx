@@ -1,23 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import {
   Sparkles,
-  ExternalLink,
   Search,
-  CheckCircle2,
   Copy,
-  Layers,
   Bot,
-  Truck,
-  Building2,
-  Cpu,
-  Share2,
-  Database,
   ArrowRight,
-  Filter,
   Check,
-  Globe,
-  Tag,
-  BookOpen
+  Globe
 } from 'lucide-react';
 import { COMPLETE_AUTHORITATIVE_BACKLINKS, AuthoritativeBacklink } from '../data/authoritativeBacklinks';
 

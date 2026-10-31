@@ -11,8 +11,7 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend, 
-  Cell 
+  Legend 
 } from 'recharts';
 import { 
   Calculator, 
@@ -26,10 +25,7 @@ import {
   BarChart3, 
   LineChart as LineChartIcon, 
   Layers, 
-  CheckCircle2, 
-  HelpCircle,
-  Zap,
-  ChevronRight
+  Zap
 } from 'lucide-react';
 
 interface RoiCalculatorProps {
@@ -686,3 +682,5 @@ export const RoiCalculator: React.FC<RoiCalculatorProps> = ({ onBookDemo }) => {
     </div>
   );
 };
+
+export default RoiCalculator;

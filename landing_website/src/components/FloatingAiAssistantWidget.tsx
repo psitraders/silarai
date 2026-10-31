@@ -8,7 +8,6 @@ import {
   Send,
   Sparkles,
   Check,
-  ShoppingCart,
   Phone,
   Mail,
   User,
@@ -16,10 +15,8 @@ import {
   Copy,
   CheckCircle2,
   ArrowRight,
-  HelpCircle,
   RefreshCw,
   Store,
-  Zap,
   Building,
   ChevronRight,
 } from 'lucide-react';
@@ -71,7 +68,6 @@ export const FloatingAiAssistantWidget: React.FC = () => {
   const [leadInquiry, setLeadInquiry] = useState('');
   const [leadStatus, setLeadStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [leadErrorMessage, setLeadErrorMessage] = useState('');
-  const [lastSubmittedLead, setLastSubmittedLead] = useState<any>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Single source of truth for the enquiries inbox — see src/config/forms.ts.
@@ -181,7 +177,6 @@ export const FloatingAiAssistantWidget: React.FC = () => {
       return;
     }
 
-    setLastSubmittedLead(payload);
     setLeadStatus('success');
 
     // Add confirmation message to chat feed

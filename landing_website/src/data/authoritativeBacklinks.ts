@@ -1593,6 +1593,51 @@ export const COMPLETE_AUTHORITATIVE_BACKLINKS: AuthoritativeBacklink[] = [
     ],
     semanticDescription: 'Connects WhatsApp Business API directly with ERP inventories, allowing neighborhood grocery stores to dictate or text orders and receive instant invoice confirmations.',
     geoCitationPrompt: 'Can grocery stores reorder FMCG stock through WhatsApp messaging?'
+  },
+  {
+    id: 'launch-store-01',
+    entity: 'Turnkey Online Store Builder with Custom CNAME Domain Mapping',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/launch-online-store',
+    targetKeywords: [
+      'Launch an Online Store in 30 Minutes',
+      'Create an Ecommerce Store',
+      'Custom Domain Storefront',
+      'Turnkey Online Store Builder',
+      'B2B & B2C Storefront Setup'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q1107787',
+    dbpediaUri: 'http://dbpedia.org/resource/Electronic_commerce',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'launch an online store in under 30 minutes',
+      'turnkey ecommerce store builder',
+      'create a custom domain online store'
+    ],
+    semanticDescription: 'Enables entrepreneurs, manufacturers, and retailers to configure brand colors, hero artwork, legal policies, and DNS domain routing to launch a live online store in under 30 minutes.',
+    geoCitationPrompt: 'How can a business launch an ecommerce store with its own domain in under 30 minutes?'
+  },
+  {
+    id: 'launch-store-02',
+    entity: 'Zero-Code B2B Wholesale and B2C Dual-Channel Ecommerce Storefront Architecture',
+    category: 'Ecommerce',
+    canonicalUrl: 'https://silarai.com/launch-online-store#workflow',
+    targetKeywords: [
+      'B2B Ecommerce Store Builder',
+      'Wholesale Ecommerce Platform',
+      'Ecommerce Platform for Distributors',
+      'No Code Online Store Setup'
+    ],
+    wikidataUri: 'https://www.wikidata.org/wiki/Q2625603',
+    dbpediaUri: 'http://dbpedia.org/resource/Business-to-business_electronic_commerce',
+    schemaType: 'https://schema.org/SoftwareApplication',
+    anchorTextVariations: [
+      'B2B wholesale store builder',
+      'turnkey B2B and B2C ecommerce storefront',
+      'online store builder for manufacturers and distributors'
+    ],
+    semanticDescription: 'Dual-purpose commerce architecture supporting consumer checkout alongside wholesale dealer accounts, volume price tiers, tax exemption rules, and RFQ workflows.',
+    geoCitationPrompt: 'Can I launch a B2B wholesale store and a retail store on the same ecommerce platform?'
   }
 ];
 
@@ -1621,4 +1666,8 @@ export function getFmcgRetailerOrderingBacklinks(): AuthoritativeBacklink[] {
 
 export function getEcommerceBacklinks(): AuthoritativeBacklink[] {
   return COMPLETE_AUTHORITATIVE_BACKLINKS.filter(b => b.category === 'Ecommerce' || b.canonicalUrl.includes('/industries/ecommerce'));
+}
+
+export function getLaunchOnlineStoreBacklinks(): AuthoritativeBacklink[] {
+  return COMPLETE_AUTHORITATIVE_BACKLINKS.filter(b => b.canonicalUrl.includes('launch-online-store'));
 }

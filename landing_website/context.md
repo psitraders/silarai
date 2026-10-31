@@ -3,7 +3,7 @@
 > **Authoritative project reference.** Read this before implementing features, fixing bugs, or refactoring.
 > Update this file whenever architecture, behaviour, workflows, or features change.
 
-Last updated: 2026-10-19
+Last updated: 2026-10-31
 
 ---
 
@@ -107,7 +107,7 @@ hand-written `public/sitemap.xml` / `llms.txt` / `robots.txt` / `.well-known/*`,
 `package.json` depending on `express`, `nodemailer` and `@google/genai`.
 
 Its SEO/UI work was merged into `landing_website/` on 2026-09-14, again on 2026-09-16,
-a full refresh on 2026-09-20, and another round on 2026-10-19 (see `changes.md`). When merging anything else from it,
+a full refresh on 2026-09-20, and further rounds on 2026-10-19 and 2026-10-31 (see `changes.md`). When merging anything else from it,
 five things must be adapted rather than copied:
 
 1. **`/api/*` URLs are dead** — this build has no backend. Knowledge surfaces are the
@@ -133,8 +133,9 @@ five things must be adapted rather than copied:
 5. **URLs: apex host, no trailing slashes, sub-pages keep their URLs.** From 2026-10-19 the
    import canonicalises on `https://www.silarai.com` (NXDOMAIN) with trailing slashes,
    collapses the 12 sub-page URLs into their parents and ships `src/lib/canonicalUrls.ts`
-   whose "301s" run only in the Vite dev server. None of that is ported; a URL migration
-   would be its own planned change (see §11).
+   whose "301s" run only in the Vite dev server. From 2026-10-31 it also ships a
+   `staticwebapp.config.json` with `trailingSlash: "always"` and ~40 real Azure 301s.
+   None of that is ported; a URL migration would be its own planned change (see §11).
 
 **Deliberately excluded from this site (user decision, reaffirmed 2026-09-20):** the
 import's author-facing SEO tooling — `BacklinkAuthorityHub`, `PartnerOutreachSuggester`,
@@ -197,6 +198,8 @@ Note: `path.startsWith('/industries/')` is the **last** industry branch — new 
 | `/industries/manufacturing[/ai-commerce-platform\|/ai-shopping-sales-assistant\|/dealer-distributor-commerce]` and any other `/industries/*` | `ManufacturingIndustryPage` |
 | `/fmcg`, `/fmcg-commerce`, `/industries/fmcg` | `FmcgIndustryPage` |
 | `/industries/fmcg/retailer-ordering-solution`, `?page=fmcg-retailer-ordering` | `FmcgRetailerOrderingPage` (added 2026-10-19) |
+| `/pricing`, `?page=pricing` | Standalone pricing view: header + `PricingSection` (with ROI calculator) + `FaqSection` + `FinalCta` (added 2026-10-31). `#pricing` on the home page still scrolls to the home pricing section. |
+| `/launch-online-store`, `?page=launch-online-store` | `LaunchOnlineStorePage` (added 2026-10-31) |
 | `/industries/ecommerce`, `/ecommerce`, `/ecommerce-ai-shopping-assistant`, `?page=ecommerce` | `EcommerceIndustryPage` (added 2026-10-19) |
 | `/shopify-ai-shopping-assistant`, `/integrations/shopify-ai-shopping-assistant`, `?page=shopify-ai-shopping-assistant` | `ShopifyAiShoppingAssistantPage` (added 2026-10-19) |
 | `/ai-commerce-marketing-platform` | `AiCommerceMarketingPlatformPage` — pillar page for the "AI Commerce & Marketing Platform" cluster |
@@ -216,6 +219,8 @@ A side-effect-only component. On every `currentView` / sub-page change it impera
 
 Metadata lives in one big `getPageMetadata(...)` `switch` keyed by `currentView` (+ sub-page). Cases exist for: `sector-landing`, `contact-us`, `about`, `why-choose-us`, `shopify-comparison`, `shopify-ai-shopping-assistant`, `woocommerce-comparison`, `ai-shopping-assistant`, `ai-commerce-marketing-platform`, `ai-commerce-platform`, `retail-commerce`, `ecommerce`, `d2c-brands`, `distributors`, `manufacturing`, `wholesalers`, `fmcg-commerce`/`fmcg`, `fmcg-retailer-ordering-solution`, `home`/`default`.
 
+Since 2026-10-31 `SeoHead` is the **only** writer of head metadata and page JSON-LD: the export removed the inline JSON-LD from the industry pages, `SectorLandingPage`, `Breadcrumbs` and `InternalLinkingSection`, and `SectionSeoMetaSnippet` no longer touches `<head>`. Canonicals for top-level views come from a local `CANONICAL_PATHS` map in `SeoHead` (apex, no trailing slash, kept in step with `seoMetaTable` and the sitemap); sub-pages keep their own canonicals. Preview/AI Studio/localhost hosts get `noindex`.
+
 Since 2026-10-19 all URLs are built from a fixed `CANONICAL_HOST = 'https://silarai.com'` (previously `window.location.origin`, which canonicalised preview hosts to themselves), and the Organization JSON-LD email comes from `CONTACT_EMAIL` in `src/config/forms.ts`.
 
 **Adding a view means adding a `case` here**, otherwise it silently falls through to the generic homepage metadata. (The FMCG page had exactly this defect until 2026-09-14.)
@@ -225,11 +230,11 @@ Since 2026-10-19 all URLs are built from a fixed `CANONICAL_HOST = 'https://sila
 Two companions:
 
 - **`src/data/seoMetaTable.ts`** — the master table of 24 per-view/sub-page SEO records (title, description, canonical, keywords, CTR hook, schema type, rating), with `findSeoMetaEntry(view, subPage)` and 60-word / 60-char compliance warnings at module load.
-- **`src/components/SectionSeoMetaSnippet.tsx`** — renders nothing visible; mounted inside `<main>` in `App.tsx`, it applies title/description/canonical/OG/Twitter and a per-view JSON-LD block from that table. **Because it sits below `SeoHead` in the tree its effect runs last, so `seoMetaTable` wins on title, description and canonical**; `SeoHead` still owns robots, geo, AI-crawler directives and the rich JSON-LD graph. Keep the two in agreement.
+- **`src/components/SectionSeoMetaSnippet.tsx`** — renders a hidden `<aside>` with `itemProp` microdata (name, headline, description, keywords, url) from that table. Since 2026-10-31 it no longer writes to `<head>`; `SeoHead` owns title, description and canonical. Keep `seoMetaTable` canonicals in agreement with `SeoHead`.
 
-**`src/components/Breadcrumbs.tsx`** emits `BreadcrumbList` JSON-LD alongside the visible trail and is mounted at the top of all 12 sub-pages.
+**`src/components/Breadcrumbs.tsx`** renders the visible trail at the top of the sub-pages (its own `BreadcrumbList` JSON-LD was removed 2026-10-31; `SeoHead` emits one per view).
 
-**`src/components/InternalLinkingSection.tsx`** is `sr-only` (invisible to sighted users) and renders a topical internal-link cluster plus `ItemList` / `SiteNavigationElement` JSON-LD, driven by `src/data/internalLinkingClusters.ts`. Two rules for that data file:
+**`src/components/InternalLinkingSection.tsx`** is `sr-only` (invisible to sighted users) and renders a topical internal-link cluster (its `ItemList` JSON-LD was removed 2026-10-31), driven by `src/data/internalLinkingClusters.ts`. Two rules for that data file:
 
 - **`path` must resolve to a real route.** The SPA fallback returns `index.html` with a 200 for anything unrecognised, so a wrong path becomes a soft 404 serving homepage content — duplicate content in Google's eyes, which is the opposite of what this file is for. Industry entries therefore use `/industries/*`, not `/d2c-brands` or `/manufacturing`.
 - **Absolute URLs use the apex** `https://silarai.com`, never `www.` (which does not resolve — see §9).
@@ -246,7 +251,7 @@ Generated output:
 
 | File | Contents |
 |---|---|
-| `sitemap.xml` | 66 URLs, built from `SITE_ARCHITECTURE` + sub-pages + `SECTORS` + use cases + discovery files |
+| `sitemap.xml` | 68 URLs, built from `SITE_ARCHITECTURE` + sub-pages + `SECTORS` + use cases + discovery files |
 | `robots.txt` | Crawl directives incl. explicit allows for GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot, Google-Extended, etc. |
 | `llms.txt`, `llms-full.txt` | GEO knowledge documents (also mirrored under `/.well-known/`) |
 | `ai-manifest.json` | AI agent discovery manifest |
@@ -327,7 +332,7 @@ Styling is Tailwind utility classes inline in components — no CSS modules, no 
 - **`SilarAiBrandLogo.tsx`** — brand mark used by Navbar and Footer.
 
 ### Home sections (in render order)
-`SmoothWaveBackground` → `HeroSection` (motion animations) → `SectionQuickNav` → `ProductsSection` → `HowItWorks` → `AllInOneSection` → `CustomDomainSection` → `TrustedIntegrations` → `IndustriesSection` → `WhySilarAi` → `CustomerMetrics` → `UseCasesSection` → `PricingSection` → `FaqSection` → `FinalCta`.
+`SmoothWaveBackground` → `HeroSection` (motion animations) → `SectionQuickNav` → `ProductsSection` → `HowItWorks` → `AllInOneSection` → `TrustedIntegrations` → `IndustriesSection` → `WhySilarAi` → `CustomerMetrics` → `UseCasesSection` → `PricingSection` → `FaqSection` → `FinalCta`.
 
 As of 2026-09-20 **only `Navbar`, `HeroSection` and the three layout primitives below are eagerly imported.** Everything else — including `SeoHead`, `Footer` and every home section — is `React.lazy`, and each home section below the hero is additionally wrapped in a `DeferredSection`. After `<main>`, two render-nothing/`sr-only` components mount: `SectionSeoMetaSnippet` (applies `seoMetaTable` metadata, runs after `SeoHead`) and `InternalLinkingSection`.
 
@@ -345,18 +350,20 @@ As of 2026-09-20 **only `Navbar`, `HeroSection` and the three layout primitives 
 
 - **`AiCommerceMarketingPlatformPage`** (added 2026-09-20, ~1,050 lines) — the pillar page for the "AI Commerce & Marketing Platform" keyword cluster. `SeoHead` had carried its metadata case since 2026-09-14 with no route behind it; the route now exists.
 - **`ShopifyAiShoppingAssistantPage`**, **`EcommerceIndustryPage`**, **`FmcgRetailerOrderingPage`** (added 2026-10-19, ~1,300–1,700 lines each) — self-contained copy + layout pages; routes in §4.2. The FMCG page links to the retailer-ordering page, and `IndustriesSection` / `Footer` / `Navbar` link to all three.
+- **`LaunchOnlineStorePage`** (added 2026-10-31, ~1,260 lines) — "launch your store in under 30 minutes" landing page with a theme switcher; linked from `Navbar` and `Footer`.
 - **`SectorLandingPage`** (added 2026-09-20, ~800 lines) — one templated page per `data/sectors.ts` entry, rendered for `/sector/:slug`. It is the only page driven entirely by data: adding a sector to `SECTORS` creates the page, its nav entry and its sitemap URL with no component change. Four industry pages and `SeoHead` also read `SECTORS`.
 
 ### Interactive
 - **`BookDemoModal`** — the main conversion flow. See §4.7.
 - **`ProductTourModal`** — static tour walkthrough.
 - **`AiDiscoveryModal`** — developer/AI-crawler facing panel listing the static discovery files under `/ai/`, `/llms.txt` and `/.well-known/`. Filters RAG chunks client-side over the imported constants.
-- **`RoiCalculator`** (inside `PricingSection`) — recharts area/bar/line chart; inputs traffic, AOV, conversion rate, conversion uplift, AOV boost, timeframe, presets; all derived values via `useMemo`.
+- **`ErrorBoundary`** (added 2026-10-31) — wraps the main page content in `App.tsx`, the hero preview in `HeroSection` and the ROI calculator; shows a retry card instead of a blank page when a render or lazy chunk fails.
+- **`RoiCalculator`** (inside `PricingSection`, still `React.lazy` so recharts stays in its own chunk) — recharts area/bar/line chart; inputs traffic, AOV, conversion rate, conversion uplift, AOV boost, timeframe, presets; all derived values via `useMemo`.
 - **`FloatingAiAssistantWidget`** — client-side assistant (replaced 2026-10-19). Keyword-matched replies from `src/lib/clientAiAssistant.ts` on a `setTimeout`; no backend, no LLM call. Its "Request Callback / Quote" tab hands off via `mailto:` to `CONTACT_EMAIL` (§4.7) and says "press Send"; a device-local copy goes to `localStorage` (`silarai_leads`).
 - **`DistributorsBacklinkHub`** — renders the backlink corpus inside `DistributorsIndustryPage`.
 
 ### Unused / dead code
-`DashboardSection.tsx` and `LogoConceptsModal.tsx` are not imported anywhere.
+None known. `CustomDomainSection`, `DashboardSection`, `LogoConceptsModal` and `ProblemsSection` were deleted 2026-10-31 (removed upstream, never rendered).
 
 ---
 
@@ -408,6 +415,7 @@ Build: `npm run build` → output `dist/`.
 - **`globalHeaders`** — `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS
 - **`routes`** — immutable caching for `/assets/*`, 1-hour caching and `Access-Control-Allow-Origin: *` for the AI knowledge files (so crawlers and agents can fetch them cross-origin), no-cache for `index.html`
 - **`responseOverrides.404`** → rewrite to `/index.html` with status 200
+- **`410 Gone`** (2026-10-31) for retired WordPress paths: `/wp-admin/*`, `/wp-content/*`, `/wp-includes/*`, `/wp-json/*`, `/wp-login.php`, `/xmlrpc.php`, `/feed`, `/feed/*`
 
 `vite.config.ts` adds a **build-only** `htmlPerformancePlugin` (2026-10-19): the main stylesheet loads non-blocking (`media="print"` swap + `<noscript>` fallback), the hero image (`shopping_assistant_ui*.webp`, the LCP element) is preloaded, and a small inline `<style id="critical-theme">` sets base colours/typography to avoid a flash of unstyled content. `/*.webmanifest` is in the `navigationFallback` exclusions.
 
@@ -462,13 +470,13 @@ Ordered by impact.
 7. **No form validation beyond `required` on name/email.** Not a spam risk any more (no endpoint), but malformed input still reaches the mail body verbatim.
 8. **`FloatingAiAssistantWidget` answers from canned client-side rules**, no LLM backend, while presenting as a live assistant ("Sub-100ms vector answers"). Standing decision (no backend); its lead form is honest since 2026-10-19.
 9. **WordPress integration dormant** (§4.6) — ~620 lines retained but non-functional, and now more likely to stay that way since the blog itself was retired rather than fixed.
-10. **Dead components**: `DashboardSection.tsx`, `LogoConceptsModal.tsx`.
+10. ~~Dead components~~ — resolved 2026-10-31 (four unused components deleted).
 11. **Bundle size** — measured 2026-09-20: `dist/` totals 4.8 MB across ~60 chunks, with a 425 KB (126 KB gzip) entry chunk. The two heaviest lazy chunks are `RoiCalculator` (434 KB — it pulls in recharts) and `D2cIndustryPage` (84 KB). The single-1.72 MB-chunk problem is gone; the remaining win is deferring recharts further, plus gap 14.
 12. **`src/server/` is a misleading directory name** — it contains build-time data only.
 13. **No tests, no ESLint**; `npm run lint` is a type-check only.
 14. **Knowledge data ships twice** — once in the JS bundle (imported by `AiDiscoveryModal` / `DistributorsBacklinkHub`) and once as static JSON. Fetching the JSON at runtime instead would cut bundle size.
 15. **`public/assets/images/` ships 30 webp files but only `silarai_official_logo.webp` is referenced** (by `SeoHead` and `ragDiscoveryEngine` JSON-LD `logo` fields, which need a stable absolute URL rather than a bundled hashed path). The rest came in with the 2026-09-20 import. Harmless (~1 MB) but prunable.
 16. **The sector switcher and the sitemap use different URL forms for the same page** — the in-app switcher pushes `?sector=:slug`, the sitemap publishes `/sector/:slug`. Both resolve, but a visitor who lands on the canonical path and then switches sectors ends up on the query form, so shared URLs are inconsistent. Worth normalising on `/sector/:slug`.
-17. **URL migration from the 2026-10-19 import is deferred.** The export wants `www` + trailing slashes, `/commerce-platform` as the platform canonical, and the 12 sub-page URLs collapsed into their parents. If adopted it needs: `www` DNS + redirect first, real 301s in `staticwebapp.config.json` (the export's are Vite-dev-only), one consistent canonical per page across `SeoHead`/`seoMetaTable`/sitemap, and router updates.
-18. **Unverified public claims.** JSON-LD carries `aggregateRating`/`reviewCount` values (e.g. 4.95 / 248) and the Footer's "Security" link claims SOC2 Type II certification; with no live customers these are not backed by data. Self-serving or unverifiable review markup risks a Google structured-data manual action.
+17. **URL migration from the export is deferred (reaffirmed 2026-10-31).** The export wants `www` + trailing slashes, `/commerce-platform` as the platform canonical, and the 12 sub-page URLs collapsed into their parents. Its 2026-10-31 `staticwebapp.config.json` adds real Azure 301s with `trailingSlash: "always"`, but still canonicalises on `www` (NXDOMAIN), drops this site's caching/CORS/`/ai/*` rules, and its `/contact*` → `/contact-us/` rule matches its own target (redirect loop). If adopted it needs: `www` DNS + redirect first (or switch the export to apex), a merged SWA config, one consistent canonical per page across `SeoHead`/`seoMetaTable`/sitemap, and router updates.
+18. **Unverified public claims (partly resolved 2026-10-31).** All `aggregateRating`/review-count markup and the "500+ merchants", "4.9★" style copy were removed upstream. Still present: the SOC2 Type II certification claim in `Footer` ("Security" link) and `FinalCta`, and benchmark figures such as "3.8x conversion lift" in data modules.
 19. **`info@silarai.com`** is still published as `contact_email` in the generated `ai-plugin.json` / RAG org data (`src/server/ragDiscoveryEngine.ts`) while `silarai.com` has no MX.
