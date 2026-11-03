@@ -17,10 +17,13 @@
   .\scripts\ef.ps1 prod  database update
   .\scripts\ef.ps1 local migrations script 20260817000000_AddB2BEnabledToggle --idempotent -o storefront_release.sql
 #>
-param(
-  [Parameter(Mandatory, Position = 0)][ValidateSet('local', 'prod')][string]$Target,
-  [Parameter(Mandatory, ValueFromRemainingArguments)][string[]]$EfArgs
-)
+# Plain $args on purpose: a param() block with [Parameter] makes this an advanced script,
+# and PowerShell then grabs short switches like -o (-OutVariable) instead of passing them to dotnet ef.
+if ($args.Count -lt 2 -or $args[0] -notin @('local', 'prod')) {
+  Write-Host 'Usage: .\scripts\ef.ps1 <local|prod> <dotnet ef args...>'; exit 1
+}
+$Target = $args[0]
+$EfArgs = @($args[1..($args.Count - 1)])
 $ErrorActionPreference = 'Stop'
 
 $backend = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
