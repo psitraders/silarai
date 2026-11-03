@@ -57,7 +57,7 @@ Lets merchants build their whole storefront — unlimited pages, shared header/f
 - **Bundles:** `chunk-storefront` = `core/` + `ui/` + `shell/` (~125 kB / 39 kB gzip); each layout its own chunk; editor chunk ~231 kB / 65 kB gzip incl. `@dnd-kit` (`../context.md` §5.6).
 
 ## Known issues
-Open items in [known-issues](known-issues.md): KI-035.
+Open items in [known-issues](known-issues.md): KI-035, KI-066.
 
 ## Suggestions
 - Template data manager (SuperAdmin) — deferred; templates stay code packs (D2).
@@ -69,8 +69,6 @@ Full plan: [`docs/plan-storefront-builder.md`](../docs/plan-storefront-builder.m
 **Status — paused 2026-10-18 after Phase 5b.** Shipped: Phases 1–4, 5a (undo/redo, version history, saved sections) and 5b (extra product designs, preview link, AI page generation). The merchant is using the builder as it is; work resumes with the items below.
 
 **1. Before relying on it (setup / verification)**
-- [ ] Apply the hand-written migrations in order and check the tables / columns exist: `20261016120000_AddCouponShowOnStorefront`, `20261017120000_AddStorefrontVersionsAndSavedSections`, `20261018120000_AddStorefrontPhase5b` (model snapshot was edited by hand — run `dotnet ef migrations add Check` once and confirm it comes out empty, then delete it).
-- [ ] `dotnet build` clean (Phase 5a / 5b backend was written without a .NET SDK; the only compile error found so far — the raw-string prompt in `StorefrontBuilderAiController` — is fixed).
 - [ ] Re-seed the demo stores (`cleanup-demo-data.sql`, then the seeder) and check `aradhya-jewels`, `priya-boutique`, `sugar-crumbs`; regenerate `DemoStorefrontDesigns.cs` whenever those templates change.
 - [ ] Smoke test: publish → version appears in history → restore → publish; save / insert / rename / delete a saved section; undo / redo across pages; extra product design assigned to a category → its products open with it (page and popup); preview link create / copy / new link / turn off (old link shows the live store); AI *New page* and *Add sections* with and without an OpenAI key (mock).
 
@@ -96,6 +94,7 @@ Full plan: [`docs/plan-storefront-builder.md`](../docs/plan-storefront-builder.m
 ## Change history
 Newest first.
 
+- 2026-11-04 — Released to production: migrations through `20261018120000_AddStorefrontPhase5b` applied, model-snapshot check (`migrations add Check`) came out empty, `dotnet build` clean — removed those two setup items from *Changes to be done*; KI-066 added for the old pages hidden by the cut-over.
 - 2026-10-18 — Fixed published changes not showing on *View store*: public `GET /public/{slug}/site` was browser-cached (`max-age=60, stale-while-revalidate=300`), so the old `version` kept serving old pages for up to ~6 min; it is now `public, no-cache` (`PublicStorefrontSiteController`). Pages / templates keep their cache (keyed by `?v=`).
 - 2026-10-18 — Fixed CS9007 in `StorefrontBuilderAiController` (prompt raw string now `$$$`); development paused after Phase 5b — pending work consolidated in `specs/storefront-builder.md` (Changes to be done: setup / verification, known limits, follow-ups, Phases 6–7) and plan status.
 - 2026-10-18 — Migration `20261018120000_AddStorefrontPhase5b` (hand-written, idempotent) + model snapshot; spec SB-R21–R23, `context.md` §4.9/§5.10 and plan status updated.

@@ -30,6 +30,7 @@ A multi-tenant SaaS platform for boutique/small-business sellers (clothing, jewe
 │   ├── ReplyCart_Database.sql        generated idempotent schema script (dotnet ef migrations script output)
 │   ├── cleanup-demo-data.sql         dev helper: wipes all non-admin-tenant rows
 │   ├── scripts/onboard_soniya.sql    one-off hand-written tenant onboarding script (real customer, raw T-SQL)
+│   ├── scripts/ef.ps1                runs `dotnet ef` against `local` (appsettings.Development.json) or `prod` (local appsettings.json) via `--connection`; asks for typed confirmation before changing prod (§4.6)
 │   ├── scripts/add_superadmins.sql   idempotent T-SQL adding the 5 extra SuperAdmins (admin_one..admin_five@silarai.com) to existing DBs (local Docker, staging); IDs match DataSeeder
 │   └── src/
 │       ├── ReplyCart.Api/            Controllers, Middleware, Security, Program.cs, appsettings.json
@@ -207,6 +208,10 @@ EF Core discovers migrations across both folders/namespaces fine as long as each
 **Baselining scripts (untracked, working tree only):** `backend/baseline_01_verify_schema.sql` verifies that every object created by migrations up to `20260709000000` exists and must return **zero rows**; `backend/baseline_02_write_history.sql` then writes the 31 guarded `__EFMigrationsHistory` inserts. These are the scripts used for the 2026-08-17 production baselining (`changes.md` calls them throwaway). They are deliberately not committed — treat them as the reference procedure if the history table ever needs baselining again.
 
 `dotnet ef` commands (e.g. `dotnet ef database update`) don't go through `Program.cs`/DI — they use `Infrastructure/Persistence/AppDbContextFactory.cs` (`IDesignTimeDbContextFactory<AppDbContext>`), which has its own hardcoded connection string (defaults to the Dockerized SQL Server on `localhost,1433`, matching `appsettings.json`; override via `ConnectionStrings__DefaultConnection` env var). Run them from `backend/` as `dotnet ef database update --project src/ReplyCart.Infrastructure --startup-project src/ReplyCart.Api` — `backend/` itself holds only the solution. If this factory's connection string ever drifts from the real DB target, `dotnet ef` commands fail even though the app itself connects fine.
+
+**`backend/scripts/ef.ps1`** wraps this: `.\scripts\ef.ps1 <local|prod> <dotnet ef args>` reads `ConnectionStrings:DefaultConnection` from `appsettings.Development.json` (`local`) or the developer's local, skip-worktree `appsettings.json` (`prod`; the committed copy stays empty) and passes it with `--connection` (only to `migrations list` and `database …`, which connect). `database update` / `drop` and `migrations remove` against `prod` need `PROD` typed first. The running app never uses the factory — it reads `ConnectionStrings:DefaultConnection` from configuration, which on Azure App Service comes from the app's connection-string setting.
+
+**Production release procedure** (used 2026-11-04): `.\scripts\ef.ps1 prod migrations list` to see what is pending → `.\scripts\ef.ps1 local migrations script <last applied id> --idempotent -o <name>_release.sql` (not committed) → back up / note the point-in-time restore time → run the script on production → `migrations list` shows nothing pending → merge to `main` straight away (pushing `main` deploys backend and frontend). **Production state:** all migrations up to `20261018120000_AddStorefrontPhase5b` applied (2026-11-04).
 
 ### 4.7 AI pipelines (summary)
 

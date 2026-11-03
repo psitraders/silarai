@@ -8,7 +8,7 @@ related: []
 
 Single register of verified defects, security gaps, missing pieces and limitations in the current code. Feature specs list only the IDs (section *Known issues*); the detail lives here. Found by a full code review on 2026-10-21 unless stated otherwise.
 
-**Open:** 65 — High 9 · Medium 19 · Low 37. **Next free ID:** KI-066.
+**Open:** 66 — High 9 · Medium 20 · Low 37. **Next free ID:** KI-067.
 
 ## How to use
 - **Before changing a feature**, check its spec's *Known issues* IDs here — a fix may already be wanted, or a change may make an issue worse.
@@ -54,6 +54,7 @@ Single register of verified defects, security gaps, missing pieces and limitatio
 | KI-054 | Bug | Email campaigns are never sent — *Send* only marks the campaign Sent and returns WhatsApp links; `ScheduledAt`, `OpenedCount`, per-recipient `IsSent` are unused; the Instagram type has no UI. | [marketing-campaigns](marketing-campaigns.md) |
 | KI-056 | Bug | Auto-campaign WhatsApp step sends a free-form text broadcast — Meta delivers non-template messages only inside a 24-hour window, so most customers won't get it. | [marketing-auto-campaigns](marketing-auto-campaigns.md) |
 | KI-060 | Bug | The in-app landing page doesn't read `GET /public/landing-content` — edits in *Admin → Landing page* are shown nowhere (ADM-R3 not met). | [superadmin-landing](superadmin-landing.md) |
+| KI-066 | Ops | The 6 production `StorefrontPages` rows from the old page editor (5 with content) lost their `Content` column in `20261014041037_AddStorefrontBuilder` and have no builder layout, so they no longer show on the live store; the old rows are kept in the production table `StorefrontPages_Backup_20261103` — rebuild those pages in the builder, then drop the backup table. | [storefront-builder](storefront-builder.md) |
 
 ## Low
 
