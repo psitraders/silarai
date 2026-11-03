@@ -659,7 +659,7 @@ export const SECTORS: Record<string, SectorData> = {
     launchHoursSubtitle: 'Skip expensive agency retainers and deliver an interactive beauty consultation experience.',
     launchTimeline: [
       { hour: 'Hour 01', title: 'Ingredient & Formula Catalog Setup', description: 'Upload INCI ingredient lists, skin type suitability (Dry, Oily, Sensitive), and clinical trial claims.', highlights: ['INCI ingredient indexing', 'Skin type tagging', 'Cruelty-free/Vegan badges'] },
-      { hour: 'Hour 02', title: 'Chic Beauty Storefront & Domain Sync', description: 'Apply soft beauty aesthetic, high-res texture closeups, customer review stars, and custom domain.', highlights: ['Minimalist chic theme', 'Verified reviews widget', 'Instant SSL'] },
+      { hour: 'Hour 02', title: 'Chic Beauty Storefront & Domain Sync', description: 'Apply soft beauty aesthetic, high-res texture closeups, certified ingredient badges, and custom domain.', highlights: ['Minimalist chic theme', 'Certified badge widget', 'Instant SSL'] },
       { hour: 'Hour 03', title: 'Recurring Subscriptions & WhatsApp Reorders', description: 'Set up 30/60-day automatic delivery replenishment and automated WhatsApp reorder triggers.', highlights: ['Replenishment subscriptions', 'WhatsApp reorder prompts', 'Free sample gifting logic'] },
       { hour: 'Hour 04', title: 'AI Esthetician Consultation Bot Go-Live', description: 'Deploy the AI assistant to conduct personalized skin quizzes and recommend morning/night routines.', highlights: ['Skin routine generator', 'Ingredient safety checks', 'Instant cart bundling'] },
     ],
@@ -821,7 +821,7 @@ export const SECTORS: Record<string, SectorData> = {
       { label: 'Subscription Adoption', value: '44%', helper: 'monthly recurring orders' },
       { label: 'Regimen Adherence', value: '+35%', helper: 'automated WhatsApp reminders' },
       { label: 'Launch Speed', value: '3 Hours', helper: 'compliant wellness templates' },
-      { label: 'Customer Trust Rating', value: '4.9/5', helper: 'evidence-backed product guidance' },
+      { label: 'Guidance Accuracy', value: '99.4%', helper: 'evidence-backed product guidance' },
     ],
     launchInHoursTitle: 'Launch Your Wellness Brand in 3 Hours',
     launchHoursSubtitle: 'Deliver evidence-backed consultations and automated replenishment without custom coding.',

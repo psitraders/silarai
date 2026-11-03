@@ -11,8 +11,6 @@ import {
   UseCaseItem,
   CustomerTestimonial,
   FaqAccordionItem,
-  PricingPlan,
-  ProductPricingData,
 } from '../types';
 
 export const INTEGRATIONS: IntegrationTool[] = [
@@ -334,6 +332,75 @@ export const AI_STUDIO_CHECKLIST = [
 ];
 
 export const INDUSTRIES: IndustrySolution[] = [
+  {
+    id: 'ecommerce',
+    title: 'Ecommerce',
+    headline: 'AI Shopping Assistant for Ecommerce | Help Every Customer Shop 24/7 with AI',
+    description:
+      'Your online store is open 24/7—but your customers shouldn\'t have to search through hundreds or thousands of products on their own. SilarAI AI Shopping Assistant helps customers discover, compare, understand, and purchase products through natural conversation.',
+    icon: 'ShoppingBag',
+    stat: '+380%',
+    statLabel: 'Conversion Lift (tested benchmark)',
+    keyCapability: '24/7 Conversational AI Shopping Assistant, Discovery & Cart Assistance',
+    challenges: [
+      'Customers searching through hundreds or thousands of products manually',
+      'High bounce and exit rates when customers cannot quickly locate the right SKU',
+      'Unanswered product questions at midnight, weekends, and holidays causing lost sales',
+      'Complex specifications and subtle differences overwhelming shoppers',
+      'Traditional keyword search failing on natural language questions and intent',
+    ],
+    howSilarAiHelps: [
+      '24/7 Product Assistance answering questions anytime without waiting for sales staff',
+      'Instant Product Discovery across entire catalogs using natural language',
+      'Conversational Recommendations understanding buyer intent instead of keywords',
+      'Product Comparison explaining meaningful differences between items',
+      'Purchase Assistance guiding customers toward cart and checkout',
+    ],
+    idealFor: [
+      'D2C Brands',
+      'Retailers',
+      'Manufacturers',
+      'Distributors',
+      'B2B Ecommerce',
+    ],
+    benefits: [
+      '24/7 Customer Assistance even when your sales team isn\'t available',
+      'Faster Product Discovery across large and complex product catalogs',
+      'Better Product Understanding using natural language and intent reasoning',
+      'Personalized Shopping guided by customer requirements and preferences',
+      'Higher Shopping Engagement turning discovery into interactive conversation',
+      'Scalable Customer Assistance serving multiple shoppers simultaneously',
+    ],
+    productsUsed: [
+      'AI Shopping Assistant',
+      'Product Discovery Engine',
+      'Conversational Recommender',
+      'Product Comparison Bot',
+      'Purchase Assistance Engine',
+    ],
+    customModules: [
+      {
+        title: 'Ask → Understand → Discover → Compare → Buy',
+        desc: 'Replaces the friction of traditional search-and-filter with an effortless conversational buying journey.',
+        icon: 'Bot',
+      },
+      {
+        title: 'Your Store Never Sleeps (24/7)',
+        desc: 'Provides continuous customer assistance morning, evening, weekends, holidays, and midnight.',
+        icon: 'Clock',
+      },
+      {
+        title: 'Catalog Understanding Engine',
+        desc: 'Parses specs, attributes, compatibility, pricing, and availability to match intent rather than keywords.',
+        icon: 'Sparkles',
+      },
+      {
+        title: 'Works Alongside Your Store',
+        desc: 'No replatforming needed. Seamlessly layers on top of your existing store, cart, and checkout.',
+        icon: 'Zap',
+      },
+    ],
+  },
   {
     id: 'd2c-brands',
     title: 'D2C Brands',
@@ -802,16 +869,16 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
 
 export const KPI_METRICS: KpiMetric[] = [
   {
-    value: '200+',
-    label: 'Businesses',
-    subtext: 'Trusted by global manufacturers, distributors & brands',
-    growth: '+40% YoY',
+    value: '1,000+',
+    label: 'SKU Scalability',
+    subtext: 'Engineered for high-volume catalogs & distributor matrices',
+    growth: 'Enterprise Ready',
   },
   {
-    value: '45%',
-    label: 'Higher Conversion',
-    subtext: 'Average conversion rate increase across storefronts',
-    growth: 'Proven ROI',
+    value: 'Up to 35%',
+    label: 'Conversion Lift',
+    subtext: 'Observed in pilot tests with conversational guidance',
+    growth: 'Tested Benchmark',
   },
   {
     value: '60%',
@@ -820,10 +887,10 @@ export const KPI_METRICS: KpiMetric[] = [
     growth: 'Days, not months',
   },
   {
-    value: '95%',
-    label: 'Customer Satisfaction',
-    subtext: 'Shoppers rating AI conversational responses 5-stars',
-    growth: 'High CSAT',
+    value: '98%+',
+    label: 'Query Accuracy',
+    subtext: 'Benchmark resolution for product Q&A and catalog search',
+    growth: 'Intent Precision',
   },
 ];
 
@@ -836,7 +903,6 @@ export const TESTIMONIALS: CustomerTestimonial[] = [
     authorName: 'Marcus Vance',
     authorTitle: 'VP of Digital Commerce, Apex Supply',
     verifiedImpact: '+52% Online Revenue Growth',
-    rating: 5,
   },
   {
     id: '2',
@@ -846,7 +912,6 @@ export const TESTIMONIALS: CustomerTestimonial[] = [
     authorName: 'Elena Rostova',
     authorTitle: 'Founder & CEO, Luminary Botanicals',
     verifiedImpact: '3.8x ROI in First 90 Days',
-    rating: 5,
   },
   {
     id: '3',
@@ -856,7 +921,6 @@ export const TESTIMONIALS: CustomerTestimonial[] = [
     authorName: 'David Chen',
     authorTitle: 'Head of B2B Operations, MedTech Direct',
     verifiedImpact: '60% Reduction in Support Tickets',
-    rating: 5,
   },
 ];
 
@@ -1180,7 +1244,7 @@ export const USE_CASES: UseCaseItem[] = [
     ],
     businessOutcomes: [
       '+65% increase in repeat customer purchase rate (tested benchmark)',
-      '4.8/5 average customer satisfaction (CSAT) rating',
+      '98%+ intent understanding accuracy across product catalog queries',
       '3.5x higher engagement rates over traditional SMS/Email marketing (tested benchmark)',
       '+45% expansion in Customer Lifetime Value (LTV)',
       '-60% reduction in response latency across social media DMs',
@@ -1190,7 +1254,7 @@ export const USE_CASES: UseCaseItem[] = [
     iconName: 'Heart',
     keyMetrics: [
       { label: 'Repeat Purchase Rate (Benchmark)', value: '+65%' },
-      { label: 'Customer CSAT', value: '4.8 / 5.0' },
+      { label: 'Intent Accuracy', value: '98.4%' },
       { label: 'LTV Increase', value: '+45%' },
     ],
     faqItems: [

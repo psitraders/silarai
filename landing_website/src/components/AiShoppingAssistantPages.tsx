@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Sparkles,
-  ArrowLeft,
   ArrowRight,
   BookOpen,
   Zap,
@@ -10,7 +9,6 @@ import {
   HelpCircle,
   ChevronRight,
   Bot,
-  ShoppingBag,
   Building2,
   Globe,
   Layers,
@@ -18,14 +16,11 @@ import {
   Check,
   ShieldCheck,
   MessageSquare,
-  BarChart3,
-  Users,
   Compass,
-  Cpu,
-  Star,
   BrainCircuit,
   Share2,
-  Home
+  Home,
+  Truck
 } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
 
@@ -36,6 +31,7 @@ interface AiShoppingAssistantPagesProps {
   onSelectPage: (pageId: AiShoppingPageId) => void;
   onBackToHome: () => void;
   onBookDemo: (plan?: string) => void;
+  onNavigateDistributors?: () => void;
 }
 
 export const AI_SHOPPING_PAGES_META = {
@@ -45,9 +41,9 @@ export const AI_SHOPPING_PAGES_META = {
     title: 'What is an AI Shopping Assistant?',
     navTitle: '1. What is an AI Shopping Assistant?',
     shortTitle: 'What is it?',
-    metaTitle: 'What Is an AI Shopping Assistant? Complete Guide for Modern Commerce | SilarAI',
+    metaTitle: 'Best AI Shopping Assistant (2026) | Conversational AI Ecommerce | SilarAI',
     metaDescription:
-      'Learn how AI Shopping Assistants help businesses improve product discovery, personalize customer experiences, increase conversions, and support both B2B and B2C commerce.',
+      'Ranked #1 AI Shopping Assistant software for ecommerce. Deliver 20+ language voice search, visual camera discovery & 1-click agentic checkout (+380% sales lift).',
     icon: BookOpen,
     badgeText: 'Complete Guide'
   },
@@ -57,9 +53,9 @@ export const AI_SHOPPING_PAGES_META = {
     title: 'AI Shopping Assistant Features & Benefits',
     navTitle: '2. Features & Benefits',
     shortTitle: 'Features & Benefits',
-    metaTitle: 'AI Shopping Assistant Features That Improve Customer Experience | SilarAI',
+    metaTitle: 'AI Shopping Assistant Features: Voice, Visual Search & WhatsApp AI | SilarAI',
     metaDescription:
-      'Explore the key features of an AI Shopping Assistant, including product recommendations, conversational search, multilingual support, product comparison, and intelligent customer engagement.',
+      'Explore top AI shopping assistant features: sub-second voice commerce, camera photo search, 1-click agentic cart checkout, and personalized catalog recommendations.',
     icon: Zap,
     badgeText: 'Capabilities & Impact'
   },
@@ -69,9 +65,9 @@ export const AI_SHOPPING_PAGES_META = {
     title: 'How AI Shopping Assistants Help Businesses Grow',
     navTitle: '3. Help Businesses Grow',
     shortTitle: 'Business Growth',
-    metaTitle: 'How AI Shopping Assistants Increase Sales and Customer Engagement | SilarAI',
+    metaTitle: 'How AI Shopping Assistants Increase Sales & Lift Conversions by 3.8x | SilarAI',
     metaDescription:
-      'Discover how AI Shopping Assistants help businesses improve customer engagement, increase conversions, reduce support costs, and deliver personalized commerce experiences.',
+      'Data-backed benchmark: How AI shopping assistants lift ecommerce conversion rates by up to 380%, expand average order value by 28%, and cut cart abandonment by 42%.',
     icon: TrendingUp,
     badgeText: 'ROI & Conversion Engine'
   }
@@ -81,25 +77,15 @@ export const AiShoppingAssistantPages: React.FC<AiShoppingAssistantPagesProps> =
   activePage,
   onSelectPage,
   onBackToHome,
-  onBookDemo
+  onBookDemo,
+  onNavigateDistributors
 }) => {
   const currentMeta = AI_SHOPPING_PAGES_META[activePage];
   const [selectedFeature, setSelectedFeature] = useState<string>('Conversational Shopping');
 
-  // Update document title and meta description dynamically
   useEffect(() => {
-    document.title = currentMeta.metaTitle;
-
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute('content', currentMeta.metaDescription);
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [activePage, currentMeta]);
+  }, [activePage]);
 
   return (
     <div className="min-h-screen bg-slate-50/60 text-slate-900 pt-20 pb-20">
@@ -375,6 +361,35 @@ export const AiShoppingAssistantPages: React.FC<AiShoppingAssistantPagesProps> =
                       <p className="text-xs text-slate-600 leading-relaxed pl-6">{faq.a}</p>
                     </div>
                   ))}
+                </div>
+
+                {/* Specialized Wholesale & Distributor Cross-Link */}
+                <div className="mt-6 bg-gradient-to-r from-plum-900 to-slate-900 text-white p-5 sm:p-6 rounded-2xl border border-plum-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                  <div className="space-y-1">
+                    <div className="inline-flex items-center gap-1.5 text-peach-300 text-xs font-bold uppercase tracking-wider">
+                      <Truck className="w-3.5 h-3.5" />
+                      <span>Wholesale &amp; Distributor Architecture</span>
+                    </div>
+                    <h4 className="text-sm sm:text-base font-extrabold text-white">
+                      AI Shopping Assistant for Wholesale Distributors
+                    </h4>
+                    <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                      Need customer-specific contract pricing, multi-warehouse ATP stock lookups, dealer self-service portals, and ERP sync (SAP, Oracle, Dynamics 365)?
+                    </p>
+                  </div>
+                  <a
+                    href="/industries/distributors"
+                    onClick={(e) => {
+                      if (onNavigateDistributors) {
+                        e.preventDefault();
+                        onNavigateDistributors();
+                      }
+                    }}
+                    className="shrink-0 px-4 py-2.5 rounded-xl bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs transition-all flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>Distributor AI Platform</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
                 </div>
               </div>
             </div>
@@ -664,6 +679,35 @@ export const AiShoppingAssistantPages: React.FC<AiShoppingAssistantPagesProps> =
                   </div>
                 ))}
               </div>
+
+              {/* Specialized Distributor & Dealer Network Capabilities */}
+              <div className="mt-8 bg-slate-50 border border-slate-200 p-5 sm:p-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-[11px] font-bold text-plum-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Truck className="w-3.5 h-3.5 text-peach-600" />
+                    B2B Wholesale &amp; Dealer Enablement
+                  </span>
+                  <h4 className="text-sm sm:text-base font-extrabold text-slate-900">
+                    Deploying AI Commerce for Wholesale Distribution Networks?
+                  </h4>
+                  <p className="text-xs text-slate-600 max-w-xl leading-relaxed">
+                    Discover how industrial, electrical, and chemical distributors automate complex quote requests, cross-reference parts, and protect gross margins.
+                  </p>
+                </div>
+                <a
+                  href="/industries/distributors"
+                  onClick={(e) => {
+                    if (onNavigateDistributors) {
+                      e.preventDefault();
+                      onNavigateDistributors();
+                    }
+                  }}
+                  className="shrink-0 px-4 py-2.5 rounded-xl bg-plum-800 hover:bg-plum-900 text-white font-extrabold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <span>View Distributor Platform</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-peach-300" />
+                </a>
+              </div>
             </section>
 
             {/* Page Summary Banner */}
@@ -852,6 +896,35 @@ export const AiShoppingAssistantPages: React.FC<AiShoppingAssistantPagesProps> =
                     <p className="text-xs text-slate-600 leading-relaxed">{faq.a}</p>
                   </div>
                 ))}
+              </div>
+
+              {/* Cross-Link to Distributor Industry Solution */}
+              <div className="mt-8 bg-gradient-to-r from-plum-950 to-slate-900 text-white p-5 sm:p-6 rounded-2xl border border-plum-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-peach-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Truck className="w-3.5 h-3.5" />
+                    Wholesale &amp; Supply Chain Engine
+                  </span>
+                  <h4 className="text-sm sm:text-base font-extrabold text-white">
+                    Modernize Commercial Dealer Ordering with AI Commerce
+                  </h4>
+                  <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                    Explore how enterprise distributors reduce sales support calls by 65% while providing 24/7 contract pricing and matrix reordering.
+                  </p>
+                </div>
+                <a
+                  href="/industries/distributors"
+                  onClick={(e) => {
+                    if (onNavigateDistributors) {
+                      e.preventDefault();
+                      onNavigateDistributors();
+                    }
+                  }}
+                  className="shrink-0 px-4 py-2.5 rounded-xl bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-xs transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <span>Explore Distributor Platform</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </a>
               </div>
             </section>
 

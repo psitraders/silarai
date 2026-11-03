@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "SilarAI — Smart Commerce AI Platform",
+  "short_name": "SilarAI",
+  "description": "Autonomous Smart Commerce AI Platform | Build. Sell. Grow.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#245668",
+  "icons": [
+    {
+      "src": "/assets/images/silarai_official_logo.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/silarai_official_logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
+}

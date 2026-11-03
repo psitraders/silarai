@@ -123,7 +123,7 @@ export interface CustomerTestimonial {
   authorName: string;
   authorTitle: string;
   verifiedImpact: string;
-  rating: number;
+  rating?: number;
   avatarUrl?: string;
 }
 

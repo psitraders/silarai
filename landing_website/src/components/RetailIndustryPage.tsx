@@ -7,21 +7,15 @@ import {
   TrendingUp,
   Boxes,
   Layers,
-  ShoppingBag,
-  Zap,
   CheckCircle2,
   ArrowRight,
   ChevronDown,
   ChevronUp,
   ChevronRight,
-  RefreshCw,
-  Sliders,
   Users,
   MessageSquare,
-  PackageCheck,
   Building2,
   BookOpen,
-  ArrowUpRight,
   Shirt,
   Tv,
   Utensils,
@@ -34,10 +28,6 @@ import {
   Dog,
   Gamepad2,
   Building,
-  HelpCircle,
-  ExternalLink,
-  ShieldCheck,
-  Check,
   Home
 } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -284,68 +274,6 @@ export const RetailIndustryPage: React.FC<RetailIndustryPageProps> = ({
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-sans">
-      {/* Structural Structured Data / JSON-LD for Search & AI Answer Engines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@graph': [
-              {
-                '@type': 'WebPage',
-                '@id': 'https://silarai.com/?page=retail-commerce#webpage',
-                url: 'https://silarai.com/?page=retail-commerce',
-                name: 'AI Commerce Platform for Retail',
-                description:
-                  'SilarAI Commerce AI is an enterprise AI commerce platform designed for modern retailers. It combines AI Shopping Assistants, omnichannel commerce, intelligent product search, personalized recommendations, real-time inventory visibility, and customer engagement to help retailers increase conversions, improve shopping experiences, and streamline operations. The platform integrates with ecommerce, ERP, POS, CRM, and loyalty systems, enabling retailers to deliver consistent AI-powered experiences across online and physical channels.',
-              },
-              {
-                '@type': 'SoftwareApplication',
-                name: 'SilarAI Retail Commerce AI Platform',
-                operatingSystem: 'Cloud Native / Web / Headless API',
-                applicationCategory: 'BusinessApplication',
-                description:
-                  'Enterprise AI Commerce Platform for Retail featuring AI Shopping Assistants, Omnichannel Commerce, Intelligent Product Search, and Real-Time Inventory Search.',
-                aggregateRating: {
-                  '@type': 'AggregateRating',
-                  ratingValue: '4.9',
-                  ratingCount: '184',
-                },
-              },
-              {
-                '@type': 'Service',
-                name: 'AI Commerce Platform for Retail',
-                provider: {
-                  '@type': 'Organization',
-                  name: 'SilarAI Technologies',
-                  url: 'https://silarai.com',
-                },
-                areaServed: 'Worldwide',
-                serviceType: 'Omnichannel Retail AI Commerce Solutions',
-              },
-              {
-                '@type': 'FAQPage',
-                mainEntity: RETAIL_FAQS.map((faq) => ({
-                  '@type': 'Question',
-                  name: faq.q,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: faq.a,
-                  },
-                })),
-              },
-              {
-                '@type': 'BreadcrumbList',
-                itemListElement: [
-                  { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://silarai.com' },
-                  { '@type': 'ListItem', position: 2, name: 'Industries', item: 'https://silarai.com/#industries' },
-                  { '@type': 'ListItem', position: 3, name: 'Retail Commerce AI', item: 'https://silarai.com/?page=retail-commerce' },
-                ],
-              },
-            ],
-          }),
-        }}
-      />
 
       {/* Top Banner & Breadcrumb Navigation */}
       <Breadcrumbs

@@ -1,6 +1,5 @@
 import React from 'react';
 import growthLogoImg from '../assets/images/silar_ai_growth_logo_1787161422563.webp';
-import sharpEmblemImg from '../assets/images/s_sharp_modern_emblem_1787576880426.webp';
 
 interface SilarAiBrandLogoProps {
   customLogoImg?: string;

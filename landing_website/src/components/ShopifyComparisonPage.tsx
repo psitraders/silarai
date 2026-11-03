@@ -1,23 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Check,
   X,
-  ArrowLeft,
   ArrowRight,
   Search,
-  Zap,
-  ShoppingBag,
   Bot,
   Layers,
-  BarChart3,
   MessageSquare,
-  Globe,
-  Database,
-  Users,
-  Layout,
-  TrendingUp,
-  ShieldCheck,
   CheckCircle2,
   Home,
   Scale
@@ -27,6 +17,7 @@ import { Breadcrumbs } from './Breadcrumbs';
 interface ShopifyComparisonPageProps {
   onBackToHome: () => void;
   onBookDemo: (plan?: string) => void;
+  onNavigateShopifyAiShoppingAssistant?: () => void;
 }
 
 export interface ComparisonItem {
@@ -116,9 +107,14 @@ export const SHOPIFY_COMPARISON_DATA: ComparisonItem[] = [
 
 export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
   onBackToHome,
-  onBookDemo
+  onBookDemo,
+  onNavigateShopifyAiShoppingAssistant
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const filteredItems = SHOPIFY_COMPARISON_DATA.filter((item) => {
     const q = searchTerm.toLowerCase();
@@ -157,11 +153,11 @@ export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-              Shopify <span className="text-slate-400 font-light">vs</span> <span className="text-peach-300">SilarAI</span>
+              SilarAI <span className="text-slate-400 font-light">vs</span> <span className="text-peach-300">Shopify Plus</span>
             </h1>
 
             <p className="text-xl sm:text-2xl font-bold text-teal-200">
-              More Than an Ecommerce Platform
+              Enterprise AI Commerce Architecture vs Fragmented App Stores
             </p>
 
             <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal pt-2">
@@ -172,6 +168,31 @@ export const ShopifyComparisonPage: React.FC<ShopifyComparisonPageProps> = ({
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-16">
+        {/* Shopify Existing Store Callout */}
+        {onNavigateShopifyAiShoppingAssistant && (
+          <div className="bg-gradient-to-r from-plum-900 via-plum-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white border border-plum-800/80 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-peach-300/20 text-peach-300 text-xs font-black uppercase tracking-wider">
+                <Sparkles className="w-3 h-3" />
+                Already on Shopify?
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white">
+                You don't need to rebuild or migrate your Shopify store.
+              </h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Add SilarAI directly to your existing Shopify storefront. Empower your shoppers with 24/7 conversational product discovery, multi-lingual guidance, and instant checkout.
+              </p>
+            </div>
+            <button
+              onClick={onNavigateShopifyAiShoppingAssistant}
+              className="whitespace-nowrap px-6 py-3.5 rounded-xl bg-peach-300 hover:bg-peach-200 text-plum-950 font-black text-sm transition-all shadow-lg hover:shadow-peach-300/20 flex items-center gap-2 cursor-pointer group"
+            >
+              <span>Explore Shopify AI Assistant</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        )}
+
         {/* Core Value Pillars Grid */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">

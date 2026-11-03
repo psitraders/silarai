@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Bot, CheckCircle2, ArrowRight, Building, Mail, User, Sparkles, Copy, Check, Phone, ExternalLink } from 'lucide-react';
+import { X, Calendar, Bot, ArrowRight, Building, Mail, User, Copy, Check, Phone, ExternalLink } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
   CONTACT_EMAIL,

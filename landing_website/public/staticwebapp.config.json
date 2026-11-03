@@ -9,6 +9,7 @@
       "/*.txt",
       "/*.xml",
       "/*.json",
+      "/*.webmanifest",
       "/*.{png,jpg,jpeg,gif,svg,webp,avif,ico}",
       "/*.{css,js,map}",
       "/*.{woff,woff2,ttf,otf,eot}"
@@ -30,6 +31,38 @@
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
   },
   "routes": [
+    {
+      "route": "/wp-admin/*",
+      "statusCode": 410
+    },
+    {
+      "route": "/wp-content/*",
+      "statusCode": 410
+    },
+    {
+      "route": "/wp-includes/*",
+      "statusCode": 410
+    },
+    {
+      "route": "/wp-json/*",
+      "statusCode": 410
+    },
+    {
+      "route": "/wp-login.php",
+      "statusCode": 410
+    },
+    {
+      "route": "/xmlrpc.php",
+      "statusCode": 410
+    },
+    {
+      "route": "/feed",
+      "statusCode": 410
+    },
+    {
+      "route": "/feed/*",
+      "statusCode": 410
+    },
     {
       "route": "/assets/*",
       "headers": {

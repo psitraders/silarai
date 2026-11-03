@@ -46,26 +46,7 @@ export const InternalLinkingSection: React.FC<InternalLinkingSectionProps> = ({
         </ul>
       </nav>
 
-      {/* Embedded Schema.org ItemList for Search Engine Bots */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'ItemList',
-            name: `Topical Internal Link Cluster for ${cluster.pageTitle}`,
-            description: cluster.description,
-            numberOfItems: 8,
-            itemListElement: cluster.links.map((link, idx) => ({
-              '@type': 'SiteNavigationElement',
-              position: idx + 1,
-              name: link.title,
-              description: link.description,
-              url: `https://silarai.com${link.path}`
-            }))
-          })
-        }}
-      />
+
     </section>
   );
 };

@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import shoppingAssistantImg from '../assets/images/shopping_assistant_ui_1788795889801.webp';
 import { DeferredSection } from './DeferredSection';
 import { SmoothWaveBackground } from './SmoothWaveBackground';
+import { ErrorBoundary } from './ErrorBoundary';
 import {
   Bot,
   ArrowRight,
@@ -33,6 +34,7 @@ interface HeroSectionProps {
   onWatchTour?: () => void;
   onLogin?: () => void;
   onSelectSector?: (sectorSlug: string) => void;
+  onSelectIndustry?: (industryId: string) => void;
   showBackground?: boolean;
 }
 
@@ -40,6 +42,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onBookDemo,
   onWatchTour,
   onSelectSector,
+  onSelectIndustry,
   showBackground = true,
 }) => {
   const scrollToPlayground = () => {
@@ -294,9 +297,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   return (
                     <a
                       key={idx}
-                      href={`/sector/${item.slug}`}
+                      href={item.slug === 'distributors' ? '/industries/distributors' : `/sector/${item.slug}`}
                       onClick={(e) => {
                         e.preventDefault();
+                        if (item.slug === 'distributors') {
+                          if (onSelectIndustry) {
+                            onSelectIndustry('distributors');
+                          } else {
+                            window.history.pushState(null, '', '/industries/distributors');
+                            window.dispatchEvent(new PopStateEvent('popstate'));
+                          }
+                          return;
+                        }
                         if (onSelectSector) {
                           onSelectSector(item.slug);
                         } else {
@@ -362,12 +374,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
           }
         >
-          <Suspense fallback={null}>
-            <HeroDashboardVisualizer
-              onBookDemo={onBookDemo}
-              onWatchTour={onWatchTour}
-            />
-          </Suspense>
+          <ErrorBoundary fallbackTitle="Platform Preview">
+            <Suspense fallback={null}>
+              <HeroDashboardVisualizer
+                onBookDemo={onBookDemo}
+                onWatchTour={onWatchTour}
+              />
+            </Suspense>
+          </ErrorBoundary>
         </DeferredSection>
       </div>
     </section>

@@ -8,13 +8,10 @@ import {
   CheckCircle2,
   ArrowRight,
   ShieldCheck,
-  Zap,
   Bot,
   UploadCloud,
   MessageCircle,
-  BarChart3,
-  Globe,
-  DollarSign
+  BarChart3
 } from 'lucide-react';
 
 interface HowItWorksProps {

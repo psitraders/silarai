@@ -860,3 +860,5 @@ export const HeroDashboardVisualizer: React.FC<HeroDashboardVisualizerProps> = (
     </div>
   );
 };
+
+export default HeroDashboardVisualizer;

@@ -1,6 +1,5 @@
 import React from 'react';
 import { KPI_METRICS } from '../data/content';
-import { TrendingUp, Users, Zap, Award } from 'lucide-react';
 
 export const CustomerMetrics: React.FC = () => {
   return (
