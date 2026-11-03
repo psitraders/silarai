@@ -94,6 +94,7 @@ Full plan: [`docs/plan-storefront-builder.md`](../docs/plan-storefront-builder.m
 ## Change history
 Newest first.
 
+- 2026-11-04 — Added the merchant / team quick-start guide `docs/storefront-builder-guide.md`.
 - 2026-11-04 — Released to production: migrations through `20261018120000_AddStorefrontPhase5b` applied, model-snapshot check (`migrations add Check`) came out empty, `dotnet build` clean — removed those two setup items from *Changes to be done*; KI-066 added for the old pages hidden by the cut-over.
 - 2026-10-18 — Fixed published changes not showing on *View store*: public `GET /public/{slug}/site` was browser-cached (`max-age=60, stale-while-revalidate=300`), so the old `version` kept serving old pages for up to ~6 min; it is now `public, no-cache` (`PublicStorefrontSiteController`). Pages / templates keep their cache (keyed by `?v=`).
 - 2026-10-18 — Fixed CS9007 in `StorefrontBuilderAiController` (prompt raw string now `$$$`); development paused after Phase 5b — pending work consolidated in `specs/storefront-builder.md` (Changes to be done: setup / verification, known limits, follow-ups, Phases 6–7) and plan status.
