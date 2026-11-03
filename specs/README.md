@@ -1,6 +1,6 @@
 # Specs
 
-Per-feature specs for the Silarai platform (backend + merchant dashboard + storefront + chatbot widget). Each spec covers one feature end to end: **purpose, scope, functional behaviour, rules, backend (data, API, logic), frontend (routes, screens, code), known-issue IDs, suggestions and agreed changes**. Architecture and cross-cutting setup (stack, layers, multi-tenancy, pipeline, secrets, migrations, build & deploy) stay in `../context.md`; history stays in `../changes.md`. The marketing site (`landing_website/`) is not covered.
+Per-feature specs for the Silarai platform (backend + merchant dashboard + storefront + chatbot widget). Each spec covers one feature end to end: **purpose, scope, functional behaviour, rules, backend (data, API, logic), frontend (routes, screens, code), known-issue IDs, suggestions and agreed changes**. Architecture and cross-cutting setup (stack, layers, multi-tenancy, pipeline, secrets, migrations, build & deploy) stay in `../context.md`; history lives in each spec's *Change history* section (cross-cutting history in `../changes.md`). The marketing site (`landing_website/`) is not covered.
 
 Specs were rebuilt from the code on 2026-10-21; problems found then are in `known-issues.md`.
 
@@ -30,7 +30,7 @@ A new rule takes the next number of its prefix; update this table in the same ch
 
 1. **Before coding — consult the specs:** open `index.md`, read the spec(s) of every feature the change touches, `_invariants.md`, the relevant *Known issues* in `known-issues.md`, and `../context.md` for architecture. Do not break a listed rule (e.g. `CAT-R3`, `INV-2`) without the user's approval. Write the planned work in the spec's *Changes to be done* (new feature → copy `_template.md`, `status: draft`, add it to `index.md`).
 2. **Implement.**
-3. **After coding — update the specs in the same change** so they describe what the code now does: *Functional behaviour*, *Rules*, *Backend*, *Frontend*; remove the shipped item from *Changes to be done*; in `known-issues.md` delete fixed issues (and their IDs from the specs) and add any new problem found; update `index.md` if a spec was added / renamed / removed; update `../context.md` only if architecture or cross-cutting detail changed; log one line in `../changes.md` tagged with the spec id, e.g. `2026-09-26 — [catalog-products] …`.
+3. **After coding — update the specs in the same change** so they describe what the code now does: *Functional behaviour*, *Rules*, *Backend*, *Frontend*; remove the shipped item from *Changes to be done*; in `known-issues.md` delete fixed issues (and their IDs from the specs) and add any new problem found; update `index.md` if a spec was added / renamed / removed; update `../context.md` only if architecture or cross-cutting detail changed; add one line at the top of each affected spec's *Change history* (`- YYYY-MM-DD — what changed and where`, newest first; add the section at the end of the spec if it is missing). Cross-cutting changes no spec owns (architecture, infra, migrations tooling, build / deploy, landing-site summary) go to the `../changes.md` instead.
 
 ## Conventions
 

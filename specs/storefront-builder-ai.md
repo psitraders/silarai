@@ -40,3 +40,8 @@ Open items in [known-issues](known-issues.md): KI-021, KI-063.
 
 ## Changes to be done
 See `storefront-builder` (*Changes to be done* — enforce the monthly AI limit; Phase 6c AI styling).
+
+## Change history
+Newest first.
+
+- 2026-10-18 — Phase 5b AI page generation: `StorefrontBuilderAiController` (`POST storefront-builder/ai/generate`, logged in `AiUsageLogs`, not blocked), `IAiProvider.GenerateJsonAsync` (OpenAI JSON mode + mock); editor `ai/AiPanel.tsx`, `ai/catalogue.ts`, `ai/normalise.ts`, `store.aiPanel`/`openAi`/`sidePanelOpen`, entry buttons in `OutlinePanel` and `PagesPanel`.

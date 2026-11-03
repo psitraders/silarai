@@ -42,3 +42,8 @@ Open items in [known-issues](known-issues.md): KI-031, KI-032.
 - Add the GA4 report page and the GA4 id fields to *Storefront settings*.
 
 ## Changes to be done
+
+## Change history
+Newest first.
+
+- 2026-10-18 — Fixed `GET /analytics/kpis` crash ("A second operation was started on this context instance"): `GetDashboardKpisQueryHandler` ran 9 EF queries concurrently on one DbContext with `Task.WhenAll`; they now run sequentially (`Application/Analytics/Queries/GetDashboardKpisQuery.cs`).

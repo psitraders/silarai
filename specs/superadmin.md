@@ -39,3 +39,8 @@ Open items in [known-issues](known-issues.md): KI-006, KI-008, KI-019, KI-024, K
 ## Suggestions
 
 ## Changes to be done
+
+## Change history
+Newest first.
+
+- 2026-10-04 — Added 5 SuperAdmins (`admin_one..admin_five@silarai.com`, Silarai System tenant): `DataSeeder.SeedExtraSuperAdminsAsync` (per-user idempotent, fixed GUIDs `…0101-0105`) for fresh DBs and `backend/scripts/add_superadmins.sql` (hash-only, idempotent) for existing local Docker / staging DBs.

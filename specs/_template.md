@@ -36,7 +36,11 @@ IDs of open problems that affect this feature, e.g. `KI-012, KI-031` — the det
 Improvement ideas. Not yet agreed work.
 
 ## Changes to be done
-Agreed work, written here **before** implementation. Remove an item once it ships (the history lives in `changes.md`).
+Agreed work, written here **before** implementation. Remove an item once it ships and log it in *Change history*.
 - [ ] …
+
+## Change history
+Newest first, one line per shipped change: `- YYYY-MM-DD — what changed and where`. Cross-cutting changes no spec owns go to `../changes.md`.
+- …
 
 <!-- Extend only when needed, e.g. "## Open questions" or "## Plan" (or a link to a plan in docs/). -->

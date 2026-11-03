@@ -43,3 +43,10 @@ Open items in [known-issues](known-issues.md): KI-064, KI-065.
 
 ## Changes to be done
 See `storefront-builder` (*Changes to be done* — Phase 3 follow-ups).
+
+## Change history
+Newest first.
+
+- 2026-10-18 — Phase 5b alternate product templates: `StorefrontPageType.AltProductTemplate`, `StorefrontPage.AssignmentJson`, `PUT pages/{id}/assignment`, public `productTemplates` + `templates/product?id=` (`StorefrontBuilderController`, `PublicStorefrontSiteController`); storefront picks the design per product (`shell/productTemplate.pickProductTemplate`, `StoreShell`); editor *Other product designs* (`PagesPanel`, `PageSwitcher`, `isProductKey` in store / preview / gallery).
+- 2026-10-16 — Phase 3 quick wins: public products API `minPrice`/`maxPrice`/`withPriceBounds`, `GET /public/{slug}/reviews/summary`; `all-products` price filter, `coupon-strip` v2 (live store coupons or typed codes), new `reviews-summary` section; data hooks `useStoreCoupons`/`useReviewsSummary` (`core/data`).
+- 2026-10-13 — Phase 3 shipped (frontend only): pack editor metadata split into `editor.ts` (`PackEditorMeta`, `editor/packs.ts`); `core/commerce/` (typed product controller, buy-now checkout, inquiry, reviews, current product, recently viewed); `ui/product/` product blocks + `ui/Overlay`; product view popup / page / both in `shell/StoreShell` with the Product page template; packs `sections/product-main` (15 layouts), `quickview/quickview` (15, replaces `classic-split`), `cards/card` (10, replaces `standard`), `cart/cart` (5 placements + options, `CartDrawer` placement/slots), `all-products` (8 layouts), new sections related-products, recently-viewed, timeline, team, coupon-strip, enquiry-form; editor Product page, Store behaviour panel with popup preview, `$layout` in `showIf`; variant-aware `CartContext` and `variantInfo` in cart orders; chatbot typed and lazy-loaded; docs updated.

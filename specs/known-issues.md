@@ -14,7 +14,7 @@ Single register of verified defects, security gaps, missing pieces and limitatio
 - **Before changing a feature**, check its spec's *Known issues* IDs here — a fix may already be wanted, or a change may make an issue worse.
 - **New problem found:** add a row with the next free ID (never reuse an ID), the severity, type and affected spec(s), and add the ID to each affected spec's *Known issues* line.
 - **Agreed to fix:** add the work to the owning spec's *Changes to be done* and reference the ID.
-- **Fixed:** delete the row here and the ID from the specs, update the specs to describe the new behaviour, and log one line in `../changes.md` (e.g. `[orders-checkout] Fixed KI-009 …`).
+- **Fixed:** delete the row here and the ID from the specs, update the specs to describe the new behaviour, and log one line in the affected spec's *Change history* (e.g. `- 2026-11-03 — Fixed KI-009 …`).
 - **Severity:** *High* — money, security or a core flow is wrong; *Medium* — a feature misbehaves or data can be lost; *Low* — missing piece, cosmetic or limitation. **Type:** Security · Bug · Gap (not built / not enforced) · Decision (needs a product decision) · Limitation (known limit of shipped work) · Ops.
 
 ## High

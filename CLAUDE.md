@@ -1,6 +1,6 @@
 ## specs
 
-Per-feature specs live in `specs/` — table of contents: `specs/index.md`; how specs work: `specs/README.md`. Each spec covers one feature end to end (purpose, scope, functional behaviour, rules, backend data / API / logic, frontend routes / screens / code, known-issue IDs, suggestions, agreed changes). All open problems are in `specs/known-issues.md` (`KI-NNN`). `context.md` holds architecture and cross-cutting detail; `changes.md` holds history.
+Per-feature specs live in `specs/` — table of contents: `specs/index.md`; how specs work: `specs/README.md`. Each spec covers one feature end to end (purpose, scope, functional behaviour, rules, backend data / API / logic, frontend routes / screens / code, known-issue IDs, suggestions, agreed changes). All open problems are in `specs/known-issues.md` (`KI-NNN`). `context.md` holds architecture and cross-cutting detail. History: each spec's *Change history* section (newest first); the root `changes.md` keeps cross-cutting history only.
 
 Before making any change:
 - Find the affected feature(s) in `specs/index.md` and read each spec, `specs/_invariants.md`, the spec's *Known issues* entries in `specs/known-issues.md`, and the relevant `context.md` sections.
@@ -12,7 +12,7 @@ After making a change (same change, not later):
 - Update every affected spec so it describes what the code now does — *Functional behaviour*, *Rules*, *Backend*, *Frontend* — and remove the shipped item from *Changes to be done*.
 - `specs/known-issues.md`: delete issues the change fixed (and their IDs from the specs); add any new problem found with the next free ID and list the ID in the affected specs.
 - Update `specs/index.md` if a spec was added, renamed or removed; take new rule numbers from the table in `specs/README.md` and update it.
-- Update `context.md` only if architecture or cross-cutting detail changed; add one line to `changes.md` tagged with the spec id (e.g. `[catalog-products]`).
+- Update `context.md` only if architecture or cross-cutting detail changed; add one line at the top of each affected spec's *Change history* (`- YYYY-MM-DD — what changed and where`, newest first; add the section at the end of the spec if it is missing). Cross-cutting changes no spec owns (architecture, infra, migrations tooling, build / deploy, landing-site summary) go to the root `changes.md` instead.
 
 Conventions: feature detail lives in the owning spec only (others link to it); spec families share a file-name prefix (e.g. `storefront-builder-*`, `catalog-*`) and a rule-ID prefix; rule and KI IDs are never renumbered or reused. `landing_website/` has no specs.
 

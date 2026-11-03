@@ -1,13 +1,13 @@
 # ReplyCart / Silarai — Project Context
 
-> Authoritative reference for this codebase's architecture. Read it with the relevant specs before implementing features, fixing bugs, or refactoring (see *Working with specs* below). Update it whenever architecture or cross-cutting behaviour changes. Log every change in `changes.md`. **Feature-level detail (functional behaviour, rules, entities, endpoints, frontend screens, planned changes) lives in `specs/` — one spec per feature, table of contents `specs/index.md`; all open problems are in `specs/known-issues.md`.** This file keeps the architecture and cross-cutting detail, plus a map of where each feature lives (§4.3).
+> Authoritative reference for this codebase's architecture. Read it with the relevant specs before implementing features, fixing bugs, or refactoring (see *Working with specs* below). Update it whenever architecture or cross-cutting behaviour changes. Log feature changes in the owning spec's *Change history*; cross-cutting ones in `changes.md`. **Feature-level detail (functional behaviour, rules, entities, endpoints, frontend screens, planned changes) lives in `specs/` — one spec per feature, table of contents `specs/index.md`; all open problems are in `specs/known-issues.md`.** This file keeps the architecture and cross-cutting detail, plus a map of where each feature lives (§4.3).
 
 Product name in code/branding is **Silarai** (the GitHub repo, package names, and some domain classes still say **ReplyCart** — the two names refer to the same product; "ReplyCart" is the original/legacy name). Repo: `github.com:psitraders/silarai.git`.
 
 ## Working with specs (read before every change)
 
 1. **Before changing anything:** find the feature(s) the change touches in `specs/index.md` (or the feature map, §4.3) and read each spec, `specs/_invariants.md` and the spec's *Known issues* in `specs/known-issues.md`, then the relevant sections of this file. Don't break a listed rule (e.g. `CAT-R3`, `INV-2`) without the user's approval. Put planned work in the spec's *Changes to be done* first.
-2. **After the change, in the same change:** update the affected specs to describe what the code now does (behaviour, rules, backend, frontend) and remove shipped items from *Changes to be done*; in `specs/known-issues.md` remove fixed issues and add new ones (next free `KI-NNN`, IDs listed in the specs); update `specs/index.md` for added / renamed / removed specs; update this file only for architecture / cross-cutting changes; add one line to `changes.md` tagged with the spec id.
+2. **After the change, in the same change:** update the affected specs to describe what the code now does (behaviour, rules, backend, frontend) and remove shipped items from *Changes to be done*; in `specs/known-issues.md` remove fixed issues and add new ones (next free `KI-NNN`, IDs listed in the specs); update `specs/index.md` for added / renamed / removed specs; update this file only for architecture / cross-cutting changes; add one line at the top of each affected spec's *Change history* (`- YYYY-MM-DD — what changed and where`, newest first; add the section at the end of the spec if it is missing). Cross-cutting changes no spec owns (architecture, infra, migrations tooling, build / deploy, landing-site summary) go to the root `changes.md` instead.
 
 ## 1. What this product does
 
@@ -317,6 +317,6 @@ Replaced the fixed storefront pages (deleted in Phase 1). Only `index.ts` (`Stor
 - Full migration history: `backend/src/ReplyCart.Infrastructure/Persistence/Migrations/`.
 - Config keys: `backend/src/ReplyCart.Api/appsettings.json`.
 - The marketing website at `silarai.com`: `landing_website/context.md` and `landing_website/changes.md` — authoritative for that app; this file only points at it (§5.9).
-- Chronological history of changes made to this codebase since context.md was introduced: `changes.md` (repo root).
+- History: feature changes in each spec's *Change history* section (newest first); cross-cutting changes (architecture, infra, migrations tooling, build / deploy, landing-site summary) in `changes.md` (repo root).
 - Per-feature behaviour, rules, entities, endpoints, frontend screens and planned changes: `specs/` (table of contents `specs/index.md`, workflow `specs/README.md`, shared rules `specs/_invariants.md`, open problems `specs/known-issues.md`).
 - Storefront builder: plan `docs/plan-storefront-builder.md`, option catalogue `docs/storefront-builder-catalogue.md`, UI rulebook `frontend/design.md`.

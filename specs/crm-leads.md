@@ -48,3 +48,8 @@ Open items in [known-issues](known-issues.md): KI-012, KI-029, KI-045.
 - Add a *Convert to order* action on the lead detail, priced from the catalogue.
 
 ## Changes to be done
+
+## Change history
+Newest first.
+
+- 2026-10-17 — Storefront newsletter signups become Leads tagged `newsletter` (`POST /public/{slug}/newsletter` in `PublicStorefrontController`; CRM-R3).

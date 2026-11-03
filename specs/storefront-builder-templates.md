@@ -46,3 +46,9 @@ Open items in [known-issues](known-issues.md): KI-065.
 
 ## Changes to be done
 See `storefront-builder` (*Changes to be done* — open Phase 4 follow-ups).
+
+## Change history
+Newest first.
+
+- 2026-10-17 — Phase 4b: Bloom, Crumb and Volt template packs with 13 signature widgets (`templates/bloom|crumb|volt`); new `newsletter` section; veg / eggless food marks from product tags (style option `foodMarkers`, `ui/FoodMark`, tags on the public product list and smart values); product compare (`behaviour.compare`, `shell/compare/*`, `ui/CompareTable`, Compare toggle in `ui/ProductCard`); `useInquiry` `details`; demo stores `priya-boutique` (Bloom) and `sugar-crumbs` (Crumb) seeded via `DemoStorefrontDesigns.cs`; spec, `context.md`, catalogue and plan updated.
+- 2026-10-16 — Phase 4a templates: template contract + lazy template bodies (`core/types.ts`, `core/templates.ts`), `POST /storefront-builder/apply-template` (`StorefrontBuilderController`), template wizard + Change template (`editor/wizard/`, `ThemePanel`, read-only preview in `PreviewApp`), Noor and Mandi template packs with 11 signature widgets (`templates/noor`, `templates/mandi`), per-template exclusives in the section gallery; demo store `aradhya-jewels` seeded on Noor (`DemoStorefrontDesigns.cs`, `DataSeeder`); spec SB-R17/SB-R18, catalogue, plan and `context.md` updated.

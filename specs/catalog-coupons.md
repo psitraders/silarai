@@ -40,3 +40,8 @@ Open items in [known-issues](known-issues.md): KI-011, KI-018.
 - Re-validate the code server-side at order creation, store `DiscountAmount`, subtract it from the total and increment `UsedCount` in the same save.
 
 ## Changes to be done
+
+## Change history
+Newest first.
+
+- 2026-10-16 — `Coupon.ShowOnStorefront` (hand-written migration `20261016120000_AddCouponShowOnStorefront`, snapshot), `CouponsController` + Coupons page toggle and "On storefront" badge; public `GET /public/{slug}/coupons` lists only shown, active, valid coupons (CAT-R6).

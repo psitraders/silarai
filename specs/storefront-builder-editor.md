@@ -56,3 +56,11 @@ Open items in [known-issues](known-issues.md): KI-061, KI-062.
 
 ## Changes to be done
 See `storefront-builder` (*Changes to be done* — Phase 6 editor style controls).
+
+## Change history
+Newest first.
+
+- 2026-10-18 — Phase 5b preview link: `StorefrontTheme.PreviewToken`, `GET/POST/DELETE preview-link`, `?preview=` draft reads (no-store, 410 when off) in `PublicStorefrontSiteController`; storefront `core/data/preview.ts`, `shell/PreviewBanner.tsx`; editor `panels/PreviewLinkDialog.tsx` (*Share preview*).
+- 2026-10-17 — Phase 5a editor: undo/redo in `editor/state/store.ts` + `useUndoShortcuts` + TopBar buttons; version history `panels/HistoryPanel` + `state/useVersionHistory`; saved sections `panels/SaveSectionDialog`, `state/savedSections`, Saved group in `SectionGallery`, Save for reuse in the preview toolbar and Inspector; `PagesPanel` forgets deleted pages; spec SB-R19/SB-R20, `context.md` and plan updated.
+- 2026-10-17 — Phase 5a backend: `StorefrontVersion` + `StorefrontSavedSection` entities, configs, DbSets, hand-written migration `20261017120000_AddStorefrontVersionsAndSavedSections` + snapshot; `StorefrontBuilderController` publish snapshots the live site (newest 10 kept) and adds `versions`, `versions/{id}`, `versions/{id}/restore`, `saved-sections` CRUD.
+- 2026-10-13 — Phase 2 shipped: storefront editor `frontend/src/storefront-builder/editor/` at `/storefront/editor` (iframe preview at real device widths, click-to-select, layout try-on, section gallery with presets, blocks, schema forms, style kits + ~40 fine-tune options, palettes + custom + contrast report, fonts, pages panel, navigation editor, autosave + publish; `@dnd-kit` editor-only), 13 header / 10 footer layouts, 24 sections / 69 layouts, `ShellFrame` shared by store and preview, store-relative links; backend drops `StorefrontPage.Content`, `PagesController` and legacy public page endpoints, publish syncs brand colours (`StorefrontBuilderController`); removed `PagesPage.tsx` / `api/pages.api.ts`, colour pickers moved from Storefront Settings to the editor; docs updated. EF migration still to fix (UQ_StorefrontPages_TenantSlug).

@@ -42,3 +42,8 @@ Open items in [known-issues](known-issues.md): KI-022.
 - Allow removing (not only deactivating) an admin who never accepted the invite.
 
 ## Changes to be done
+
+## Change history
+Newest first.
+
+- 2026-09-26 — Replaced the unused `Manager`/`Staff` roles with `BusinessAdmin`: TenantAdmin invites Business Admins by email link and can resend / deactivate / reactivate them (`Api/Controllers/v1/TeamController.cs`, `Application/Team/`, `Application/Auth/Commands/AcceptInviteCommand.cs`, `UserTokenType.Invitation`, `EmailService.SendBusinessAdminInviteAsync`, `POST /auth/accept-invite`); BusinessAdmin can't change the plan (`SubscriptionsController.SelectPlan`) and `/api/v1/team` added to the Basic allow-list (`BasicPlanAccessFilter`); frontend adds `pages/settings/TeamPage.tsx` (owner-only `TenantAdminGuard`, sidebar "Team"), `pages/auth/AcceptInvitePage.tsx`, `api/team.api.ts`, and hides the change-plan card for Business Admins in `SubscriptionPage.tsx`. No DB migration (enum stored as int, roles created on first use).

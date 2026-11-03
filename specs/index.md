@@ -1,6 +1,6 @@
 # Specs — Table of Contents
 
-Every spec file, grouped by area. Files of one family share a name prefix and a rule-ID prefix. Architecture and cross-cutting setup: [`../context.md`](../context.md); history: [`../changes.md`](../changes.md).
+Every spec file, grouped by area. Files of one family share a name prefix and a rule-ID prefix. Architecture and cross-cutting setup: [`../context.md`](../context.md); history: each spec's *Change history* section (cross-cutting: [`../changes.md`](../changes.md)).
 
 | Spec | Prefix | Covers |
 |---|---|---|
