@@ -14,7 +14,7 @@ A standalone AI sales chatbot sold to businesses that may not use the Silarai st
 - **Out:** the conversation pipeline (`chatbot-service-agent`), the embeddable script (`chatbot-service-widget`), webhook routing (`channels-inbox`), the tenant's own store chatbot (`ai-tenant-chatbot*`).
 
 ## Functional behaviour
-- **Chatbot Clients** (`/chatbot-clients` for tenants, `/admin/chatbot-clients` for SuperAdmin): list (name, products, status, owner tenant for admins), create (name, description, currency, language, contact, welcome message — gets an API key `rc_bot_<guid>`), activate / deactivate, delete.
+- **Chatbot Clients** (`/chatbot-clients` for tenants, `/admin/chatbot-clients` for SuperAdmin): list (name, products, status, owner tenant for admins), create (name, description, currency, language, contact, welcome message — gets an API key `rc_bot_<guid>`), activate / deactivate, delete. The row's *View / Edit* (eye) action that opens the client detail is shown on the tenant list only; the SuperAdmin list offers activate / deactivate and delete only.
 - **Client detail** tabs: **Products** (add / edit / delete, bulk replace, CSV import with columns `title, description, price, sale_price, variants, image_url, category` — replaces all products), **Orders** (orders placed through the chatbot; change status placed / confirmed / cancelled / fulfilled), **Channels** (WhatsApp phone number id + token + WABA id, Facebook page id + token, Instagram account id + token), **Catalog Sync** (Shopify domain + Admin token → *Sync* imports up to 250 active products; knowledge-base documents: upload PDF / DOCX / TXT / MD / CSV ≤ 10 MB — text is extracted and chunked for answers), **Payments** (COD on/off, online via Razorpay key id + secret), **Settings** (name, business description, currency, language, welcome message, logo, contact, order webhook URL), **Embed** (copy-paste `<script>` snippet with `window.RCChatbotConfig = { apiKey, apiBase, … }`). The page also has a test chat (session `admin-test`, renders the server's `thinking` lines) and *Regenerate key* (old key stops working).
 - **Token usage** (`/chatbot-usage` tenant; `/admin/chatbot-usage` SuperAdmin per tenant): prompt / completion / total tokens for 1–365 days, per client, per channel, per day.
 - **New orders** are POSTed to the client's `WebhookUrl` (fire-and-forget) and appear in the Orders tab; online orders are confirmed by `verify-payment`.
@@ -34,7 +34,7 @@ A standalone AI sales chatbot sold to businesses that may not use the Silarai st
 - **Logic:** `Api/Services/DocumentTextExtractor` (txt/md/csv direct, docx via OpenXML, pdf best-effort FlateDecode); `Application/Chatbot/ChatbotKnowledgeSelector` (600-char chunks, cached per client); `IChatbotContextCache` (`ChatbotContextCache`, Redis + `IMemoryCache`, `Redis:CatalogCacheSeconds` = 300).
 
 ## Frontend
-- **Routes & screens:** `pages/admin/AdminChatbotClientsPage.tsx`, `AdminChatbotClientDetailPage.tsx` (tabs above; embed snippet uses `VITE_APP_URL` → `{APP_URL}/chatbot-widget.js`), `AdminChatbotUsagePage.tsx`, `pages/chatbot/ChatbotUsagePage.tsx`. Tenants and admins use the same pages; the UI always calls the `/admin/chatbot-clients` path (allowed on Basic, TEN-R5).
+- **Routes & screens:** `pages/admin/AdminChatbotClientsPage.tsx`, `AdminChatbotClientDetailPage.tsx` (tabs above; embed snippet uses `VITE_APP_URL` → `{APP_URL}/chatbot-widget.js`), `AdminChatbotUsagePage.tsx`, `pages/chatbot/ChatbotUsagePage.tsx`. Tenants and admins use the same pages (`AdminChatbotClientsPage` hides the *View / Edit* row action when the path starts with `/admin`); the UI always calls the `/admin/chatbot-clients` path (allowed on Basic, TEN-R5).
 
 ## Known issues
 Open items in [known-issues](known-issues.md): KI-004, KI-052.
@@ -43,3 +43,6 @@ Open items in [known-issues](known-issues.md): KI-004, KI-052.
 - Background plan: `docs/plan-chatbot-redis-session-memory.md`.
 
 ## Changes to be done
+
+## Change history
+- 2026-11-14 — SuperAdmin Chatbot Clients list (`/admin/chatbot-clients`): removed the *View / Edit* (eye) row action; Actions now show activate / deactivate and delete only (`frontend/src/pages/admin/AdminChatbotClientsPage.tsx`). Tenant list unchanged.

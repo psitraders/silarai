@@ -155,13 +155,16 @@ export function AdminChatbotClientsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => navigate(`${basePath}/${client.id}`)}
-                        className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                        title="View / Edit"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+                      {/* SuperAdmin list: no View / Edit — admins must not open other tenants' client detail */}
+                      {!isAdminView && (
+                        <button
+                          onClick={() => navigate(`${basePath}/${client.id}`)}
+                          className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                          title="View / Edit"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => toggleMutation.mutate(client.id)}
                         className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
